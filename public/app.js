@@ -18,17 +18,48 @@
   const mix = (a, b, t) => `rgb(${lerp(a, b, t).join(',')})`;
   // Read from the CSS, and again whenever the theme changes.
   // PREVIEW is what a line brightens to while you read it silently in read-aloud mode.
-  let DIM, COL, PREVIEW;
+  let DIM, COL, PREVIEW, HOLD;
   function readColours() {
     const css = getComputedStyle(document.documentElement);
     const v = (name) => hexToRgb(css.getPropertyValue(name));
     DIM = v('--text-dim');
     COL = { in: v('--in'), out: v('--out') };
+    HOLD = `rgb(${v('--hold').join(',')})`;
     PREVIEW = lerp(DIM, v('--text'), 0.5);
   }
   readColours();
 
+  // ---- Splitting long lines (off by default) ----
+  // When on, a line longer than `splitWords` words is broken at its strongest
+  // pause (. ! ? then ; : — then a comma) nearest the middle, so each part fits one breath.
+  let splitOn = false, splitWords = 12;
+  try {
+    splitOn = localStorage.getItem('litany-split') === '1';
+    const w = parseInt(localStorage.getItem('litany-split-words'), 10);
+    if (w >= 4 && w <= 40) splitWords = w;
+  } catch {}
+  const MIN_PART = 3; // never leave a part shorter than this many words
+  const pauseStrength = (w) => (/[.!?]["'”’)\]]*$/.test(w) ? 3 : /[;:—–]$/.test(w) ? 2 : /,$/.test(w) ? 1 : 0);
+  function splitText(text, max) {
+    const words = text.split(/\s+/).filter(Boolean);
+    if (words.length <= max) return [words.join(' ')];
+    let best = -1, bestScore = -Infinity;
+    for (let i = MIN_PART - 1; i < words.length - MIN_PART; i++) {
+      const s = pauseStrength(words[i]);
+      if (!s) continue;
+      const score = s * 100 - Math.abs(i + 1 - words.length / 2);
+      if (score > bestScore) { bestScore = score; best = i; }
+    }
+    if (best < 0) return [words.join(' ')]; // no natural pause: leave it whole
+    return [...splitText(words.slice(0, best + 1).join(' '), max), ...splitText(words.slice(best + 1).join(' '), max)];
+  }
+  const charCount = (t) => [...t.replace(/\s+/g, '')].length;
+
   // ---- Reader state ----
+  // `src` holds the lines as written; `lines` the steps actually shown (the same
+  // unless splitting is on). For step k, partSrc[k] is its source line and
+  // partStart[k] / partLen[k] its slice of that line's character spans.
+  let src = [], partSrc = [], partStart = [], partLen = [];
   let lines = [], idx = 0, phase = 'breath', elapsed = 0, playing = false, finished = false;
   let chars = [], lastTs = null, rafId = null;
   // Counts lines shown, across loops, so in/out keeps alternating even
@@ -74,6 +105,12 @@
         const li = document.createElement('li');
         const b = document.createElement('button');
         b.textContent = it.title;
+        if (it.author) {
+          const a = document.createElement('span');
+          a.className = 'author-tag';
+          a.textContent = it.author;
+          b.appendChild(a);
+        }
         b.onclick = () => openLitany(it.id);
         li.appendChild(b);
         listEl.appendChild(li);
@@ -89,7 +126,8 @@
     const res = await fetch('/api/litanies/' + encodeURIComponent(id), { cache: 'no-store' });
     if (!res.ok) { msgEl.textContent = 'Could not open that litany.'; return; }
     const data = await res.json();
-    lines = data.lines.length ? data.lines : [data.title];
+    src = data.lines.length ? data.lines : [data.title];
+    buildParts();
     title = data.title;
     author = data.author || '';
     document.title = data.title;
@@ -102,6 +140,31 @@
     play();
   }
 
+  function buildParts() {
+    lines = []; partSrc = []; partStart = []; partLen = [];
+    src.forEach((text, r) => {
+      let start = 0;
+      for (const part of splitOn ? splitText(text, splitWords) : [text]) {
+        const len = charCount(part);
+        lines.push(part); partSrc.push(r); partStart.push(start); partLen.push(len);
+        start += len;
+      }
+    });
+  }
+  const partChars = (k) => rowChars[partSrc[k]].slice(partStart[k], partStart[k] + partLen[k]);
+
+  // Re-split after the setting changes, staying on the same source line.
+  function resplit() {
+    if (!src.length) return;
+    const row = partSrc[idx];
+    buildParts();
+    const target = partSrc.indexOf(row);
+    step = Math.max(0, step + (target - idx));
+    idx = target;
+    rowChars = [];
+    if (!finished) goTo(idx);
+  }
+
   function goTo(i) {
     const target = Math.max(0, Math.min(lines.length - 1, i));
     step = Math.max(0, step + (target - idx));
@@ -111,6 +174,8 @@
     elapsed = 0;
     finished = false;
     endEl.classList.add('hidden');
+    holdEl.classList.remove('hidden');
+    cueEl.classList.remove('hidden');
     renderLine();
     draw();
   }
@@ -141,7 +206,7 @@
   function renderLine() {
     if (fullView) {
       if (!rowChars.length) buildAllRows();
-      chars = rowChars[idx];
+      chars = partChars(idx);
       paintRows();
       return;
     }
@@ -152,7 +217,8 @@
     fadeIn();
   }
 
-  // Whole-litany view: every line on screen, one row each. Click a row to jump to it.
+  // Whole-litany view: every line on screen as written, one row each, even when
+  // split (only the current part lights up). Click a row to jump to it.
   function buildAllRows() {
     lineEl.classList.add('full');
     lineEl.innerHTML = '';
@@ -163,10 +229,10 @@
       lineEl.appendChild(h);
     }
     rowEls = [];
-    rowChars = lines.map((text, j) => {
+    rowChars = src.map((text, j) => {
       const row = document.createElement('div');
       row.className = 'row';
-      row.onclick = () => goTo(j);
+      row.onclick = () => goTo(partSrc.indexOf(j));
       lineEl.appendChild(row);
       rowEls.push(row);
       return buildWords(text, row);
@@ -181,15 +247,15 @@
     fadeIn();
   }
 
-  // Lines already read keep a softer version of their breath colour; lines to come stay dim.
+  // Parts already read keep a softer version of their breath colour; parts to come stay dim.
   function paintRows() {
-    rowChars.forEach((cs, j) => {
-      rowEls[j].classList.toggle('current', j === idx);
-      if (j === idx) return; // draw() fills the current line
-      const parity = aloud ? 1 : (((step - idx + j) % 2) + 2) % 2;
-      const colour = j < idx ? mix(DIM, COL[parity === 0 ? 'in' : 'out'], 0.5) : `rgb(${DIM.join(',')})`;
-      for (const c of cs) c.style.color = colour;
-    });
+    rowEls.forEach((el, r) => el.classList.toggle('current', r === partSrc[idx]));
+    for (let k = 0; k < lines.length; k++) {
+      if (k === idx) continue; // draw() fills the current part
+      const parity = aloud ? 1 : (((step - idx + k) % 2) + 2) % 2;
+      const colour = k < idx ? mix(DIM, COL[parity === 0 ? 'in' : 'out'], 0.5) : `rgb(${DIM.join(',')})`;
+      for (const c of partChars(k)) c.style.color = colour;
+    }
   }
 
   function setFullView(on) {
@@ -204,7 +270,7 @@
 
   // Largest font size that keeps the text within ~90% width and ~70% height.
   function fitText() {
-    const maxH = window.innerHeight * (fullView ? 0.72 : 0.7);
+    const maxH = (fullView ? window.innerHeight * 0.72 - 70 : window.innerHeight * 0.7); // 70px = top padding in whole view
     let lo = 12, hi = 600;
     while (hi - lo > 1) {
       const mid = (lo + hi) / 2;
@@ -244,7 +310,7 @@
     orbEl.setAttribute('r', (10 + 24 * size).toFixed(2));
     orbEl.style.fill = rgb;
     holdEl.classList.add('show');
-    arcEl.style.stroke = rgb;
+    arcEl.style.stroke = HOLD; // one hold colour for both holds
     arcEl.classList.toggle('on', holding && dur > 0);
     arcEl.style.strokeDashoffset = holding && dur > 0 ? String(1 - p) : '1';
     // Word cue
@@ -278,8 +344,9 @@
   function finish() {
     finished = true;
     pause();
-    holdEl.classList.remove('show');
-    cueEl.classList.remove('show');
+    // The return link takes the place of the breath ring and cue, clear of the toolbar.
+    holdEl.classList.add('hidden');
+    cueEl.classList.add('hidden');
     endEl.classList.remove('hidden');
   }
 
@@ -326,18 +393,22 @@
     else finish();
   };
 
-  const loopBtn = $('btn-loop');
+  const loopBtn = $('btn-loop'), repeatPill = $('repeat-pill');
   function setLoop(on) {
     looping = on;
     loopBtn.classList.toggle('active', on);
     loopBtn.setAttribute('aria-pressed', String(on));
     loopBtn.title = on ? 'Loop: on (L)' : 'Loop: off (L)';
+    repeatPill.classList.toggle('on', on);
+    repeatPill.setAttribute('aria-pressed', String(on));
+    repeatPill.title = on ? 'Repeat: on (L)' : 'Read once (L)';
     try { localStorage.setItem('litany-loop', on ? '1' : '0'); } catch {}
     // Turning loop on after the litany has ended starts it again from the top.
     if (on && finished && lines.length) play();
   }
   setLoop(looping);
   loopBtn.onclick = () => setLoop(!looping);
+  repeatPill.onclick = () => setLoop(!looping);
   setFullView(fullView);
   viewBtn.onclick = () => setFullView(!fullView);
 
@@ -408,7 +479,28 @@
       if (!isNaN(v)) { timings[k] = Math.max(min, Math.min(30, v)); saveTimings(); }
     });
   }
-  $('btn-settings').onclick = () => { fillFields(); settingsEl.classList.toggle('hidden'); };
+  const splitBox = $('t-split'), splitField = $('t-split-words');
+  const fillSplit = () => { splitBox.checked = splitOn; splitField.value = splitWords; splitField.disabled = !splitOn; };
+  splitBox.addEventListener('change', () => {
+    splitOn = splitBox.checked;
+    try { localStorage.setItem('litany-split', splitOn ? '1' : '0'); } catch {}
+    fillSplit();
+    resplit();
+  });
+  splitField.addEventListener('input', () => {
+    const v = parseInt(splitField.value, 10);
+    if (isNaN(v)) return;
+    splitWords = Math.max(4, Math.min(40, v));
+    try { localStorage.setItem('litany-split-words', String(splitWords)); } catch {}
+    if (splitOn) resplit();
+  });
+  $('btn-settings').onclick = () => { fillFields(); fillSplit(); settingsEl.classList.toggle('hidden'); };
+  // A click anywhere outside the panel (other than the gear itself) closes it.
+  document.addEventListener('click', (e) => {
+    if (settingsOpen() && !settingsEl.contains(e.target) && !$('btn-settings').contains(e.target)) {
+      settingsEl.classList.add('hidden');
+    }
+  });
   $('t-done').onclick = () => settingsEl.classList.add('hidden');
   $('t-reset').onclick = () => { timings = { ...DEFAULTS }; saveTimings(); fillFields(); };
 

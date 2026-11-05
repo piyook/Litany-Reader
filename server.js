@@ -62,7 +62,10 @@ const server = http.createServer(async (req, res) => {
     if (p === '/api/litanies') {
       const files = await listFiles();
       const items = await Promise.all(
-        files.map(async (id) => ({ id, title: (await parseLitany(id)).title }))
+        files.map(async (id) => {
+          const { title, author } = await parseLitany(id);
+          return { id, title, author };
+        })
       );
       items.sort((a, b) => a.title.localeCompare(b.title));
       return send(res, 200, items);

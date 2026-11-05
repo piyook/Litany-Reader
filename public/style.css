@@ -5,6 +5,7 @@
   --muted: #6b6b78;
   --in: #f2b46b;   /* warm amber: in-breath */
   --out: #7fb2e5;  /* cool blue: out-breath */
+  --hold: #a9d39b; /* soft sage: the hold ring, same for both holds */
   --panel: #16161d;
   --line: #2a2a33;
   --bar: rgba(22, 22, 29, .85);
@@ -19,6 +20,7 @@
   --muted: #858079;
   --in: #b86e14;
   --out: #2e6aa8;
+  --hold: #4a8a3c;
   --panel: #fbf8f2;
   --line: #e0dacd;
   --bar: rgba(251, 248, 242, .9);
@@ -32,8 +34,21 @@
 :root[data-theme="light"] .btn-theme .icon-sun { display: none !important; }
 
 /* Mode pill at the top of the reader: silent or spoken. Click to switch. */
-#mode-pill {
+#top-bar {
   position: absolute; top: 20px; left: 50%; transform: translateX(-50%); z-index: 2;
+  display: flex; align-items: center; gap: 10px;
+}
+/* Repeat toggle beside the mode pill: muted "read once" icon when off, coloured repeat icon when on. */
+#repeat-pill {
+  width: 28px; height: 28px; border-radius: 50%; border: 1px solid currentColor;
+  color: var(--muted); opacity: .8; transition: color .4s, background .4s, opacity .3s;
+}
+#repeat-pill svg { display: block; margin: auto; }
+#repeat-pill:hover { opacity: 1; }
+#repeat-pill .icon-repeat, #repeat-pill.on .icon-once { display: none; }
+#repeat-pill.on .icon-repeat { display: block; }
+#repeat-pill.on { color: var(--in); background: color-mix(in srgb, var(--in) 14%, transparent); }
+#mode-pill {
   padding: 5px 14px; border-radius: 999px; border: 1px solid currentColor;
   font-family: system-ui, sans-serif; font-size: 12px; letter-spacing: .18em; text-transform: uppercase;
   color: var(--in); background: color-mix(in srgb, var(--in) 14%, transparent);
@@ -62,6 +77,12 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
   border-bottom: 1px solid var(--line); color: var(--text); transition: color .2s;
 }
 #litany-list button:hover, #litany-list button:focus-visible { color: var(--in); outline: none; }
+/* Small muted author tag on the right of each index entry. */
+#litany-list button { display: flex; justify-content: space-between; align-items: baseline; gap: 1rem; }
+#litany-list .author-tag {
+  flex-shrink: 0; font-family: system-ui, sans-serif; font-size: 0.72rem; letter-spacing: .08em;
+  color: var(--muted); padding: 2px 9px; border: 1px solid var(--line); border-radius: 999px;
+}
 
 /* Reader */
 #reader { position: fixed; inset: 0; }
@@ -70,6 +91,8 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
   position: absolute; inset: 0; display: flex; flex-direction: column;
   align-items: center; justify-content: center; padding: 0 5vw;
 }
+/* Keep the whole-litany title clear of the buttons at the top. */
+#stage:has(#line.full) { padding-top: 70px; }
 #line {
   width: 90vw; text-align: center; line-height: 1.15;
   transition: opacity .6s ease;
@@ -104,7 +127,12 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
 }
 #cue.show { opacity: .85; }
 
-#end { margin-top: 3vh; text-align: center; animation: fade-in .8s ease-out; }
+/* Sits where the breath ring and cue were, about the same height, so the text doesn't jump. */
+#end {
+  margin-top: 5vh; min-height: calc(10vmin + 1.6vh + 1.4em);
+  display: flex; align-items: center; justify-content: center;
+  animation: fade-in .8s ease-out;
+}
 @keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
 .link { color: var(--muted); text-decoration: underline; text-underline-offset: 4px; font-size: 1.1rem; }
 .link:hover { color: var(--text); }
@@ -137,4 +165,7 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
 #settings input { width: 72px; background: var(--bg); color: var(--text); border: 1px solid var(--line); border-radius: 6px; padding: 5px 8px; font: inherit; }
 #settings .row { display: flex; justify-content: space-between; align-items: center; margin-top: 14px; }
 #settings .link { font-size: 12px; }
+#settings h2.sub { margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--line); }
+#settings input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--in); }
+#settings input:disabled { opacity: .45; }
 #t-done { background: var(--line); padding: 6px 14px; border-radius: 6px; }
