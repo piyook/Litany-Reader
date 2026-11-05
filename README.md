@@ -90,7 +90,7 @@ Author: Name
 - The first line is the title.
 - Every other non-empty line is one step on screen.
 - An optional `Short version` (or `Short form`) line starts a short form: the lines after it are a quick version of the litany, read when [Short form](#views) is on. A litany without one is always read in full.
-- An optional last line starting `Author:` is a credit, not a step. It shows as a small tag beside the title on the index, and under the text in the whole-litany view.
+- An optional `Author:` line, last in the file or last before `Short version`, is a credit, not a step. A line ending in `.`, `!` or `?` is always read as a step. It shows as a small tag beside the title on the index, and under the text in the whole-litany view.
 
 The folder is read fresh each time, so new or edited files show up when you refresh.
 
@@ -131,7 +131,6 @@ The files are not changed. In the whole-litany view each line still appears as w
 
 - **One line at a time** (the default): each line fills the screen, as large as it fits, with the litany's title small at the top.
 - **Whole litany** (the lines button, or `V`): the title, every line and the author credit on one screen. Lines already read keep a softer version of their breath colour, and lines to come stay dim. Click any line to jump to it.
-
 - **Short form** (the fold button, two arrows pressing in on a line, or `S`): reads the litany's short version instead, starting from its first line. The title shows *· short* while it is on. The setting is saved in the browser and applies to every litany that has a short form; the button is greyed out for one that doesn't.
 
 When a litany has been read once through, the breath ring and cue give way to a **Return to index** link. With repeat on it never finishes, so the link doesn't appear.

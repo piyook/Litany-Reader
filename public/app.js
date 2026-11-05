@@ -83,6 +83,8 @@
 
   // Short form: a quick version of the litany, for litanies whose file has one.
   let shortForm = false, longLines = [], shortLines = [];
+  const usingShort = () => shortForm && shortLines.length > 0;
+  const displayTitle = () => (usingShort() ? title + ' · short' : title);
   try { shortForm = localStorage.getItem('litany-short') === '1'; } catch {}
   const shortBtn = $('btn-short');
 
@@ -131,7 +133,7 @@
     const res = await fetch('/api/litanies/' + encodeURIComponent(id), { cache: 'no-store' });
     if (!res.ok) { msgEl.textContent = 'Could not open that litany.'; return; }
     const data = await res.json();
-    longLines = data.lines.length ? data.lines : [data.title];
+    longLines = data.lines;
     shortLines = data.short || [];
     title = data.title;
     author = data.author || '';
@@ -144,9 +146,8 @@
 
   // Shows the long or short form from the first line. With no short form, the long one.
   function loadForm() {
-    const useShort = shortForm && shortLines.length > 0;
-    src = useShort ? shortLines : longLines;
-    $('reader-title').textContent = useShort ? title + ' · short' : title;
+    src = usingShort() ? shortLines : longLines;
+    $('reader-title').textContent = displayTitle();
     shortBtn.disabled = !shortLines.length;
     updateShortBtn();
     buildParts();
@@ -168,7 +169,10 @@
     if (src.length && !shortLines.length) return; // this litany has no short form
     shortForm = on;
     try { localStorage.setItem('litany-short', on ? '1' : '0'); } catch {}
-    if (src.length) loadForm(); else updateShortBtn();
+    if (!src.length) return updateShortBtn();
+    const wasFinished = finished;
+    loadForm();
+    if (wasFinished) play();
   }
 
   function buildParts() {
@@ -256,7 +260,7 @@
     if (title) {
       const h = document.createElement('div');
       h.className = 'title';
-      h.textContent = title;
+      h.textContent = displayTitle();
       lineEl.appendChild(h);
     }
     rowEls = [];
@@ -436,7 +440,14 @@
     repeatPill.title = on ? 'Repeat: on (L)' : 'Read once (L)';
     try { localStorage.setItem('litany-loop', on ? '1' : '0'); } catch {}
     // Turning loop on after the litany has ended starts it again from the top.
-    if (on && finished && lines.length) play();
+    if (on) restartIfFinished();
+  }
+
+  // After the litany has ended, changing loop, read-aloud or short form starts it again.
+  function restartIfFinished() {
+    if (!finished || !lines.length) return false;
+    play(); // play() goes back to the first line when finished
+    return true;
   }
   setLoop(looping);
   loopBtn.onclick = () => setLoop(!looping);
@@ -455,7 +466,7 @@
     modePill.classList.toggle('spoken', on);
     try { localStorage.setItem('litany-aloud', on ? '1' : '0'); } catch {}
     // Restart the current line so it begins on an in-breath in the new mode.
-    if (lines.length && !finished) goTo(idx);
+    if (!restartIfFinished() && lines.length) goTo(idx);
   }
   const modePill = $('mode-pill');
   setAloud(aloud);

@@ -7,3 +7,6 @@ server.log
 
 # Copyrighted text: kept locally, never committed
 litanies/litany-against-fear.txt
+
+# Local Claude Code settings
+.claude/

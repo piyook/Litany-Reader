@@ -36,15 +36,21 @@ async function parseLitany(file) {
   text = text.replace(/^﻿/, '');
   const lines = text.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
   const title = lines.shift() || file.replace(/\.txt$/i, '');
-  // An optional last line "Author: <name>" is a credit, not a step.
-  let author = '';
-  const m = lines.length && lines[lines.length - 1].match(/^author\s*:\s*(.+)$/i);
-  if (m) { author = m[1].trim(); lines.pop(); }
   // An optional "Short version" (or "Short form") line starts a quick form of the litany.
   let short = [];
   const s = lines.findIndex((l) => /^short\s+(version|form)\s*:?$/i.test(l));
   if (s >= 0) { short = lines.slice(s + 1); lines.splice(s); }
-  return { title, lines, short, author };
+  // An "Author: <name>" line at the end of either form is a credit, not a step.
+  // A line ending like a sentence (". ! ?") is a step that happens to start "Author:".
+  const authors = [];
+  for (const form of [lines, short]) {
+    const m = form.length && form[form.length - 1].match(/^author\s*:\s*(.*[^.!?\s])\s*$/i);
+    if (m) { form.pop(); if (!authors.includes(m[1])) authors.push(m[1]); }
+  }
+  // A file with only a short form reads it as its one form; an empty file shows its title.
+  if (!lines.length) { lines.push(...short); short = []; }
+  if (!lines.length) lines.push(title);
+  return { title, lines, short, author: authors.join(', ') };
 }
 
 function send(res, status, body, type = 'application/json; charset=utf-8') {
