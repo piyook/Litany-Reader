@@ -29,6 +29,11 @@
   let looping = false;
   try { looping = localStorage.getItem('litany-loop') === '1'; } catch {}
 
+  // Whole-litany view state
+  let fullView = false, rowChars = [], rowEls = [], title = '';
+  try { fullView = localStorage.getItem('litany-full') === '1'; } catch {}
+  const viewBtn = $('btn-view');
+
   const kindOf = () => (step % 2 === 0 ? 'in' : 'out');
   const phaseDuration = () => {
     const k = kindOf();
@@ -69,11 +74,13 @@
     if (!res.ok) { msgEl.textContent = 'Could not open that litany.'; return; }
     const data = await res.json();
     lines = data.lines.length ? data.lines : [data.title];
+    title = data.title;
     document.title = data.title;
     indexEl.classList.add('hidden');
     readerEl.classList.remove('hidden');
     step = 0;
     idx = 0;
+    rowChars = [];
     goTo(0);
     play();
   }
@@ -90,12 +97,12 @@
     draw();
   }
 
-  function renderLine() {
-    lineEl.innerHTML = '';
-    chars = [];
-    // Each word is an unbreakable group of character spans, so lines only wrap
-    // between words. A word too wide for the screen makes the font shrink instead.
-    const words = lines[idx].split(/\s+/);
+  // Adds `text` to `container` and returns its character spans. Each word is an
+  // unbreakable group, so lines only wrap between words; a word too wide for the
+  // screen makes the font shrink instead.
+  function buildWords(text, container) {
+    const out = [];
+    const words = text.split(/\s+/);
     words.forEach((word, wi) => {
       const w = document.createElement('span');
       w.className = 'word';
@@ -103,18 +110,77 @@
         const s = document.createElement('span');
         s.textContent = ch;
         w.appendChild(s);
-        chars.push(s);
+        out.push(s);
       }
-      lineEl.appendChild(w);
-      if (wi < words.length - 1) lineEl.appendChild(document.createTextNode(' '));
+      container.appendChild(w);
+      if (wi < words.length - 1) container.appendChild(document.createTextNode(' '));
     });
-    fitText();
-    lineEl.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 600, easing: 'ease-out' });
+    return out;
   }
 
-  // Largest font size that keeps the line within ~90% width and ~70% height.
+  const fadeIn = () => lineEl.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 600, easing: 'ease-out' });
+
+  function renderLine() {
+    if (fullView) {
+      if (!rowChars.length) buildAllRows();
+      chars = rowChars[idx];
+      paintRows();
+      return;
+    }
+    lineEl.classList.remove('full');
+    lineEl.innerHTML = '';
+    chars = buildWords(lines[idx], lineEl);
+    fitText();
+    fadeIn();
+  }
+
+  // Whole-litany view: every line on screen, one row each. Click a row to jump to it.
+  function buildAllRows() {
+    lineEl.classList.add('full');
+    lineEl.innerHTML = '';
+    if (title) {
+      const h = document.createElement('div');
+      h.className = 'title';
+      h.textContent = title;
+      lineEl.appendChild(h);
+    }
+    rowEls = [];
+    rowChars = lines.map((text, j) => {
+      const row = document.createElement('div');
+      row.className = 'row';
+      row.onclick = () => goTo(j);
+      lineEl.appendChild(row);
+      rowEls.push(row);
+      return buildWords(text, row);
+    });
+    fitText();
+    fadeIn();
+  }
+
+  // Lines already read keep a softer version of their breath colour; lines to come stay dim.
+  function paintRows() {
+    rowChars.forEach((cs, j) => {
+      rowEls[j].classList.toggle('current', j === idx);
+      if (j === idx) return; // draw() fills the current line
+      const parity = (((step - idx + j) % 2) + 2) % 2;
+      const colour = j < idx ? mix(DIM, COL[parity === 0 ? 'in' : 'out'], 0.5) : `rgb(${DIM.join(',')})`;
+      for (const c of cs) c.style.color = colour;
+    });
+  }
+
+  function setFullView(on) {
+    fullView = on;
+    viewBtn.classList.toggle('active', on);
+    viewBtn.setAttribute('aria-pressed', String(on));
+    viewBtn.title = on ? 'Whole litany: on (V)' : 'Whole litany: off (V)';
+    try { localStorage.setItem('litany-full', on ? '1' : '0'); } catch {}
+    rowChars = [];
+    if (lines.length) { renderLine(); draw(); }
+  }
+
+  // Largest font size that keeps the text within ~90% width and ~70% height.
   function fitText() {
-    const maxH = window.innerHeight * 0.7;
+    const maxH = window.innerHeight * (fullView ? 0.72 : 0.7);
     let lo = 12, hi = 600;
     while (hi - lo > 1) {
       const mid = (lo + hi) / 2;
@@ -232,6 +298,8 @@
   }
   setLoop(looping);
   loopBtn.onclick = () => setLoop(!looping);
+  setFullView(fullView);
+  viewBtn.onclick = () => setFullView(!fullView);
 
   // ---- Controls ----
   playBtn.onclick = toggle;
@@ -284,6 +352,7 @@
         else if (!document.fullscreenElement) showIndex();
         break;
       case 'l': case 'L': setLoop(!looping); break;
+      case 'v': case 'V': setFullView(!fullView); break;
       case 'f': case 'F':
         if (document.fullscreenElement) document.exitFullscreen();
         else document.documentElement.requestFullscreen().catch(() => {});
