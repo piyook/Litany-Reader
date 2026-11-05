@@ -1,0 +1,80 @@
+:root {
+  --bg: #0b0b0f;
+  --text-dim: #3a3a44;
+  --text: #c9c9d1;
+  --muted: #6b6b78;
+  --in: #f2b46b;   /* warm amber: in-breath */
+  --out: #7fb2e5;  /* cool blue: out-breath */
+  --panel: #16161d;
+  --line: #2a2a33;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; background: var(--bg); color: var(--text); }
+body { font-family: Georgia, "Iowan Old Style", "Palatino Linotype", serif; overflow: hidden; }
+button { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; }
+.hidden { display: none !important; }
+.muted { color: var(--muted); }
+
+/* Index */
+#index { max-width: 640px; margin: 0 auto; padding: 12vh 24px; overflow-y: auto; height: 100%; }
+#index h1 { font-weight: normal; letter-spacing: 0.04em; color: var(--muted); font-size: 1.1rem; text-transform: uppercase; margin: 0 0 2rem; }
+#litany-list { list-style: none; padding: 0; margin: 0; }
+#litany-list button {
+  display: block; width: 100%; text-align: left; font-size: 1.8rem; padding: 0.9rem 0;
+  border-bottom: 1px solid var(--line); color: var(--text); transition: color .2s;
+}
+#litany-list button:hover, #litany-list button:focus-visible { color: var(--in); outline: none; }
+
+/* Reader */
+#reader { position: fixed; inset: 0; }
+#reader.idle, #reader.idle * { cursor: none; }
+#stage {
+  position: absolute; inset: 0; display: flex; flex-direction: column;
+  align-items: center; justify-content: center; padding: 0 5vw;
+}
+#line {
+  width: 90vw; text-align: center; line-height: 1.15; overflow-wrap: break-word;
+  transition: opacity .6s ease;
+}
+#line span { color: var(--text-dim); }
+#line.fade { opacity: 0; }
+
+#hold { width: 7vmin; height: 7vmin; margin-top: 5vh; opacity: 0; transition: opacity .5s; transform: rotate(-90deg); }
+#hold.show { opacity: 1; }
+#hold circle { fill: none; stroke-width: 5; }
+#hold .track { stroke: var(--line); }
+#hold .arc { stroke: var(--in); stroke-dasharray: 1; stroke-dashoffset: 1; stroke-linecap: round; }
+
+#end { position: absolute; left: 0; right: 0; bottom: 18vh; text-align: center; }
+.link { color: var(--muted); text-decoration: underline; text-underline-offset: 4px; font-size: 1.1rem; }
+.link:hover { color: var(--text); }
+
+/* Controls: appear only when the pointer is near the bottom */
+#hotzone { position: absolute; left: 0; right: 0; bottom: 0; height: 120px; }
+#controls {
+  position: absolute; left: 50%; bottom: 24px; transform: translate(-50%, 12px);
+  display: flex; align-items: center; gap: 8px; padding: 8px 14px;
+  background: rgba(22, 22, 29, .85); border: 1px solid var(--line); border-radius: 999px;
+  opacity: 0; pointer-events: none; transition: opacity .35s, transform .35s;
+  font-family: system-ui, sans-serif;
+}
+#controls.show { opacity: 1; pointer-events: auto; transform: translate(-50%, 0); }
+#controls button { width: 48px; height: 48px; border-radius: 50%; font-size: 22px; color: var(--text); }
+#controls button.small { width: 38px; height: 38px; font-size: 17px; color: var(--muted); }
+#controls button:hover { background: var(--line); color: #fff; }
+#controls .spacer { width: 1px; height: 26px; background: var(--line); margin: 0 4px; }
+
+/* Settings */
+#settings {
+  position: absolute; right: 24px; bottom: 100px; width: 260px; padding: 18px 20px;
+  background: var(--panel); border: 1px solid var(--line); border-radius: 12px;
+  font-family: system-ui, sans-serif; font-size: 14px;
+}
+#settings h2 { font-size: 13px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; margin: 0 0 12px; }
+#settings label { display: flex; justify-content: space-between; align-items: center; margin: 8px 0; }
+#settings input { width: 72px; background: var(--bg); color: var(--text); border: 1px solid var(--line); border-radius: 6px; padding: 5px 8px; font: inherit; }
+#settings .row { display: flex; justify-content: space-between; align-items: center; margin-top: 14px; }
+#settings .link { font-size: 12px; }
+#t-done { background: var(--line); padding: 6px 14px; border-radius: 6px; }

@@ -1,0 +1,77 @@
+// Litany Reader: a tiny local server with no dependencies.
+// It reads the litanies folder fresh on every request.
+const http = require('http');
+const fs = require('fs/promises');
+const path = require('path');
+
+const PORT = Number(process.env.PORT) || 8484;
+const LITANY_DIR = path.join(__dirname, 'litanies');
+const PUBLIC_DIR = path.join(__dirname, 'public');
+
+const TYPES = {
+  '.html': 'text/html; charset=utf-8',
+  '.css': 'text/css; charset=utf-8',
+  '.js': 'text/javascript; charset=utf-8',
+  '.svg': 'image/svg+xml',
+  '.ico': 'image/x-icon',
+};
+
+async function listFiles() {
+  const names = await fs.readdir(LITANY_DIR);
+  return names.filter((n) => n.toLowerCase().endsWith('.txt'));
+}
+
+async function parseLitany(file) {
+  let text = await fs.readFile(path.join(LITANY_DIR, file), 'utf8');
+  text = text.replace(/^﻿/, '');
+  const lines = text.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
+  const title = lines.shift() || file.replace(/\.txt$/i, '');
+  return { title, lines };
+}
+
+function send(res, status, body, type = 'application/json; charset=utf-8') {
+  res.writeHead(status, { 'Content-Type': type, 'Cache-Control': 'no-store' });
+  res.end(typeof body === 'string' || Buffer.isBuffer(body) ? body : JSON.stringify(body));
+}
+
+const server = http.createServer(async (req, res) => {
+  try {
+    const url = new URL(req.url, 'http://localhost');
+    const p = decodeURIComponent(url.pathname);
+
+    if (p === '/api/litanies') {
+      const files = await listFiles();
+      const items = await Promise.all(
+        files.map(async (id) => ({ id, title: (await parseLitany(id)).title }))
+      );
+      items.sort((a, b) => a.title.localeCompare(b.title));
+      return send(res, 200, items);
+    }
+
+    if (p.startsWith('/api/litanies/')) {
+      const id = p.slice('/api/litanies/'.length);
+      // Only accept a file that is really in the folder (blocks ../ tricks).
+      const files = await listFiles();
+      if (!files.includes(id)) return send(res, 404, { error: 'Not found' });
+      return send(res, 200, await parseLitany(id));
+    }
+
+    // Static files from public/
+    const rel = p === '/' ? 'index.html' : p.replace(/^\/+/, '');
+    const full = path.resolve(PUBLIC_DIR, rel);
+    if (!full.startsWith(PUBLIC_DIR + path.sep)) return send(res, 403, 'Forbidden', 'text/plain');
+    try {
+      const data = await fs.readFile(full);
+      return send(res, 200, data, TYPES[path.extname(full)] || 'application/octet-stream');
+    } catch {
+      return send(res, 404, 'Not found', 'text/plain');
+    }
+  } catch (err) {
+    console.error(err);
+    return send(res, 500, { error: 'Server error' });
+  }
+});
+
+server.listen(PORT, '127.0.0.1', () => {
+  console.log(`Litany Reader running at http://localhost:${PORT}`);
+});

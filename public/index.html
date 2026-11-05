@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Litany Reader</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Index -->
+  <main id="index" class="screen">
+    <h1>Litany Reader</h1>
+    <ul id="litany-list"></ul>
+    <p id="index-msg" class="muted"></p>
+  </main>
+
+  <!-- Reader -->
+  <section id="reader" class="screen hidden">
+    <div id="stage">
+      <div id="line"></div>
+      <svg id="hold" viewBox="0 0 100 100" aria-hidden="true">
+        <circle class="track" cx="50" cy="50" r="40"></circle>
+        <circle class="arc" cx="50" cy="50" r="40" pathLength="1"></circle>
+      </svg>
+    </div>
+
+    <div id="end" class="hidden"><button id="end-back" class="link">Return to index</button></div>
+
+    <div id="hotzone"></div>
+    <nav id="controls">
+      <button id="btn-prev" title="Previous (←)">&#x23EE;&#xFE0E;</button>
+      <button id="btn-play" title="Play / pause (Space)">&#x23F8;&#xFE0E;</button>
+      <button id="btn-next" title="Next (→)">&#x23ED;&#xFE0E;</button>
+      <span class="spacer"></span>
+      <button id="btn-settings" class="small" title="Breathing timings">&#x2699;&#xFE0E;</button>
+      <button id="btn-close" class="small" title="Back to index (Esc)">&#x2715;</button>
+    </nav>
+
+    <div id="settings" class="hidden">
+      <h2>Breathing (seconds)</h2>
+      <label>In-breath <input type="number" id="t-in" min="0.5" max="30" step="0.5"></label>
+      <label>Hold <input type="number" id="t-hold1" min="0" max="30" step="0.5"></label>
+      <label>Out-breath <input type="number" id="t-out" min="0.5" max="30" step="0.5"></label>
+      <label>Hold <input type="number" id="t-hold2" min="0" max="30" step="0.5"></label>
+      <div class="row">
+        <button id="t-reset" class="link">Reset to 4 / 4 / 6 / 2</button>
+        <button id="t-done">Done</button>
+      </div>
+    </div>
+  </section>
+
+  <script src="app.js"></script>
+</body>
+</html>
