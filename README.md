@@ -8,7 +8,7 @@ A very simple app that shows a litany one line at a time, in large text, paced t
 
 The idea comes from the **Litany Against Fear** in Frank Herbert's *Dune* (1965), recited by the Bene Gesserit to calm the mind in the face of fear. The litanies here are written in the same spirit: short lines, spoken slowly, in time with the breath.
 
-A litany takes practice before it works in real situations. This tool helps by linking your breathing to the litany you are reading, so you can focus on the meaning of each line.
+A litany takes practice before it works in real situations. This tool helps by linking your breathing to the litany you are reading, so you can focus on the meaning of each line. Reading it the same way, at the same pace, again and again also helps you learn it by heart, so it is there when you need it without the screen.
 
 Add your own as `.txt` files in the `litanies` folder (see [File format](#file-format)).
 
