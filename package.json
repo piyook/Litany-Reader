@@ -1,0 +1,13 @@
+{
+  "name": "litany-reader",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Shows a litany one line at a time, paced to guide calm breathing.",
+  "scripts": {
+    "start": "node scripts/start.js",
+    "stop": "node scripts/stop.js",
+    "restart": "node scripts/stop.js && node scripts/start.js",
+    "serve": "node server.js"
+  },
+  "engines": { "node": ">=18" }
+}

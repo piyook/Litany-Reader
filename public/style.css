@@ -41,11 +41,22 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
 #line span { color: var(--text-dim); }
 #line.fade { opacity: 0; }
 
-#hold { width: 7vmin; height: 7vmin; margin-top: 5vh; opacity: 0; transition: opacity .5s; transform: rotate(-90deg); }
+/* Breath indicator: the orb grows on the in-breath and shrinks on the out-breath;
+   the arc draws round it during a hold. */
+#hold { width: 10vmin; height: 10vmin; margin-top: 5vh; opacity: 0; transition: opacity .5s; transform: rotate(-90deg); }
 #hold.show { opacity: 1; }
-#hold circle { fill: none; stroke-width: 5; }
+#hold circle { fill: none; stroke-width: 4; }
 #hold .track { stroke: var(--line); }
-#hold .arc { stroke: var(--in); stroke-dasharray: 1; stroke-dashoffset: 1; stroke-linecap: round; }
+#hold .orb { stroke: none; fill: var(--in); fill-opacity: .35; }
+#hold .arc { stroke: var(--in); stroke-dasharray: 1; stroke-dashoffset: 1; stroke-linecap: round; opacity: 0; transition: opacity .3s; }
+#hold .arc.on { opacity: 1; }
+
+#cue {
+  margin-top: 1.6vh; min-height: 1.4em; font-family: system-ui, sans-serif;
+  font-size: clamp(13px, 1.6vmin, 20px); letter-spacing: .25em; text-transform: lowercase;
+  color: var(--muted); opacity: 0; transition: opacity .5s, color .5s;
+}
+#cue.show { opacity: .85; }
 
 #end { position: absolute; left: 0; right: 0; bottom: 18vh; text-align: center; }
 .link { color: var(--muted); text-decoration: underline; text-underline-offset: 4px; font-size: 1.1rem; }

@@ -3,6 +3,7 @@
   const $ = (id) => document.getElementById(id);
   const indexEl = $('index'), listEl = $('litany-list'), msgEl = $('index-msg');
   const readerEl = $('reader'), lineEl = $('line'), holdEl = $('hold'), arcEl = holdEl.querySelector('.arc');
+  const orbEl = holdEl.querySelector('.orb'), cueEl = $('cue');
   const controlsEl = $('controls'), playBtn = $('btn-play'), endEl = $('end'), settingsEl = $('settings');
 
   // ---- Timings (seconds) ----
@@ -117,11 +118,23 @@
       const t = Math.max(0, Math.min(1, (front - i) / edge));
       chars[i].style.color = mix(DIM, COL[kind], t);
     }
-    // Hold circle
-    const holding = phase === 'hold' && dur > 0;
-    holdEl.classList.toggle('show', holding);
-    arcEl.style.stroke = `rgb(${COL[kind].join(',')})`;
-    arcEl.style.strokeDashoffset = holding ? String(1 - p) : '1';
+    // Breath indicator: orb grows on the in-breath, shrinks on the out-breath,
+    // and stays still while the hold arc draws round it.
+    const rgb = `rgb(${COL[kind].join(',')})`;
+    const holding = phase === 'hold';
+    const ease = 0.5 - 0.5 * Math.cos(Math.PI * p);
+    const size = holding ? (kind === 'in' ? 1 : 0) : (kind === 'in' ? ease : 1 - ease);
+    orbEl.setAttribute('r', (10 + 24 * size).toFixed(2));
+    orbEl.style.fill = rgb;
+    holdEl.classList.add('show');
+    arcEl.style.stroke = rgb;
+    arcEl.classList.toggle('on', holding && dur > 0);
+    arcEl.style.strokeDashoffset = holding && dur > 0 ? String(1 - p) : '1';
+    // Word cue
+    const word = holding ? 'hold' : kind === 'in' ? 'breathe in' : 'breathe out';
+    if (cueEl.textContent !== word) cueEl.textContent = word;
+    cueEl.style.color = rgb;
+    cueEl.classList.add('show');
   }
 
   function advance() {
@@ -142,6 +155,7 @@
     finished = true;
     pause();
     holdEl.classList.remove('show');
+    cueEl.classList.remove('show');
     endEl.classList.remove('hidden');
   }
 

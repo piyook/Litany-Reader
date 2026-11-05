@@ -2,11 +2,16 @@
 // It reads the litanies folder fresh on every request.
 const http = require('http');
 const fs = require('fs/promises');
+const fsSync = require('fs');
 const path = require('path');
+const crypto = require('crypto');
 
 const PORT = Number(process.env.PORT) || 8484;
 const LITANY_DIR = path.join(__dirname, 'litanies');
 const PUBLIC_DIR = path.join(__dirname, 'public');
+// Written while running so `npm stop` can find the server and ask it to exit.
+const STATE_FILE = path.join(__dirname, '.server.json');
+const TOKEN = crypto.randomBytes(16).toString('hex');
 
 const TYPES = {
   '.html': 'text/html; charset=utf-8',
@@ -38,6 +43,12 @@ const server = http.createServer(async (req, res) => {
   try {
     const url = new URL(req.url, 'http://localhost');
     const p = decodeURIComponent(url.pathname);
+
+    if (p === '/__shutdown' && req.method === 'POST') {
+      if (req.headers['x-litany-token'] !== TOKEN) return send(res, 403, { error: 'Forbidden' });
+      send(res, 200, { ok: true });
+      return shutdown();
+    }
 
     if (p === '/api/litanies') {
       const files = await listFiles();
@@ -72,6 +83,31 @@ const server = http.createServer(async (req, res) => {
   }
 });
 
+function removeStateFile() {
+  try {
+    const s = JSON.parse(fsSync.readFileSync(STATE_FILE, 'utf8'));
+    if (s.pid === process.pid) fsSync.unlinkSync(STATE_FILE);
+  } catch {}
+}
+
+function shutdown() {
+  console.log('Litany Reader stopping.');
+  removeStateFile();
+  server.close(() => process.exit(0));
+  server.closeAllConnections?.();
+  setTimeout(() => process.exit(0), 1000).unref();
+}
+
+process.on('SIGINT', shutdown);
+process.on('SIGTERM', shutdown);
+
+server.on('error', (err) => {
+  if (err.code === 'EADDRINUSE') console.error(`Port ${PORT} is already in use. Is the reader already running?`);
+  else console.error(err);
+  process.exit(1);
+});
+
 server.listen(PORT, '127.0.0.1', () => {
+  fsSync.writeFileSync(STATE_FILE, JSON.stringify({ pid: process.pid, port: PORT, token: TOKEN }));
   console.log(`Litany Reader running at http://localhost:${PORT}`);
 });
