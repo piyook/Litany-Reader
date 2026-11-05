@@ -1,6 +1,14 @@
 # Litany Reader
 
-Shows a litany one line at a time, in large text on a dark screen, paced to guide calm breathing.
+A very simple app that shows a litany one line at a time, in large text on a dark screen, paced to guide calm breathing. You can also see the whole litany on one screen if you prefer.
+
+The idea comes from the **Litany Against Fear** in Frank Herbert's *Dune* (1965), recited by the Bene Gesserit to calm the mind in the face of fear. The litanies here are written in the same spirit: short lines, spoken slowly, in time with the breath.
+
+A litany takes practice before it works in real situations. This tool helps by linking your breathing to the litany you are reading, so you can focus on the meaning of each line.
+
+Add your own as `.txt` files in the `litanies` folder (see [File format](#file-format)).
+
+These help me. I hope they help someone else.
 
 ## Run
 
@@ -12,8 +20,6 @@ npm stop     # stops it
 Or double-click `start.bat` and `stop.bat`. The reader is at http://localhost:8484. It needs Node.js; there is nothing to install.
 
 ## Litanies
-
-The idea comes from the **Litany Against Fear** in Frank Herbert's *Dune* (1965), recited by the Bene Gesserit to calm the mind in the face of fear. The litanies here, by piyook, are written in the same spirit: short lines, spoken slowly, in time with the breath.
 
 | File | Author |
 |---|---|
