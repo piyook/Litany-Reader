@@ -57,10 +57,19 @@ Lines alternate between an in-breath and an out-breath:
 3. **Out-breath** (6s): the next line fills in blue, more slowly.
 4. **Hold** (2s): the circle again.
 
+This suits reading silently. You can't speak while breathing in, so for reading out loud turn on **Read aloud** (the speech-bubble button, or `A`). Each line then gets a whole breath:
+
+1. **In-breath**: the line brightens softly. Read it silently.
+2. **Hold**: the circle.
+3. **Out-breath**: the line fills in blue. Say it aloud (the cue reads *speak*).
+4. **Hold**: the circle, then the next line.
+
+A litany takes about twice as long this way. A pill at the top of the screen shows the mode, **Silent** (amber) or **Spoken** (blue), and switches it when clicked. The setting is saved in the browser.
+
 Change the timings with the ⚙ button. They are saved in the browser.
 
 ## Controls
 
-Move the pointer to the bottom of the screen to show the controls: previous, play/pause, next, loop, whole litany, settings, back. With loop on, the litany repeats from the start indefinitely.
+Move the pointer to the bottom of the screen to show the controls: previous, play/pause, next, loop, whole litany, read aloud, light/dark, settings, back. The light/dark button is also on the index page; the reader follows your system setting until you choose. With loop on, the litany repeats from the start indefinitely. Turning loop on after a litany has finished starts it again.
 
-Keys: `Space` play/pause · `←` `→` previous/next · `L` loop on/off · `V` whole litany on one screen · `F` fullscreen · `Esc` back to the index.
+Keys: `Space` play/pause · `←` `→` previous/next · `L` loop on/off · `V` whole litany on one screen · `A` read aloud on/off · `T` light/dark · `F` fullscreen · `Esc` back to the index.

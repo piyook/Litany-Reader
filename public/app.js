@@ -13,11 +13,20 @@
   const saveTimings = () => { try { localStorage.setItem('litany-timings', JSON.stringify(timings)); } catch {} };
 
   // ---- Colours for the fill ----
-  const css = getComputedStyle(document.documentElement);
   const hexToRgb = (h) => { h = h.trim().replace('#', ''); return [0, 2, 4].map((i) => parseInt(h.slice(i, i + 2), 16)); };
-  const DIM = hexToRgb(css.getPropertyValue('--text-dim'));
-  const COL = { in: hexToRgb(css.getPropertyValue('--in')), out: hexToRgb(css.getPropertyValue('--out')) };
-  const mix = (a, b, t) => `rgb(${a.map((v, i) => Math.round(v + (b[i] - v) * t)).join(',')})`;
+  const lerp = (a, b, t) => a.map((v, i) => Math.round(v + (b[i] - v) * t));
+  const mix = (a, b, t) => `rgb(${lerp(a, b, t).join(',')})`;
+  // Read from the CSS, and again whenever the theme changes.
+  // PREVIEW is what a line brightens to while you read it silently in read-aloud mode.
+  let DIM, COL, PREVIEW;
+  function readColours() {
+    const css = getComputedStyle(document.documentElement);
+    const v = (name) => hexToRgb(css.getPropertyValue(name));
+    DIM = v('--text-dim');
+    COL = { in: v('--in'), out: v('--out') };
+    PREVIEW = lerp(DIM, v('--text'), 0.5);
+  }
+  readColours();
 
   // ---- Reader state ----
   let lines = [], idx = 0, phase = 'breath', elapsed = 0, playing = false, finished = false;
@@ -34,7 +43,14 @@
   try { fullView = localStorage.getItem('litany-full') === '1'; } catch {}
   const viewBtn = $('btn-view');
 
-  const kindOf = () => (step % 2 === 0 ? 'in' : 'out');
+  // Read-aloud mode: you can only speak on the out-breath, so each line gets a
+  // whole breath: read it silently breathing in, hold, speak it breathing out, hold.
+  // `half` is 0 for the in-breath half of the line and 1 for the out-breath half.
+  let aloud = false, half = 0;
+  try { aloud = localStorage.getItem('litany-aloud') === '1'; } catch {}
+  const aloudBtn = $('btn-aloud');
+
+  const kindOf = () => (aloud ? (half ? 'out' : 'in') : step % 2 === 0 ? 'in' : 'out');
   const phaseDuration = () => {
     const k = kindOf();
     if (phase === 'breath') return (k === 'in' ? timings.in : timings.out) * 1000;
@@ -91,6 +107,7 @@
     step = Math.max(0, step + (target - idx));
     idx = target;
     phase = 'breath';
+    half = 0;
     elapsed = 0;
     finished = false;
     endEl.classList.add('hidden');
@@ -169,7 +186,7 @@
     rowChars.forEach((cs, j) => {
       rowEls[j].classList.toggle('current', j === idx);
       if (j === idx) return; // draw() fills the current line
-      const parity = (((step - idx + j) % 2) + 2) % 2;
+      const parity = aloud ? 1 : (((step - idx + j) % 2) + 2) % 2;
       const colour = j < idx ? mix(DIM, COL[parity === 0 ? 'in' : 'out'], 0.5) : `rgb(${DIM.join(',')})`;
       for (const c of cs) c.style.color = colour;
     });
@@ -202,19 +219,27 @@
     const kind = kindOf();
     const dur = phaseDuration();
     const p = dur > 0 ? Math.min(1, elapsed / dur) : 1;
-    // Fill left to right with a soft edge a few characters wide.
-    const fill = phase === 'breath' ? p : 1;
-    const edge = 3, n = chars.length;
-    const front = fill * (n + edge);
-    for (let i = 0; i < n; i++) {
-      const t = Math.max(0, Math.min(1, (front - i) / edge));
-      chars[i].style.color = mix(DIM, COL[kind], t);
+    const ease = 0.5 - 0.5 * Math.cos(Math.PI * p);
+    const n = chars.length;
+    if (aloud && kind === 'in') {
+      // Silent read: the whole line brightens evenly, ready to be spoken.
+      const c = mix(DIM, PREVIEW, phase === 'breath' ? ease : 1);
+      for (let i = 0; i < n; i++) chars[i].style.color = c;
+    } else {
+      // Fill left to right with a soft edge a few characters wide.
+      const from = aloud ? PREVIEW : DIM;
+      const fill = phase === 'breath' ? p : 1;
+      const edge = 3;
+      const front = fill * (n + edge);
+      for (let i = 0; i < n; i++) {
+        const t = Math.max(0, Math.min(1, (front - i) / edge));
+        chars[i].style.color = mix(from, COL[kind], t);
+      }
     }
     // Breath indicator: orb grows on the in-breath, shrinks on the out-breath,
     // and stays still while the hold arc draws round it.
     const rgb = `rgb(${COL[kind].join(',')})`;
     const holding = phase === 'hold';
-    const ease = 0.5 - 0.5 * Math.cos(Math.PI * p);
     const size = holding ? (kind === 'in' ? 1 : 0) : (kind === 'in' ? ease : 1 - ease);
     orbEl.setAttribute('r', (10 + 24 * size).toFixed(2));
     orbEl.style.fill = rgb;
@@ -223,7 +248,7 @@
     arcEl.classList.toggle('on', holding && dur > 0);
     arcEl.style.strokeDashoffset = holding && dur > 0 ? String(1 - p) : '1';
     // Word cue
-    const word = holding ? 'hold' : kind === 'in' ? 'breathe in' : 'breathe out';
+    const word = holding ? 'hold' : kind === 'in' ? 'breathe in' : aloud ? 'speak' : 'breathe out';
     if (cueEl.textContent !== word) cueEl.textContent = word;
     cueEl.style.color = rgb;
     cueEl.classList.add('show');
@@ -233,9 +258,15 @@
     if (phase === 'breath') {
       phase = 'hold';
       elapsed = 0;
+    } else if (aloud && half === 0) {
+      // Same line, now the out-breath: speak it.
+      half = 1;
+      phase = 'breath';
+      elapsed = 0;
     } else if (idx < lines.length - 1 || looping) {
       idx = (idx + 1) % lines.length;
       step++;
+      half = 0;
       phase = 'breath';
       elapsed = 0;
       renderLine();
@@ -302,11 +333,46 @@
     loopBtn.setAttribute('aria-pressed', String(on));
     loopBtn.title = on ? 'Loop: on (L)' : 'Loop: off (L)';
     try { localStorage.setItem('litany-loop', on ? '1' : '0'); } catch {}
+    // Turning loop on after the litany has ended starts it again from the top.
+    if (on && finished && lines.length) play();
   }
   setLoop(looping);
   loopBtn.onclick = () => setLoop(!looping);
   setFullView(fullView);
   viewBtn.onclick = () => setFullView(!fullView);
+
+  function setAloud(on) {
+    aloud = on;
+    aloudBtn.classList.toggle('active', on);
+    aloudBtn.setAttribute('aria-pressed', String(on));
+    aloudBtn.title = on ? 'Read aloud: on (A)' : 'Read aloud: off (A)';
+    modePill.textContent = on ? 'Spoken' : 'Silent';
+    modePill.classList.toggle('spoken', on);
+    try { localStorage.setItem('litany-aloud', on ? '1' : '0'); } catch {}
+    // Restart the current line so it begins on an in-breath in the new mode.
+    if (lines.length && !finished) goTo(idx);
+  }
+  const modePill = $('mode-pill');
+  setAloud(aloud);
+  aloudBtn.onclick = () => setAloud(!aloud);
+  modePill.onclick = () => setAloud(!aloud);
+
+  // Light / dark theme. The <head> script sets it before first paint; this keeps it in step.
+  const themeBtns = document.querySelectorAll('.btn-theme');
+  function setTheme(t) {
+    document.documentElement.dataset.theme = t;
+    try { localStorage.setItem('litany-theme', t); } catch {}
+    const label = t === 'dark' ? 'Switch to light mode (T)' : 'Switch to dark mode (T)';
+    themeBtns.forEach((b) => { b.title = label; b.setAttribute('aria-label', label); });
+    readColours();
+    if (lines.length && !readerEl.classList.contains('hidden')) {
+      if (fullView && rowChars.length) paintRows();
+      draw();
+    }
+  }
+  const toggleTheme = () => setTheme(document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark');
+  setTheme(document.documentElement.dataset.theme || 'dark');
+  themeBtns.forEach((b) => (b.onclick = toggleTheme));
 
   // ---- Controls ----
   playBtn.onclick = toggle;
@@ -348,8 +414,9 @@
 
   // ---- Keyboard ----
   document.addEventListener('keydown', (e) => {
-    if (readerEl.classList.contains('hidden')) return;
     if (e.target.tagName === 'INPUT') { if (e.key === 'Escape') settingsEl.classList.add('hidden'); return; }
+    if (e.key === 't' || e.key === 'T') return toggleTheme();
+    if (readerEl.classList.contains('hidden')) return;
     switch (e.key) {
       case ' ': e.preventDefault(); toggle(); break;
       case 'ArrowLeft': prev(); break;
@@ -360,6 +427,7 @@
         break;
       case 'l': case 'L': setLoop(!looping); break;
       case 'v': case 'V': setFullView(!fullView); break;
+      case 'a': case 'A': setAloud(!aloud); break;
       case 'f': case 'F':
         if (document.fullscreenElement) document.exitFullscreen();
         else document.documentElement.requestFullscreen().catch(() => {});

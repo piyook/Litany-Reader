@@ -7,8 +7,44 @@
   --out: #7fb2e5;  /* cool blue: out-breath */
   --panel: #16161d;
   --line: #2a2a33;
+  --bar: rgba(22, 22, 29, .85);
+  --hover-text: #ffffff;
   color-scheme: dark;
 }
+/* Light theme: warm paper, darker breath colours so they read on a light ground. */
+:root[data-theme="light"] {
+  --bg: #f3efe6;
+  --text-dim: #d3cdc1;
+  --text: #2b2a30;
+  --muted: #858079;
+  --in: #b86e14;
+  --out: #2e6aa8;
+  --panel: #fbf8f2;
+  --line: #e0dacd;
+  --bar: rgba(251, 248, 242, .9);
+  --hover-text: #000000;
+  color-scheme: light;
+}
+
+/* Theme button shows the theme you would switch to: sun in dark mode, moon in light.
+   !important beats the general "button svg { display: block }" rules. */
+:root[data-theme="dark"] .btn-theme .icon-moon,
+:root[data-theme="light"] .btn-theme .icon-sun { display: none !important; }
+
+/* Mode pill at the top of the reader: silent or spoken. Click to switch. */
+#mode-pill {
+  position: absolute; top: 20px; left: 50%; transform: translateX(-50%); z-index: 2;
+  padding: 5px 14px; border-radius: 999px; border: 1px solid currentColor;
+  font-family: system-ui, sans-serif; font-size: 12px; letter-spacing: .18em; text-transform: uppercase;
+  color: var(--in); background: color-mix(in srgb, var(--in) 14%, transparent);
+  opacity: .8; transition: color .4s, background .4s, opacity .3s;
+}
+#mode-pill:hover { opacity: 1; }
+#mode-pill.spoken { color: var(--out); background: color-mix(in srgb, var(--out) 14%, transparent); }
+.index-head { display: flex; justify-content: space-between; align-items: baseline; margin: 0 0 2rem; }
+.index-head .btn-theme { color: var(--muted); width: 38px; height: 38px; border-radius: 50%; }
+.index-head .btn-theme:hover { color: var(--text); background: var(--line); }
+.index-head .btn-theme svg { display: block; margin: auto; }
 
 * { box-sizing: border-box; }
 html, body { margin: 0; height: 100%; background: var(--bg); color: var(--text); }
@@ -19,7 +55,7 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
 
 /* Index */
 #index { max-width: 640px; margin: 0 auto; padding: 12vh 24px; overflow-y: auto; height: 100%; }
-#index h1 { font-weight: normal; letter-spacing: 0.04em; color: var(--muted); font-size: 1.1rem; text-transform: uppercase; margin: 0 0 2rem; }
+#index h1 { font-weight: normal; letter-spacing: 0.04em; color: var(--muted); font-size: 1.1rem; text-transform: uppercase; margin: 0; }
 #litany-list { list-style: none; padding: 0; margin: 0; }
 #litany-list button {
   display: block; width: 100%; text-align: left; font-size: 1.8rem; padding: 0.9rem 0;
@@ -78,14 +114,14 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
 #controls {
   position: absolute; left: 50%; bottom: 24px; transform: translate(-50%, 12px);
   display: flex; align-items: center; gap: 8px; padding: 8px 14px;
-  background: rgba(22, 22, 29, .85); border: 1px solid var(--line); border-radius: 999px;
+  background: var(--bar); border: 1px solid var(--line); border-radius: 999px;
   opacity: 0; pointer-events: none; transition: opacity .35s, transform .35s;
   font-family: system-ui, sans-serif;
 }
 #controls.show { opacity: 1; pointer-events: auto; transform: translate(-50%, 0); }
 #controls button { width: 48px; height: 48px; border-radius: 50%; font-size: 22px; color: var(--text); }
 #controls button.small { width: 38px; height: 38px; font-size: 17px; color: var(--muted); }
-#controls button:hover { background: var(--line); color: #fff; }
+#controls button:hover { background: var(--line); color: var(--hover-text); }
 #controls button svg { display: block; margin: auto; }
 #controls button.active, #controls button.active:hover { color: var(--in); }
 #controls .spacer { width: 1px; height: 26px; background: var(--line); margin: 0 4px; }
