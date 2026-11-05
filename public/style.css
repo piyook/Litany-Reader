@@ -159,6 +159,7 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
 #controls button:hover { background: var(--line); color: var(--hover-text); }
 #controls button svg { display: block; margin: auto; }
 #controls button.active, #controls button.active:hover { color: var(--in); }
+#controls button:disabled { opacity: .35; cursor: default; background: none; }
 #controls .spacer { width: 1px; height: 26px; background: var(--line); margin: 0 4px; }
 
 /* Settings */

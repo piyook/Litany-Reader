@@ -40,7 +40,11 @@ async function parseLitany(file) {
   let author = '';
   const m = lines.length && lines[lines.length - 1].match(/^author\s*:\s*(.+)$/i);
   if (m) { author = m[1].trim(); lines.pop(); }
-  return { title, lines, author };
+  // An optional "Short version" (or "Short form") line starts a quick form of the litany.
+  let short = [];
+  const s = lines.findIndex((l) => /^short\s+(version|form)\s*:?$/i.test(l));
+  if (s >= 0) { short = lines.slice(s + 1); lines.splice(s); }
+  return { title, lines, short, author };
 }
 
 function send(res, status, body, type = 'application/json; charset=utf-8') {

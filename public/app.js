@@ -81,6 +81,11 @@
   try { aloud = localStorage.getItem('litany-aloud') === '1'; } catch {}
   const aloudBtn = $('btn-aloud');
 
+  // Short form: a quick version of the litany, for litanies whose file has one.
+  let shortForm = false, longLines = [], shortLines = [];
+  try { shortForm = localStorage.getItem('litany-short') === '1'; } catch {}
+  const shortBtn = $('btn-short');
+
   const kindOf = () => (aloud ? (half ? 'out' : 'in') : step % 2 === 0 ? 'in' : 'out');
   const phaseDuration = () => {
     const k = kindOf();
@@ -126,19 +131,44 @@
     const res = await fetch('/api/litanies/' + encodeURIComponent(id), { cache: 'no-store' });
     if (!res.ok) { msgEl.textContent = 'Could not open that litany.'; return; }
     const data = await res.json();
-    src = data.lines.length ? data.lines : [data.title];
-    buildParts();
+    longLines = data.lines.length ? data.lines : [data.title];
+    shortLines = data.short || [];
     title = data.title;
     author = data.author || '';
     document.title = data.title;
-    $('reader-title').textContent = data.title;
     indexEl.classList.add('hidden');
     readerEl.classList.remove('hidden');
+    loadForm();
+    play();
+  }
+
+  // Shows the long or short form from the first line. With no short form, the long one.
+  function loadForm() {
+    const useShort = shortForm && shortLines.length > 0;
+    src = useShort ? shortLines : longLines;
+    $('reader-title').textContent = useShort ? title + ' · short' : title;
+    shortBtn.disabled = !shortLines.length;
+    updateShortBtn();
+    buildParts();
     step = 0;
     idx = 0;
     rowChars = [];
     goTo(0);
-    play();
+  }
+
+  function updateShortBtn() {
+    const on = shortForm && !shortBtn.disabled;
+    shortBtn.classList.toggle('active', on);
+    shortBtn.setAttribute('aria-pressed', String(on));
+    shortBtn.title = shortBtn.disabled ? 'No short form for this litany'
+      : on ? 'Short form: on (S)' : 'Short form: off (S)';
+  }
+
+  function setShort(on) {
+    if (src.length && !shortLines.length) return; // this litany has no short form
+    shortForm = on;
+    try { localStorage.setItem('litany-short', on ? '1' : '0'); } catch {}
+    if (src.length) loadForm(); else updateShortBtn();
   }
 
   function buildParts() {
@@ -382,7 +412,7 @@
     rafId = null;
     playBtn.innerHTML = '&#x25B6;&#xFE0E;';
   }
-  function stop() { pause(); lines = []; }
+  function stop() { pause(); lines = []; src = []; }
   const toggle = () => (playing ? pause() : play());
   const prev = () => {
     if (finished) return goTo(lines.length - 1);
@@ -413,6 +443,8 @@
   repeatPill.onclick = () => setLoop(!looping);
   setFullView(fullView);
   viewBtn.onclick = () => setFullView(!fullView);
+  shortBtn.onclick = () => setShort(!shortForm);
+  updateShortBtn();
 
   function setAloud(on) {
     aloud = on;
@@ -521,6 +553,7 @@
         break;
       case 'l': case 'L': setLoop(!looping); break;
       case 'v': case 'V': setFullView(!fullView); break;
+      case 's': case 'S': setShort(!shortForm); break;
       case 'a': case 'A': setAloud(!aloud); break;
       case 'f': case 'F':
         if (document.fullscreenElement) document.exitFullscreen();

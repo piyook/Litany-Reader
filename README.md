@@ -1,6 +1,12 @@
 # Litany Reader
 
-A very simple app that shows a litany one line at a time, in large text, paced to guide calm breathing. You can also see the whole litany on one screen if you prefer.
+[![GitHub Release](https://img.shields.io/github/v/release/piyook/Litany-Reader)](https://github.com/piyook/Litany-Reader/releases)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Node.js](https://img.shields.io/badge/Node.js-%3E%3D18-339933?logo=nodedotjs&logoColor=white)](https://nodejs.org/)
+[![Dependencies: none](https://img.shields.io/badge/dependencies-none-brightgreen)](package.json)
+[![Docker](https://img.shields.io/badge/Docker-ready-2496ED?logo=docker&logoColor=white)](#docker)
+
+A very simple app that shows a litany one line at a time, in large text, paced to guide calm breathing. You can also see the whole litany on one screen if you prefer, or read a three-line short form when you only have a moment.
 
 | One line at a time | Whole litany |
 |---|---|
@@ -51,8 +57,16 @@ This applies to `npm start` and to Docker.
 |---|---|
 | `litany-against-anxiety.txt` | piyook |
 | `litany-against-despair.txt` | piyook |
+| `litany-against-overwhelm.txt` | piyook |
+| `litany-against-regret.txt` | piyook |
+| `litany-against-self-criticism.txt` | piyook |
 | `litany-for-calm.txt` | piyook |
 | `litany-for-patience.txt` | piyook |
+| `litany-for-resilience.txt` | piyook |
+| `litany-for-sleep.txt` | piyook |
+| `litany-of-gratitude.txt` | piyook |
+
+Each one also has a short form of three lines, for when you only have a moment.
 
 ### File format
 
@@ -65,11 +79,17 @@ First line.
 Second line.
 ...
 
+Short version
+
+First line of the short form.
+...
+
 Author: Name
 ```
 
 - The first line is the title.
 - Every other non-empty line is one step on screen.
+- An optional `Short version` (or `Short form`) line starts a short form: the lines after it are a quick version of the litany, read when [Short form](#views) is on. A litany without one is always read in full.
 - An optional last line starting `Author:` is a credit, not a step. It shows as a small tag beside the title on the index, and under the text in the whole-litany view.
 
 The folder is read fresh each time, so new or edited files show up when you refresh.
@@ -112,13 +132,15 @@ The files are not changed. In the whole-litany view each line still appears as w
 - **One line at a time** (the default): each line fills the screen, as large as it fits, with the litany's title small at the top.
 - **Whole litany** (the lines button, or `V`): the title, every line and the author credit on one screen. Lines already read keep a softer version of their breath colour, and lines to come stay dim. Click any line to jump to it.
 
+- **Short form** (the fold button, two arrows pressing in on a line, or `S`): reads the litany's short version instead, starting from its first line. The title shows *· short* while it is on. The setting is saved in the browser and applies to every litany that has a short form; the button is greyed out for one that doesn't.
+
 When a litany has been read once through, the breath ring and cue give way to a **Return to index** link. With repeat on it never finishes, so the link doesn't appear.
 
 ## Controls
 
-Move the pointer to the bottom of the screen to show the controls: previous, play/pause, next, loop, whole litany, read aloud, light/dark, settings, back. They hide again when the pointer moves away, and the cursor hides after a few seconds without movement. The light/dark button is also on the index page; the reader follows your system setting until you choose. Loop can also be switched with the repeat button at the top of the screen. With loop on, the litany repeats from the start indefinitely. Turning loop on after a litany has finished starts it again.
+Move the pointer to the bottom of the screen to show the controls: previous, play/pause, next, loop, short form, whole litany, read aloud, light/dark, settings, back. They hide again when the pointer moves away, and the cursor hides after a few seconds without movement. The light/dark button is also on the index page; the reader follows your system setting until you choose. Loop can also be switched with the repeat button at the top of the screen. With loop on, the litany repeats from the start indefinitely. Turning loop on after a litany has finished starts it again.
 
-Keys: `Space` play/pause · `←` `→` previous/next · `L` loop on/off · `V` whole litany on one screen · `A` read aloud on/off · `T` light/dark · `F` fullscreen · `Esc` close settings, leave fullscreen, or go back to the index.
+Keys: `Space` play/pause · `←` `→` previous/next · `L` loop on/off · `S` short form on/off · `V` whole litany on one screen · `A` read aloud on/off · `T` light/dark · `F` fullscreen · `Esc` close settings, leave fullscreen, or go back to the index.
 
 ## Files
 
@@ -130,4 +152,8 @@ scripts/           npm start / stop / docker helpers
 docs/              screenshots for this README
 ```
 
-Settings (timings, mode, view, loop, theme, long lines) are stored in your browser, not on the server.
+Settings (timings, mode, view, loop, short form, theme, long lines) are stored in your browser, not on the server.
+
+## License
+
+[MIT](LICENSE), for the code and the litanies.
