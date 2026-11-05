@@ -69,7 +69,10 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
 .muted { color: var(--muted); }
 
 /* Index */
-#index { max-width: 640px; margin: 0 auto; padding: 12vh 24px; overflow-y: auto; height: 100%; }
+/* Content up to 1200px wide, centred by the side padding, so the scroll box stays full width
+   and any scrollbar (only on short windows) sits at the window edge. */
+#index { padding: 8vh max(clamp(24px, 6vw, 96px), calc((100% - 1200px) / 2)); overflow-y: auto; height: 100%; }
+#index-msg:empty { display: none; }
 #index h1 { font-weight: normal; letter-spacing: 0.04em; color: var(--muted); font-size: 1.1rem; text-transform: uppercase; margin: 0; }
 #litany-list { list-style: none; padding: 0; margin: 0; }
 #litany-list button {
