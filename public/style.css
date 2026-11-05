@@ -6,6 +6,7 @@
   --in: #f2b46b;   /* warm amber: in-breath */
   --out: #7fb2e5;  /* cool blue: out-breath */
   --hold: #a9d39b; /* soft sage: the hold ring, same for both holds */
+  --fav: #e8899b;  /* rose: favourite hearts */
   --panel: #16161d;
   --line: #2a2a33;
   --bar: rgba(22, 22, 29, .85);
@@ -21,6 +22,7 @@
   --in: #b86e14;
   --out: #2e6aa8;
   --hold: #4a8a3c;
+  --fav: #c2475f;
   --panel: #fbf8f2;
   --line: #e0dacd;
   --bar: rgba(251, 248, 242, .9);
@@ -48,6 +50,15 @@
 #repeat-pill .icon-repeat, #repeat-pill.on .icon-once { display: none; }
 #repeat-pill.on .icon-repeat { display: block; }
 #repeat-pill.on { color: var(--in); background: color-mix(in srgb, var(--in) 14%, transparent); }
+/* Heart beside the pills, only while the open litany is a favourite. */
+#fav-pill {
+  width: 28px; height: 28px; border-radius: 50%; border: 1px solid currentColor;
+  color: var(--fav); background: color-mix(in srgb, var(--fav) 14%, transparent);
+  opacity: .8; transition: opacity .3s;
+}
+#fav-pill:hover { opacity: 1; }
+#fav-pill svg { display: block; margin: auto; }
+#fav-pill path { fill: currentColor; }
 #mode-pill {
   padding: 5px 14px; border-radius: 999px; border: 1px solid currentColor;
   font-family: system-ui, sans-serif; font-size: 12px; letter-spacing: .18em; text-transform: uppercase;
@@ -75,13 +86,25 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
 #index-msg:empty { display: none; }
 #index h1 { font-weight: normal; letter-spacing: 0.04em; color: var(--muted); font-size: 1.1rem; text-transform: uppercase; margin: 0; }
 #litany-list { list-style: none; padding: 0; margin: 0; }
-#litany-list button {
-  display: block; width: 100%; text-align: left; font-size: 1.8rem; padding: 0.9rem 0;
-  border-bottom: 1px solid var(--line); color: var(--text); transition: color .2s;
+#litany-list li { display: flex; align-items: center; gap: .5rem; border-bottom: 1px solid var(--line); }
+#litany-list .open {
+  flex: 1; min-width: 0; text-align: left; font-size: 1.8rem; padding: 0.9rem 0;
+  color: var(--text); transition: color .2s;
 }
-#litany-list button:hover, #litany-list button:focus-visible { color: var(--in); outline: none; }
+#litany-list .open:hover, #litany-list .open:focus-visible { color: var(--in); outline: none; }
 /* Small muted author tag on the right of each index entry. */
-#litany-list button { display: flex; justify-content: space-between; align-items: baseline; gap: 1rem; }
+#litany-list .open { display: flex; justify-content: space-between; align-items: baseline; gap: 1rem; }
+/* Heart: filled for a favourite, a faint outline on hover or focus otherwise. */
+#litany-list .fav {
+  flex-shrink: 0; width: 38px; height: 38px; border-radius: 50%; color: var(--muted);
+  opacity: 0; transition: opacity .2s, color .2s;
+}
+#litany-list .fav svg { display: block; margin: auto; }
+#litany-list li:hover .fav, #litany-list li:focus-within .fav { opacity: .6; }
+#litany-list li .fav:hover, #litany-list li .fav:focus-visible { opacity: 1; color: var(--fav); outline: none; }
+#litany-list li .fav.on { opacity: 1; color: var(--fav); }
+@media (hover: none) { #litany-list .fav { opacity: .5; } }
+.fav.on path, #btn-fav.active path { fill: currentColor; }
 #litany-list .author-tag {
   flex-shrink: 0; font-family: system-ui, sans-serif; font-size: 0.72rem; letter-spacing: .08em;
   color: var(--muted); padding: 2px 9px; border: 1px solid var(--line); border-radius: 999px;
@@ -162,6 +185,7 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
 #controls button:hover { background: var(--line); color: var(--hover-text); }
 #controls button svg { display: block; margin: auto; }
 #controls button.active, #controls button.active:hover { color: var(--in); }
+#controls #btn-fav.active, #controls #btn-fav.active:hover { color: var(--fav); }
 #controls button:disabled { opacity: .35; cursor: default; background: none; }
 #controls .spacer { width: 1px; height: 26px; background: var(--line); margin: 0 4px; }
 
@@ -180,3 +204,13 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
 #settings input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--in); }
 #settings input:disabled { opacity: .45; }
 #t-done { background: var(--line); padding: 6px 14px; border-radius: 6px; }
+
+/* Short message, e.g. when the favourites limit is reached. */
+#toast {
+  position: fixed; left: 50%; bottom: 100px; transform: translate(-50%, 8px); z-index: 10;
+  max-width: calc(100% - 32px); padding: 9px 18px; border-radius: 999px;
+  background: var(--panel); border: 1px solid var(--line); color: var(--text);
+  font-family: system-ui, sans-serif; font-size: 14px; text-align: center;
+  opacity: 0; pointer-events: none; transition: opacity .3s, transform .3s;
+}
+#toast.show { opacity: 1; transform: translate(-50%, 0); }

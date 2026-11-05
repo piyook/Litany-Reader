@@ -88,6 +88,40 @@
   try { shortForm = localStorage.getItem('litany-short') === '1'; } catch {}
   const shortBtn = $('btn-short');
 
+  // ---- Favourites ----
+  // Up to three litany ids, kept in a cookie in the order they were added.
+  const MAX_FAVS = 3;
+  let favs = [];
+  try {
+    const m = document.cookie.match(/(?:^|;\s*)litany-favs=([^;]*)/);
+    const a = m ? JSON.parse(decodeURIComponent(m[1])) : [];
+    if (Array.isArray(a)) favs = a.filter((x) => typeof x === 'string').slice(0, MAX_FAVS);
+  } catch {}
+  const saveFavs = () => {
+    document.cookie = `litany-favs=${encodeURIComponent(JSON.stringify(favs))}; Max-Age=31536000; Path=/; SameSite=Lax`;
+  };
+  const isFav = (id) => favs.includes(id);
+  // Adds or removes a favourite. Returns false when the limit stopped it.
+  function toggleFav(id) {
+    if (isFav(id)) favs = favs.filter((f) => f !== id);
+    else if (favs.length >= MAX_FAVS) { toast('You can have three favourites. Remove one first.'); return false; }
+    else favs.push(id);
+    saveFavs();
+    return true;
+  }
+  const HEART = '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true">'
+    + '<path d="M12 20s-7.5-4.6-9-9.2C1.9 7.4 4 4.5 7.2 4.5c2 0 3.5 1.1 4.8 2.9 1.3-1.8 2.8-2.9 4.8-2.9 3.2 0 5.3 2.9 4.2 6.3-1.5 4.6-9 9.2-9 9.2z"/></svg>';
+
+  // A short message near the bottom of the screen.
+  const toastEl = $('toast');
+  let toastTimer = null;
+  function toast(text) {
+    toastEl.textContent = text;
+    toastEl.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => toastEl.classList.remove('show'), 2800);
+  }
+
   const kindOf = () => (aloud ? (half ? 'out' : 'in') : step % 2 === 0 ? 'in' : 'out');
   const phaseDuration = () => {
     const k = kindOf();
@@ -106,25 +140,50 @@
     msgEl.textContent = 'Loading…';
     try {
       const res = await fetch('/api/litanies', { cache: 'no-store' });
-      const items = await res.json();
-      msgEl.textContent = items.length ? '' : 'No litanies found. Add .txt files to the litanies folder.';
-      for (const it of items) {
-        const li = document.createElement('li');
-        const b = document.createElement('button');
-        b.textContent = it.title;
-        if (it.author) {
-          const a = document.createElement('span');
-          a.className = 'author-tag';
-          a.textContent = it.author;
-          b.appendChild(a);
-        }
-        b.onclick = () => openLitany(it.id);
-        li.appendChild(b);
-        listEl.appendChild(li);
-      }
-      listEl.querySelector('button')?.focus();
+      indexItems = await res.json();
+      msgEl.textContent = indexItems.length ? '' : 'No litanies found. Add .txt files to the litanies folder.';
+      // Forget favourites whose file has gone, so they don't hold a slot.
+      const ids = new Set(indexItems.map((it) => it.id));
+      if (favs.some((f) => !ids.has(f))) { favs = favs.filter((f) => ids.has(f)); saveFavs(); }
+      renderIndex();
+      listEl.querySelector('.open')?.focus();
     } catch {
       msgEl.textContent = 'Could not reach the server. Is it running?';
+    }
+  }
+
+  // Favourites first, then the rest, each in the server's (alphabetical) order.
+  let indexItems = [];
+  function renderIndex() {
+    listEl.innerHTML = '';
+    const ordered = [...indexItems.filter((it) => isFav(it.id)), ...indexItems.filter((it) => !isFav(it.id))];
+    for (const it of ordered) {
+      const li = document.createElement('li');
+      const b = document.createElement('button');
+      b.className = 'open';
+      b.textContent = it.title;
+      if (it.author) {
+        const a = document.createElement('span');
+        a.className = 'author-tag';
+        a.textContent = it.author;
+        b.appendChild(a);
+      }
+      b.onclick = () => openLitany(it.id);
+      const h = document.createElement('button');
+      const on = isFav(it.id);
+      h.className = 'fav' + (on ? ' on' : '');
+      h.innerHTML = HEART;
+      h.dataset.id = it.id;
+      h.setAttribute('aria-pressed', String(on));
+      h.title = on ? 'Remove from favourites' : 'Add to favourites';
+      h.setAttribute('aria-label', h.title + ': ' + it.title);
+      h.onclick = () => {
+        if (!toggleFav(it.id)) return;
+        renderIndex();
+        listEl.querySelector(`.fav[data-id="${CSS.escape(it.id)}"]`)?.focus();
+      };
+      li.append(b, h);
+      listEl.appendChild(li);
     }
   }
 
@@ -133,6 +192,8 @@
     const res = await fetch('/api/litanies/' + encodeURIComponent(id), { cache: 'no-store' });
     if (!res.ok) { msgEl.textContent = 'Could not open that litany.'; return; }
     const data = await res.json();
+    currentId = id;
+    updateFavBtn();
     longLines = data.lines;
     shortLines = data.short || [];
     title = data.title;
@@ -457,6 +518,22 @@
   shortBtn.onclick = () => setShort(!shortForm);
   updateShortBtn();
 
+  // Heart in the reader toolbar for the open litany.
+  let currentId = null;
+  const favBtn = $('btn-fav'), favPill = $('fav-pill');
+  favBtn.innerHTML = HEART;
+  favPill.innerHTML = HEART.replace(/width="20" height="20"/, 'width="16" height="16"');
+  function updateFavBtn() {
+    const on = currentId != null && isFav(currentId);
+    favPill.classList.toggle('hidden', !on);
+    favBtn.classList.toggle('active', on);
+    favBtn.setAttribute('aria-pressed', String(on));
+    favBtn.title = on ? 'Favourite: on (H)' : 'Favourite: off (H)';
+  }
+  const toggleCurrentFav = () => { if (currentId != null && toggleFav(currentId)) updateFavBtn(); };
+  favBtn.onclick = toggleCurrentFav;
+  favPill.onclick = toggleCurrentFav;
+
   function setAloud(on) {
     aloud = on;
     aloudBtn.classList.toggle('active', on);
@@ -566,6 +643,7 @@
       case 'v': case 'V': setFullView(!fullView); break;
       case 's': case 'S': setShort(!shortForm); break;
       case 'a': case 'A': setAloud(!aloud); break;
+      case 'h': case 'H': toggleCurrentFav(); break;
       case 'f': case 'F':
         if (document.fullscreenElement) document.exitFullscreen();
         else document.documentElement.requestFullscreen().catch(() => {});

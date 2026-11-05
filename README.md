@@ -10,7 +10,7 @@ A very simple app that shows a litany one line at a time, in large text, paced t
 
 | One line at a time | Whole litany |
 |---|---|
-| ![One line at a time: the line fills in blue on the out-breath](docs/single-line.png) | ![Whole litany: lines already read keep their breath colour, the current line fills in amber](docs/whole-litany.png) |
+| ![One line at a time: the line fills in blue on the out-breath; the heart at the top marks a favourite](docs/single-line.png) | ![Whole litany: lines already read keep their breath colour, the current line fills in amber; the heart at the top marks a favourite](docs/whole-litany.png) |
 
 The idea comes from the **Litany Against Fear** in Frank Herbert's *Dune* (1965), recited by the Bene Gesserit to calm the mind in the face of fear. The litanies here are written in the same spirit: short lines, spoken slowly, in time with the breath.
 
@@ -144,11 +144,15 @@ The files are not changed. In the whole-litany view each line still appears as w
 
 When a litany has been read once through, the breath ring and cue give way to a **Return to index** link. With repeat on it never finishes, so the link doesn't appear.
 
+## Favourites
+
+You can keep up to three favourites. On the index, hover over a litany and click the heart on the right; in the reader, use the heart button or `H`. Favourites show a filled heart and sit at the top of the index. While you read a favourite, a heart also shows at the top of the screen beside the Silent and repeat buttons; click it to remove the favourite. To pick a fourth, remove one first. They are kept in a cookie in your browser.
+
 ## Controls
 
-Move the pointer to the bottom of the screen to show the controls: previous, play/pause, next, loop, short form, whole litany, read aloud, light/dark, settings, back. They hide again when the pointer moves away, and the cursor hides after a few seconds without movement. The light/dark button is also on the index page; the reader follows your system setting until you choose. Loop can also be switched with the repeat button at the top of the screen. With loop on, the litany repeats from the start indefinitely. Turning loop on after a litany has finished starts it again.
+Move the pointer to the bottom of the screen to show the controls: previous, play/pause, next, favourite, loop, short form, whole litany, read aloud, light/dark, settings, back. They hide again when the pointer moves away, and the cursor hides after a few seconds without movement. The light/dark button is also on the index page; the reader follows your system setting until you choose. Loop can also be switched with the repeat button at the top of the screen. With loop on, the litany repeats from the start indefinitely. Turning loop on after a litany has finished starts it again.
 
-Keys: `Space` play/pause · `←` `→` previous/next · `L` loop on/off · `S` short form on/off · `V` whole litany on one screen · `A` read aloud on/off · `T` light/dark · `F` fullscreen · `Esc` close settings, leave fullscreen, or go back to the index.
+Keys: `Space` play/pause · `←` `→` previous/next · `H` favourite on/off · `L` loop on/off · `S` short form on/off · `V` whole litany on one screen · `A` read aloud on/off · `T` light/dark · `F` fullscreen · `Esc` close settings, leave fullscreen, or go back to the index.
 
 ## Files
 
@@ -160,7 +164,7 @@ scripts/           npm start / stop / docker helpers
 docs/              screenshots for this README
 ```
 
-Settings (timings, mode, view, loop, short form, theme, long lines) are stored in your browser, not on the server.
+Settings (timings, mode, view, loop, short form, theme, long lines, favourites) are stored in your browser, not on the server.
 
 ## License
 
