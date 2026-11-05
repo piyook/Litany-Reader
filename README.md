@@ -13,17 +13,14 @@ Or double-click `start.bat` and `stop.bat`. The reader is at http://localhost:84
 
 ## Litanies
 
-The idea comes from the **Litany Against Fear** in Frank Herbert's *Dune* (1965), recited by the Bene Gesserit to calm the mind in the face of fear. The other litanies here, by piyook, are written in the same spirit: short lines, spoken slowly, in time with the breath.
+The idea comes from the **Litany Against Fear** in Frank Herbert's *Dune* (1965), recited by the Bene Gesserit to calm the mind in the face of fear. The litanies here, by piyook, are written in the same spirit: short lines, spoken slowly, in time with the breath.
 
 | File | Author |
 |---|---|
-| `litany-against-fear.txt` | Frank Herbert, from *Dune* |
 | `litany-against-anxiety.txt` | piyook |
 | `litany-against-despair.txt` | piyook |
 | `litany-for-calm.txt` | piyook |
 | `litany-for-patience.txt` | piyook |
-
-The Litany Against Fear is © the Herbert estate, so its text is not in this repo: `litany-against-fear.txt` is git-ignored. To use it, create that file yourself (title, blank line, the litany, then `Author: Frank Herbert, from Dune (1965)`) from your own copy of *Dune*.
 
 ### File format
 
