@@ -20,6 +20,15 @@ Add your own as `.txt` files in the `litanies` folder (see [File format](#file-f
 
 These help me. I hope they help someone else.
 
+> [!NOTE]
+> This is a calming aid, not a substitute for professional help. If you are struggling, please reach out to someone: a friend, your doctor, or a helpline.
+>
+> - Anywhere: [Find A Helpline](https://findahelpline.com) lists free, confidential helplines in your country.
+> - UK and Ireland: [Samaritans](https://www.samaritans.org), call 116 123, free, any time.
+> - US: [988 Suicide & Crisis Lifeline](https://988lifeline.org), call or text 988.
+>
+> If you are in immediate danger, call your local emergency number.
+
 ## Run
 
 ```
