@@ -19,6 +19,28 @@ npm stop     # stops it
 
 Or double-click `start.bat` and `stop.bat`. The reader is at http://localhost:8484. It needs Node.js; there is nothing to install.
 
+### Docker
+
+```
+npm run docker:start   # builds the image, starts the container and opens your browser
+npm run docker:stop    # stops and removes the container
+npm run docker:logs    # follow the server log
+```
+
+Or without npm: `docker compose up -d --build` and `docker compose down`.
+
+The container restarts by itself whenever Docker starts, until you stop it with `docker:stop`. The `litanies` folder is read from your project folder, so new or edited files show up on refresh without a rebuild. Run either the local server or the container, not both, as they use the same port.
+
+### Port
+
+The port is 8484 unless you set another in a `.env` file in the project folder (copy `.env.example`):
+
+```
+PORT=9000
+```
+
+This applies to `npm start` and to Docker.
+
 ## Litanies
 
 | File | Author |

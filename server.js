@@ -6,7 +6,12 @@ const fsSync = require('fs');
 const path = require('path');
 const crypto = require('crypto');
 
-const PORT = Number(process.env.PORT) || 8484;
+const { loadEnv, DEFAULT_PORT } = require('./scripts/env');
+
+loadEnv();
+const PORT = Number(process.env.PORT) || DEFAULT_PORT;
+// Local use stays on this machine only; the Docker image sets HOST=0.0.0.0.
+const HOST = process.env.HOST || '127.0.0.1';
 const LITANY_DIR = path.join(__dirname, 'litanies');
 const PUBLIC_DIR = path.join(__dirname, 'public');
 // Written while running so `npm stop` can find the server and ask it to exit.
@@ -111,7 +116,7 @@ server.on('error', (err) => {
   process.exit(1);
 });
 
-server.listen(PORT, '127.0.0.1', () => {
+server.listen(PORT, HOST, () => {
   fsSync.writeFileSync(STATE_FILE, JSON.stringify({ pid: process.pid, port: PORT, token: TOKEN }));
   console.log(`Litany Reader running at http://localhost:${PORT}`);
 });

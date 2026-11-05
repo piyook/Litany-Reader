@@ -7,7 +7,10 @@
     "start": "node scripts/start.js",
     "stop": "node scripts/stop.js",
     "restart": "node scripts/stop.js && node scripts/start.js",
-    "serve": "node server.js"
+    "serve": "node server.js",
+    "docker:start": "node scripts/docker.js start",
+    "docker:stop": "node scripts/docker.js stop",
+    "docker:logs": "docker compose logs -f"
   },
   "engines": { "node": ">=18" }
 }

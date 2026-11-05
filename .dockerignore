@@ -1,0 +1,9 @@
+.git
+node_modules
+.env
+.server.json
+server.log
+*.bat
+README.md
+# Copyrighted text: never baked into the image (the compose file mounts it from disk instead)
+litanies/litany-against-fear.txt

@@ -1,0 +1,13 @@
+services:
+  litany-reader:
+    build: .
+    image: litany-reader
+    container_name: litany-reader
+    # Starts again whenever Docker starts, unless you stopped it yourself.
+    restart: unless-stopped
+    ports:
+      # Host port from .env (PORT=...), 8484 if not set. Bound to this machine only.
+      - "127.0.0.1:${PORT:-8484}:8484"
+    volumes:
+      # Read the litanies from the project folder, so new or edited files show up on refresh.
+      - ./litanies:/app/litanies:ro
