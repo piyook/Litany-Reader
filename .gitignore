@@ -3,3 +3,6 @@ node_modules/
 Thumbs.db
 .server.json
 server.log
+
+# Copyrighted text: kept locally, never committed
+litanies/litany-against-fear.txt

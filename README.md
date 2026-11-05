@@ -4,17 +4,46 @@ Shows a litany one line at a time, in large text on a dark screen, paced to guid
 
 ## Run
 
-Double-click `start.bat`, or run:
-
 ```
-node server.js
+npm start    # runs in the background and opens your browser
+npm stop     # stops it
 ```
 
-then open http://localhost:8484. Needs Node.js. There is nothing to install.
+Or double-click `start.bat` and `stop.bat`. The reader is at http://localhost:8484. It needs Node.js; there is nothing to install.
 
 ## Litanies
 
-Put plain `.txt` files in `litanies/`. The first line is the title, and every other non-empty line is one step on screen. The folder is read fresh each time, so new or edited files show up when you refresh.
+The idea comes from the **Litany Against Fear** in Frank Herbert's *Dune* (1965), recited by the Bene Gesserit to calm the mind in the face of fear. The other litanies here, by piyook, are written in the same spirit: short lines, spoken slowly, in time with the breath.
+
+| File | Author |
+|---|---|
+| `litany-against-fear.txt` | Frank Herbert, from *Dune* |
+| `litany-against-anxiety.txt` | piyook |
+| `litany-against-despair.txt` | piyook |
+| `litany-for-calm.txt` | piyook |
+| `litany-for-patience.txt` | piyook |
+
+The Litany Against Fear is © the Herbert estate, so its text is not in this repo: `litany-against-fear.txt` is git-ignored. To use it, create that file yourself (title, blank line, the litany, then `Author: Frank Herbert, from Dune (1965)`) from your own copy of *Dune*.
+
+### File format
+
+Each litany is a plain `.txt` file in `litanies/`:
+
+```
+Title of the litany
+
+First line.
+Second line.
+...
+
+Author: Name
+```
+
+- The first line is the title.
+- Every other non-empty line is one step on screen.
+- An optional last line starting `Author:` is shown as a small credit in the whole-litany view, not as a step.
+
+The folder is read fresh each time, so new or edited files show up when you refresh.
 
 ## Breathing
 

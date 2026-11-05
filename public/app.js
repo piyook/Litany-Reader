@@ -30,7 +30,7 @@
   try { looping = localStorage.getItem('litany-loop') === '1'; } catch {}
 
   // Whole-litany view state
-  let fullView = false, rowChars = [], rowEls = [], title = '';
+  let fullView = false, rowChars = [], rowEls = [], title = '', author = '';
   try { fullView = localStorage.getItem('litany-full') === '1'; } catch {}
   const viewBtn = $('btn-view');
 
@@ -75,6 +75,7 @@
     const data = await res.json();
     lines = data.lines.length ? data.lines : [data.title];
     title = data.title;
+    author = data.author || '';
     document.title = data.title;
     indexEl.classList.add('hidden');
     readerEl.classList.remove('hidden');
@@ -153,6 +154,12 @@
       rowEls.push(row);
       return buildWords(text, row);
     });
+    if (author) {
+      const a = document.createElement('div');
+      a.className = 'author';
+      a.textContent = '— ' + author;
+      lineEl.appendChild(a);
+    }
     fitText();
     fadeIn();
   }
@@ -361,6 +368,5 @@
   });
 
   window.addEventListener('resize', () => { if (lines.length) fitText(); });
-
   showIndex();
 })();

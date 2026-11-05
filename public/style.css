@@ -46,7 +46,10 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
   font-size: 0.8em; letter-spacing: 0.16em; text-transform: uppercase;
   color: var(--muted); margin-bottom: 1.8em;
 }
-#line.fade { opacity: 0; }
+#line.full .author {
+  font-size: 0.42em; font-style: italic; letter-spacing: 0.04em;
+  color: var(--muted); margin-top: 2.5em; text-align: right;
+}#line.fade { opacity: 0; }
 
 /* Breath indicator: the orb grows on the in-breath and shrinks on the out-breath;
    the arc draws round it during a hold. */

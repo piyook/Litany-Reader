@@ -31,7 +31,11 @@ async function parseLitany(file) {
   text = text.replace(/^﻿/, '');
   const lines = text.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
   const title = lines.shift() || file.replace(/\.txt$/i, '');
-  return { title, lines };
+  // An optional last line "Author: <name>" is a credit, not a step.
+  let author = '';
+  const m = lines.length && lines[lines.length - 1].match(/^author\s*:\s*(.+)$/i);
+  if (m) { author = m[1].trim(); lines.pop(); }
+  return { title, lines, author };
 }
 
 function send(res, status, body, type = 'application/json; charset=utf-8') {
