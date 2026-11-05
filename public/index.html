@@ -4,6 +4,13 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Litany Reader</title>
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icon-192.png" type="image/png">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
+  <meta name="theme-color" content="#0b0b0f">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="apple-mobile-web-app-title" content="Litanies">
   <script>
     // Set the theme before first paint: saved choice, else the system setting.
     (() => {
@@ -49,6 +56,8 @@
       </button>
       <!-- Shown only while this litany is a favourite. Click to remove it. -->
       <button id="fav-pill" class="hidden" title="Favourite (H): click to remove"></button>
+      <!-- Shown only in learn-by-heart mode: how many words are hidden. Click for the next level. -->
+      <button id="mem-pill" class="hidden" title="Learn by heart: click to hide more or fewer words"></button>
     </div>
     <div id="reader-title"></div>
     <div id="stage">
@@ -78,6 +87,12 @@
       <button id="btn-short" class="small" aria-pressed="false" title="Short form: off (S)">
         <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
           <path d="M4 12h16"/><path d="M12 3v6"/><path d="M9 6l3 3 3-3"/><path d="M12 21v-6"/><path d="M9 18l3-3 3 3"/>
+        </svg>
+      </button>
+      <button id="btn-mem" class="small" aria-pressed="false" title="Learn by heart: off (M)">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true">
+          <path d="M3 7h5"/><path d="M12 7h9" stroke-dasharray="1.5 2.5"/><path d="M3 12h9" stroke-dasharray="1.5 2.5"/><path d="M16 12h5"/>
+          <path d="M3 17h7"/><path d="M14 17h7" stroke-dasharray="1.5 2.5"/>
         </svg>
       </button>
       <button id="btn-view" class="small" aria-pressed="false" title="Whole litany: off (V)">
@@ -122,5 +137,9 @@
   <div id="toast" role="status" aria-live="polite"></div>
 
   <script src="app.js"></script>
+  <script>
+    // Offline support and "install" on phones. Browsers only allow it over https or on localhost.
+    if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
+  </script>
 </body>
 </html>

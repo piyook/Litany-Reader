@@ -7,12 +7,12 @@ const path = require('path');
 const crypto = require('crypto');
 
 const { loadEnv, DEFAULT_PORT } = require('./scripts/env');
+const { listFiles, parseLitany, listLitanies } = require('./scripts/litanies');
 
 loadEnv();
 const PORT = Number(process.env.PORT) || DEFAULT_PORT;
 // Local use stays on this machine only; the Docker image sets HOST=0.0.0.0.
 const HOST = process.env.HOST || '127.0.0.1';
-const LITANY_DIR = path.join(__dirname, 'litanies');
 const PUBLIC_DIR = path.join(__dirname, 'public');
 // Written while running so `npm stop` can find the server and ask it to exit.
 const STATE_FILE = path.join(__dirname, '.server.json');
@@ -24,34 +24,9 @@ const TYPES = {
   '.js': 'text/javascript; charset=utf-8',
   '.svg': 'image/svg+xml',
   '.ico': 'image/x-icon',
+  '.png': 'image/png',
+  '.webmanifest': 'application/manifest+json',
 };
-
-async function listFiles() {
-  const names = await fs.readdir(LITANY_DIR);
-  return names.filter((n) => n.toLowerCase().endsWith('.txt'));
-}
-
-async function parseLitany(file) {
-  let text = await fs.readFile(path.join(LITANY_DIR, file), 'utf8');
-  text = text.replace(/^﻿/, '');
-  const lines = text.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
-  const title = lines.shift() || file.replace(/\.txt$/i, '');
-  // An optional "Short version" (or "Short form") line starts a quick form of the litany.
-  let short = [];
-  const s = lines.findIndex((l) => /^short\s+(version|form)\s*:?$/i.test(l));
-  if (s >= 0) { short = lines.slice(s + 1); lines.splice(s); }
-  // An "Author: <name>" line at the end of either form is a credit, not a step.
-  // A line ending like a sentence (". ! ?") is a step that happens to start "Author:".
-  const authors = [];
-  for (const form of [lines, short]) {
-    const m = form.length && form[form.length - 1].match(/^author\s*:\s*(.*[^.!?\s])\s*$/i);
-    if (m) { form.pop(); if (!authors.includes(m[1])) authors.push(m[1]); }
-  }
-  // A file with only a short form reads it as its one form; an empty file shows its title.
-  if (!lines.length) { lines.push(...short); short = []; }
-  if (!lines.length) lines.push(title);
-  return { title, lines, short, author: authors.join(', ') };
-}
 
 function send(res, status, body, type = 'application/json; charset=utf-8') {
   res.writeHead(status, { 'Content-Type': type, 'Cache-Control': 'no-store' });
@@ -69,20 +44,13 @@ const server = http.createServer(async (req, res) => {
       return shutdown();
     }
 
-    if (p === '/api/litanies') {
-      const files = await listFiles();
-      const items = await Promise.all(
-        files.map(async (id) => {
-          const { title, author } = await parseLitany(id);
-          return { id, title, author };
-        })
-      );
-      items.sort((a, b) => a.title.localeCompare(b.title));
-      return send(res, 200, items);
-    }
+    // The app asks for api/index.json and api/litany/<id>.json, the same paths the
+    // static build (GitHub Pages) writes as files. The older paths still answer.
+    if (p === '/api/index.json' || p === '/api/litanies') return send(res, 200, await listLitanies());
 
-    if (p.startsWith('/api/litanies/')) {
-      const id = p.slice('/api/litanies/'.length);
+    const one = p.match(/^\/api\/litany\/(.+)\.json$/) || p.match(/^\/api\/litanies\/(.+)$/);
+    if (one) {
+      const id = one[1];
       // Only accept a file that is really in the folder (blocks ../ tricks).
       const files = await listFiles();
       if (!files.includes(id)) return send(res, 404, { error: 'Not found' });

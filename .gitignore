@@ -4,9 +4,7 @@ Thumbs.db
 .server.json
 server.log
 .env
-
-# Copyrighted text: kept locally, never committed
-litanies/litany-against-fear.txt
+dist/
 
 # Local Claude Code settings
 .claude/

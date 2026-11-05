@@ -59,7 +59,8 @@
   // `src` holds the lines as written; `lines` the steps actually shown (the same
   // unless splitting is on). For step k, partSrc[k] is its source line and
   // partStart[k] / partLen[k] its slice of that line's character spans.
-  let src = [], partSrc = [], partStart = [], partLen = [];
+  // partWord[k] is the position of the part's first word in its source line.
+  let src = [], partSrc = [], partStart = [], partLen = [], partWord = [];
   let lines = [], idx = 0, phase = 'breath', elapsed = 0, playing = false, finished = false;
   let chars = [], lastTs = null, rafId = null;
   // Counts lines shown, across loops, so in/out keeps alternating even
@@ -109,6 +110,58 @@
     saveFavs();
     return true;
   }
+  // ---- Learn by heart ----
+  // Hides a share of the words: level 1 a quarter, 2 half, 3 three quarters, 4 all.
+  // A hidden word is a blank line while you breathe the line and recall it, and comes
+  // back during the hold so you can check. Each time through raises the level, kept
+  // per litany (and per form). The same words are chosen every time, and a word
+  // hidden at one level stays hidden at the higher ones.
+  const MEM_MAX = 4;
+  const MEM_PILL = ['', 'Hide 25%', 'Hide 50%', 'Hide 75%', 'Hide all'];
+  const MEM_TOAST = ['', 'a quarter of the words', 'half the words', 'three quarters of the words', 'every word'];
+  let memorise = false, memLevels = {}, memHidden = [];
+  try {
+    memorise = localStorage.getItem('litany-mem') === '1';
+    const o = JSON.parse(localStorage.getItem('litany-mem-levels') || '{}');
+    if (o && typeof o === 'object') memLevels = o;
+  } catch {}
+  const memKey = () => currentId + (usingShort() ? '#short' : '');
+  const memLevel = () => Math.min(MEM_MAX, Math.max(1, parseInt(memLevels[memKey()], 10) || 1));
+  const saveMemLevels = () => { try { localStorage.setItem('litany-mem-levels', JSON.stringify(memLevels)); } catch {} };
+  const hash = (s) => { let h = 2166136261; for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } return h >>> 0; };
+  const hasLetter = (s) => /[\p{L}\p{N}]/u.test(s);
+  // For each source line, the positions of the words to hide at the current level.
+  function buildHidden() {
+    memHidden = src.map((text) => {
+      const set = new Set();
+      if (!memorise) return set;
+      const words = text.split(/\s+/);
+      const order = words.map((_, i) => i).filter((i) => hasLetter(words[i]))
+        .sort((a, b) => hash(text + '|' + a) - hash(text + '|' + b));
+      order.slice(0, Math.ceil(order.length * memLevel() / MEM_MAX)).forEach((i) => set.add(i));
+      return set;
+    });
+  }
+
+  // ---- Keep the screen awake while a litany plays ----
+  // Browsers allow this only over https or on localhost; elsewhere it quietly does nothing.
+  let wakeLock = null, wantAwake = false, wakeRequesting = false;
+  function keepAwake(on) {
+    wantAwake = on;
+    if (!('wakeLock' in navigator)) return;
+    if (!on) { if (wakeLock) { wakeLock.release().catch(() => {}); wakeLock = null; } return; }
+    if (wakeLock || wakeRequesting || document.visibilityState !== 'visible') return;
+    wakeRequesting = true;
+    navigator.wakeLock.request('screen').then((lock) => {
+      wakeRequesting = false;
+      if (!wantAwake) { lock.release().catch(() => {}); return; }
+      wakeLock = lock;
+      lock.addEventListener('release', () => { if (wakeLock === lock) wakeLock = null; });
+    }, () => { wakeRequesting = false; });
+  }
+  // The browser drops the lock when the tab is hidden; take it again on return.
+  document.addEventListener('visibilitychange', () => { if (wantAwake && document.visibilityState === 'visible') keepAwake(true); });
+
   const HEART = '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true">'
     + '<path d="M12 20s-7.5-4.6-9-9.2C1.9 7.4 4 4.5 7.2 4.5c2 0 3.5 1.1 4.8 2.9 1.3-1.8 2.8-2.9 4.8-2.9 3.2 0 5.3 2.9 4.2 6.3-1.5 4.6-9 9.2-9 9.2z"/></svg>';
 
@@ -139,8 +192,10 @@
     listEl.innerHTML = '';
     msgEl.textContent = 'Loading…';
     try {
-      const res = await fetch('/api/litanies', { cache: 'no-store' });
+      const res = await fetch('api/index.json', { cache: 'no-store' });
       indexItems = await res.json();
+      // Ask the offline helper to save any litanies it hasn't seen yet.
+      navigator.serviceWorker?.controller?.postMessage('save-litanies');
       msgEl.textContent = indexItems.length ? '' : 'No litanies found. Add .txt files to the litanies folder.';
       // Forget favourites whose file has gone, so they don't hold a slot.
       const ids = new Set(indexItems.map((it) => it.id));
@@ -189,7 +244,7 @@
 
   // ---- Reader ----
   async function openLitany(id) {
-    const res = await fetch('/api/litanies/' + encodeURIComponent(id), { cache: 'no-store' });
+    const res = await fetch('api/litany/' + encodeURIComponent(id) + '.json', { cache: 'no-store' });
     if (!res.ok) { msgEl.textContent = 'Could not open that litany.'; return; }
     const data = await res.json();
     currentId = id;
@@ -212,6 +267,8 @@
     shortBtn.disabled = !shortLines.length;
     updateShortBtn();
     buildParts();
+    buildHidden();
+    updateMemPill();
     step = 0;
     idx = 0;
     rowChars = [];
@@ -237,13 +294,14 @@
   }
 
   function buildParts() {
-    lines = []; partSrc = []; partStart = []; partLen = [];
+    lines = []; partSrc = []; partStart = []; partLen = []; partWord = [];
     src.forEach((text, r) => {
-      let start = 0;
+      let start = 0, word = 0;
       for (const part of splitOn ? splitText(text, splitWords) : [text]) {
         const len = charCount(part);
-        lines.push(part); partSrc.push(r); partStart.push(start); partLen.push(len);
+        lines.push(part); partSrc.push(r); partStart.push(start); partLen.push(len); partWord.push(word);
         start += len;
+        word += part.split(/\s+/).filter(Boolean).length;
       }
     });
   }
@@ -278,19 +336,37 @@
 
   // Adds `text` to `container` and returns its character spans. Each word is an
   // unbreakable group, so lines only wrap between words; a word too wide for the
-  // screen makes the font shrink instead.
-  function buildWords(text, container) {
+  // screen makes the font shrink instead. Words whose position (counted from
+  // `offset`) is in `hidden` are hidden for learning by heart: their letters get
+  // the class "mem", and any punctuation before or after stays visible.
+  function buildWords(text, container, hidden, offset = 0) {
     const out = [];
     const words = text.split(/\s+/);
     words.forEach((word, wi) => {
       const w = document.createElement('span');
       w.className = 'word';
-      for (const ch of word) {
+      const chs = [...word];
+      let a = 0, b = -1;
+      if (hidden && hidden.has(offset + wi)) {
+        b = chs.length - 1;
+        while (a <= b && !hasLetter(chs[a])) a++;
+        while (b >= a && !hasLetter(chs[b])) b--;
+      }
+      // The hidden letters sit in one "gap" span, so the underline is a single line.
+      const gap = b >= a ? document.createElement('span') : null;
+      if (gap) gap.className = 'gap';
+      chs.forEach((ch, ci) => {
         const s = document.createElement('span');
         s.textContent = ch;
-        w.appendChild(s);
+        if (ci >= a && ci <= b) {
+          s.className = 'mem';
+          gap.appendChild(s);
+          if (ci === a) w.appendChild(gap);
+        } else {
+          w.appendChild(s);
+        }
         out.push(s);
-      }
+      });
       container.appendChild(w);
       if (wi < words.length - 1) container.appendChild(document.createTextNode(' '));
     });
@@ -300,6 +376,7 @@
   const fadeIn = () => lineEl.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 600, easing: 'ease-out' });
 
   function renderLine() {
+    revealKey = '';
     if (fullView) {
       if (!rowChars.length) buildAllRows();
       chars = partChars(idx);
@@ -308,7 +385,7 @@
     }
     lineEl.classList.remove('full');
     lineEl.innerHTML = '';
-    chars = buildWords(lines[idx], lineEl);
+    chars = buildWords(lines[idx], lineEl, memHidden[partSrc[idx]], partWord[idx]);
     fitText();
     fadeIn();
   }
@@ -331,8 +408,9 @@
       row.onclick = () => goTo(partSrc.indexOf(j));
       lineEl.appendChild(row);
       rowEls.push(row);
-      return buildWords(text, row);
+      return buildWords(text, row, memHidden[j]);
     });
+    revealKey = '';
     if (author) {
       const a = document.createElement('div');
       a.className = 'author';
@@ -415,6 +493,38 @@
     if (cueEl.textContent !== word) cueEl.textContent = word;
     cueEl.style.color = rgb;
     cueEl.classList.add('show');
+    applyReveal();
+  }
+
+  // Learning by heart: hidden words come back in the hold after the line is breathed
+  // (in read-aloud mode, after it is spoken). In the whole-litany view, lines already
+  // read stay revealed and lines to come stay hidden.
+  let revealKey = '';
+  function applyReveal() {
+    if (!memorise || (fullView && !rowChars.length)) return;
+    const now = phase === 'hold' && (!aloud || half === 1);
+    const key = idx + ':' + now;
+    if (key === revealKey) return; // only touch the page when something changes
+    revealKey = key;
+    if (fullView) {
+      for (let k = 0; k < lines.length; k++) {
+        const on = k < idx || (k === idx && now);
+        for (const c of partChars(k)) c.classList.toggle('shown', on);
+      }
+    } else {
+      for (const c of chars) c.classList.toggle('shown', now);
+    }
+  }
+
+  // After each time through, hide more words next time.
+  function raiseMemLevel() {
+    if (!memorise || memLevel() >= MEM_MAX) return;
+    memLevels[memKey()] = memLevel() + 1;
+    saveMemLevels();
+    buildHidden();
+    rowChars = []; // the whole-litany view is rebuilt with the new words hidden
+    updateMemPill();
+    toast('Learn by heart: next time, ' + MEM_TOAST[memLevel()] + ' will be hidden.');
   }
 
   function advance() {
@@ -428,12 +538,14 @@
       elapsed = 0;
     } else if (idx < lines.length - 1 || looping) {
       idx = (idx + 1) % lines.length;
+      if (idx === 0) raiseMemLevel(); // looped round: one more time through
       step++;
       half = 0;
       phase = 'breath';
       elapsed = 0;
       renderLine();
     } else {
+      raiseMemLevel();
       finish();
     }
   }
@@ -470,9 +582,11 @@
     lastTs = null;
     playBtn.innerHTML = '&#x23F8;&#xFE0E;';
     rafId = requestAnimationFrame(tick);
+    keepAwake(true);
   }
   function pause() {
     playing = false;
+    keepAwake(false);
     if (rafId) cancelAnimationFrame(rafId);
     rafId = null;
     playBtn.innerHTML = '&#x25B6;&#xFE0E;';
@@ -547,6 +661,36 @@
   }
   const modePill = $('mode-pill');
   setAloud(aloud);
+
+  // Learn-by-heart button (M) turns it on and off; the pill shows the level and
+  // steps through the levels when clicked.
+  const memBtn = $('btn-mem'), memPill = $('mem-pill');
+  function updateMemPill() {
+    memPill.classList.toggle('hidden', !memorise);
+    memPill.textContent = MEM_PILL[memLevel()];
+  }
+  // Starts the current line again with the words hidden afresh.
+  function rehide() {
+    buildHidden();
+    rowChars = [];
+    updateMemPill();
+    if (lines.length && !finished) goTo(idx);
+  }
+  function setMemorise(on) {
+    memorise = on;
+    memBtn.classList.toggle('active', on);
+    memBtn.setAttribute('aria-pressed', String(on));
+    memBtn.title = on ? 'Learn by heart: on (M)' : 'Learn by heart: off (M)';
+    try { localStorage.setItem('litany-mem', on ? '1' : '0'); } catch {}
+    rehide();
+  }
+  setMemorise(memorise);
+  memBtn.onclick = () => setMemorise(!memorise);
+  memPill.onclick = () => {
+    memLevels[memKey()] = (memLevel() % MEM_MAX) + 1;
+    saveMemLevels();
+    rehide();
+  };
   aloudBtn.onclick = () => setAloud(!aloud);
   modePill.onclick = () => setAloud(!aloud);
 
@@ -577,7 +721,8 @@
   // Show controls only when the pointer is near the bottom; hide the cursor when idle.
   let hideTimer = null, idleTimer = null;
   const settingsOpen = () => !settingsEl.classList.contains('hidden');
-  readerEl.addEventListener('mousemove', (e) => {
+  readerEl.addEventListener('pointermove', (e) => {
+    if (e.pointerType !== 'mouse') return; // touch screens use the tap below
     readerEl.classList.remove('idle');
     clearTimeout(idleTimer);
     idleTimer = setTimeout(() => { if (!settingsOpen()) readerEl.classList.add('idle'); }, 2500);
@@ -589,7 +734,25 @@
       hideTimer = setTimeout(() => controlsEl.classList.remove('show'), 600);
     }
   });
-  readerEl.addEventListener('mouseleave', () => { if (!settingsOpen()) controlsEl.classList.remove('show'); });
+  readerEl.addEventListener('pointerleave', (e) => {
+    if (e.pointerType === 'mouse' && !settingsOpen()) controlsEl.classList.remove('show');
+  });
+  // Touch screens have no pointer to move: a tap on the page shows or hides the
+  // controls, and they hide again after a few seconds untouched.
+  const autoHide = () => {
+    clearTimeout(hideTimer);
+    hideTimer = setTimeout(() => { if (!settingsOpen()) controlsEl.classList.remove('show'); }, 5000);
+  };
+  readerEl.addEventListener('pointerup', (e) => {
+    if (e.pointerType === 'mouse') return;
+    // A tap on a button, a line in the whole view, or the settings keeps the controls up a little longer.
+    if (e.target.closest('button, input, label, #controls, #settings, #line.full .row')) {
+      if (controlsEl.classList.contains('show')) autoHide();
+      return;
+    }
+    if (controlsEl.classList.toggle('show')) autoHide();
+    else clearTimeout(hideTimer);
+  });
 
   // ---- Settings ----
   const fields = { in: $('t-in'), hold1: $('t-hold1'), out: $('t-out'), hold2: $('t-hold2') };
@@ -644,6 +807,7 @@
       case 's': case 'S': setShort(!shortForm); break;
       case 'a': case 'A': setAloud(!aloud); break;
       case 'h': case 'H': toggleCurrentFav(); break;
+      case 'm': case 'M': setMemorise(!memorise); break;
       case 'f': case 'F':
         if (document.fullscreenElement) document.exitFullscreen();
         else document.documentElement.requestFullscreen().catch(() => {});

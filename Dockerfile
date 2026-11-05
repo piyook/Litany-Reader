@@ -7,7 +7,7 @@ ENV NODE_ENV=production \
 
 # No dependencies to install: copy the app only.
 COPY package.json server.js ./
-COPY scripts/env.js scripts/env.js
+COPY scripts/env.js scripts/litanies.js scripts/
 COPY public public
 # The litanies folder is mounted by docker-compose.yml so edits show up without a rebuild.
 # These copies are a fallback for running the image on its own.

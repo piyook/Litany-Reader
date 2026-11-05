@@ -66,6 +66,14 @@
   opacity: .8; transition: color .4s, background .4s, opacity .3s;
 }
 #mode-pill:hover { opacity: 1; }
+/* Learn-by-heart level, in the hold colour. Click for the next level. */
+#mem-pill {
+  padding: 5px 12px; border-radius: 999px; border: 1px solid currentColor;
+  font-family: system-ui, sans-serif; font-size: 12px; letter-spacing: .14em; text-transform: uppercase;
+  color: var(--hold); background: color-mix(in srgb, var(--hold) 14%, transparent);
+  opacity: .8; transition: opacity .3s;
+}
+#mem-pill:hover { opacity: 1; }
 #mode-pill.spoken { color: var(--out); background: color-mix(in srgb, var(--out) 14%, transparent); }
 .index-head { display: flex; justify-content: space-between; align-items: baseline; margin: 0 0 2rem; }
 .index-head .btn-theme { color: var(--muted); width: 38px; height: 38px; border-radius: 50%; }
@@ -111,7 +119,7 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
 }
 
 /* Reader */
-#reader { position: fixed; inset: 0; }
+#reader { position: fixed; inset: 0; -webkit-tap-highlight-color: transparent; user-select: none; -webkit-user-select: none; }
 #reader.idle, #reader.idle * { cursor: none !important; }
 #stage {
   position: absolute; inset: 0; display: flex; flex-direction: column;
@@ -132,6 +140,14 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
 }
 #line span { color: var(--text-dim); }
 #line .word { white-space: nowrap; }
+/* Learn by heart: a hidden word keeps its width as a faint underline, and fades back
+   in when revealed. !important beats the colour the fill sets on each letter. */
+#line span.gap {
+  text-decoration: underline; text-decoration-color: var(--muted);
+  text-decoration-thickness: .05em; text-underline-offset: .14em;
+}
+#line span.mem { transition: color .8s ease-out; }
+#line span.mem:not(.shown) { color: transparent !important; }
 #line.full { line-height: 1.25; }
 #line.full .row { margin: 0.18em 0; cursor: pointer; }
 #line.full .title {
@@ -214,3 +230,20 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
   opacity: 0; pointer-events: none; transition: opacity .3s, transform .3s;
 }
 #toast.show { opacity: 1; transform: translate(-50%, 0); }
+
+/* Phones and narrow windows: the controls wrap onto two rows, and the settings
+   panel spans the width above them. */
+@media (max-width: 760px) {
+  #controls {
+    flex-wrap: wrap; justify-content: center; gap: 4px; padding: 8px;
+    width: calc(100% - 24px); max-width: 480px; bottom: 12px; border-radius: 24px;
+  }
+  #controls .spacer { display: none; }
+  #settings { left: 12px; right: 12px; width: auto; bottom: 150px; }
+  #toast { bottom: 150px; }
+  #top-bar { top: 14px; gap: 8px; }
+  #mode-pill, #mem-pill { letter-spacing: .08em; padding: 5px 10px; }
+  #reader-title { top: 60px; }
+  #index { padding-top: 5vh; }
+  #litany-list .open { font-size: 1.4rem; }
+}

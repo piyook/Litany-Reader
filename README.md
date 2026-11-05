@@ -38,6 +38,14 @@ npm stop     # stops it
 
 Or double-click `start.bat` and `stop.bat`. The reader is at http://localhost:8484. It needs Node.js; there is nothing to install.
 
+### On your phone
+
+The reader is also online at **https://piyook.github.io/Litany-Reader/**, published from this repository each time `main` changes. Open it on your phone and add it to the home screen (Safari: Share, *Add to Home Screen*; Chrome: menu, *Install app* or *Add to Home screen*). It then opens like an app and works with no signal: every litany is saved on the phone the first time it loads.
+
+Tap the screen to show the controls; they hide again after a few seconds. The online copy has only the litanies in this repository, not ones you add to your own `litanies` folder.
+
+To build the same static copy yourself: `npm run build` writes it to `dist/`.
+
 ### Docker
 
 ```
@@ -66,6 +74,7 @@ This applies to `npm start` and to Docker.
 |---|---|
 | `litany-against-anxiety.txt` | piyook |
 | `litany-against-despair.txt` | piyook |
+| `litany-against-fear.txt` | piyook |
 | `litany-against-overwhelm.txt` | piyook |
 | `litany-against-regret.txt` | piyook |
 | `litany-against-self-criticism.txt` | piyook |
@@ -144,27 +153,36 @@ The files are not changed. In the whole-litany view each line still appears as w
 
 When a litany has been read once through, the breath ring and cue give way to a **Return to index** link. With repeat on it never finishes, so the link doesn't appear.
 
+While a litany plays, the screen is kept awake so it doesn't dim or lock part way through. When you pause, it can sleep as normal.
+
+## Learn by heart
+
+Turn it on with the gaps button (three lines with gaps in them) or `M`. Some of the words are hidden: each shows as a blank line the width of the word. Say them from memory as you breathe the line; in the hold they fade back in, so you can check yourself. In read-aloud mode they come back in the hold after you speak the line.
+
+Each time you read the litany through, more words are hidden: a quarter, then half, then three quarters, then all of them. A green pill at the top shows the level, for example **Hide 50%**; click it to choose another. The level is kept for each litany (and its short form separately), and the same words are hidden each time, so you are learning the same gaps. In the whole-litany view, lines you have read stay revealed and lines to come stay hidden.
+
 ## Favourites
 
 You can keep up to three favourites. On the index, hover over a litany and click the heart on the right; in the reader, use the heart button or `H`. Favourites show a filled heart and sit at the top of the index. While you read a favourite, a heart also shows at the top of the screen beside the Silent and repeat buttons; click it to remove the favourite. To pick a fourth, remove one first. They are kept in a cookie in your browser.
 
 ## Controls
 
-Move the pointer to the bottom of the screen to show the controls: previous, play/pause, next, favourite, loop, short form, whole litany, read aloud, light/dark, settings, back. They hide again when the pointer moves away, and the cursor hides after a few seconds without movement. The light/dark button is also on the index page; the reader follows your system setting until you choose. Loop can also be switched with the repeat button at the top of the screen. With loop on, the litany repeats from the start indefinitely. Turning loop on after a litany has finished starts it again.
+Move the pointer to the bottom of the screen to show the controls: previous, play/pause, next, favourite, loop, short form, learn by heart, whole litany, read aloud, light/dark, settings, back. They hide again when the pointer moves away, and the cursor hides after a few seconds without movement. The light/dark button is also on the index page; the reader follows your system setting until you choose. Loop can also be switched with the repeat button at the top of the screen. With loop on, the litany repeats from the start indefinitely. Turning loop on after a litany has finished starts it again.
 
-Keys: `Space` play/pause · `←` `→` previous/next · `H` favourite on/off · `L` loop on/off · `S` short form on/off · `V` whole litany on one screen · `A` read aloud on/off · `T` light/dark · `F` fullscreen · `Esc` close settings, leave fullscreen, or go back to the index.
+Keys: `Space` play/pause · `←` `→` previous/next · `H` favourite on/off · `L` loop on/off · `S` short form on/off · `M` learn by heart on/off · `V` whole litany on one screen · `A` read aloud on/off · `T` light/dark · `F` fullscreen · `Esc` close settings, leave fullscreen, or go back to the index.
 
 ## Files
 
 ```
 server.js          the server: serves public/ and reads litanies/ on each request
-public/            the reader page (index.html, app.js, style.css)
+public/            the reader page (index.html, app.js, style.css), offline helper (sw.js), app icons
 litanies/          the litany .txt files
-scripts/           npm start / stop / docker helpers
+scripts/           npm start / stop / docker helpers, litany parsing, the static build
+.github/workflows/ publishes the static build to GitHub Pages
 docs/              screenshots for this README
 ```
 
-Settings (timings, mode, view, loop, short form, theme, long lines, favourites) are stored in your browser, not on the server.
+Settings (timings, mode, view, loop, short form, theme, long lines, learn-by-heart levels, favourites) are stored in your browser, not on the server.
 
 ## License
 

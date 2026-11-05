@@ -6,5 +6,4 @@ server.log
 *.bat
 README.md
 docs
-# Copyrighted text: never baked into the image (the compose file mounts it from disk instead)
-litanies/litany-against-fear.txt
+dist
