@@ -22,10 +22,16 @@
   // ---- Reader state ----
   let lines = [], idx = 0, phase = 'breath', elapsed = 0, playing = false, finished = false;
   let chars = [], lastTs = null, rafId = null;
+  // Counts lines shown, across loops, so in/out keeps alternating even
+  // when a litany with an odd number of lines wraps round.
+  let step = 0;
 
-  const kindOf = (i) => (i % 2 === 0 ? 'in' : 'out');
+  let looping = false;
+  try { looping = localStorage.getItem('litany-loop') === '1'; } catch {}
+
+  const kindOf = () => (step % 2 === 0 ? 'in' : 'out');
   const phaseDuration = () => {
-    const k = kindOf(idx);
+    const k = kindOf();
     if (phase === 'breath') return (k === 'in' ? timings.in : timings.out) * 1000;
     return (k === 'in' ? timings.hold1 : timings.hold2) * 1000;
   };
@@ -66,12 +72,16 @@
     document.title = data.title;
     indexEl.classList.add('hidden');
     readerEl.classList.remove('hidden');
+    step = 0;
+    idx = 0;
     goTo(0);
     play();
   }
 
   function goTo(i) {
-    idx = Math.max(0, Math.min(lines.length - 1, i));
+    const target = Math.max(0, Math.min(lines.length - 1, i));
+    step = Math.max(0, step + (target - idx));
+    idx = target;
     phase = 'breath';
     elapsed = 0;
     finished = false;
@@ -83,12 +93,21 @@
   function renderLine() {
     lineEl.innerHTML = '';
     chars = [];
-    for (const ch of lines[idx]) {
-      const s = document.createElement('span');
-      s.textContent = ch;
-      lineEl.appendChild(s);
-      chars.push(s);
-    }
+    // Each word is an unbreakable group of character spans, so lines only wrap
+    // between words. A word too wide for the screen makes the font shrink instead.
+    const words = lines[idx].split(/\s+/);
+    words.forEach((word, wi) => {
+      const w = document.createElement('span');
+      w.className = 'word';
+      for (const ch of word) {
+        const s = document.createElement('span');
+        s.textContent = ch;
+        w.appendChild(s);
+        chars.push(s);
+      }
+      lineEl.appendChild(w);
+      if (wi < words.length - 1) lineEl.appendChild(document.createTextNode(' '));
+    });
     fitText();
     lineEl.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 600, easing: 'ease-out' });
   }
@@ -107,7 +126,7 @@
   }
 
   function draw() {
-    const kind = kindOf(idx);
+    const kind = kindOf();
     const dur = phaseDuration();
     const p = dur > 0 ? Math.min(1, elapsed / dur) : 1;
     // Fill left to right with a soft edge a few characters wide.
@@ -141,8 +160,9 @@
     if (phase === 'breath') {
       phase = 'hold';
       elapsed = 0;
-    } else if (idx < lines.length - 1) {
-      idx++;
+    } else if (idx < lines.length - 1 || looping) {
+      idx = (idx + 1) % lines.length;
+      step++;
       phase = 'breath';
       elapsed = 0;
       renderLine();
@@ -191,8 +211,27 @@
   }
   function stop() { pause(); lines = []; }
   const toggle = () => (playing ? pause() : play());
-  const prev = () => goTo(finished ? lines.length - 1 : idx - 1);
-  const next = () => { if (idx < lines.length - 1) goTo(idx + 1); else finish(); };
+  const prev = () => {
+    if (finished) return goTo(lines.length - 1);
+    if (idx === 0 && looping) { step--; idx = lines.length - 1; return goTo(idx); }
+    goTo(idx - 1);
+  };
+  const next = () => {
+    if (idx < lines.length - 1) goTo(idx + 1);
+    else if (looping) { step++; idx = 0; goTo(0); }
+    else finish();
+  };
+
+  const loopBtn = $('btn-loop');
+  function setLoop(on) {
+    looping = on;
+    loopBtn.classList.toggle('active', on);
+    loopBtn.setAttribute('aria-pressed', String(on));
+    loopBtn.title = on ? 'Loop: on (L)' : 'Loop: off (L)';
+    try { localStorage.setItem('litany-loop', on ? '1' : '0'); } catch {}
+  }
+  setLoop(looping);
+  loopBtn.onclick = () => setLoop(!looping);
 
   // ---- Controls ----
   playBtn.onclick = toggle;
@@ -244,6 +283,7 @@
         if (settingsOpen()) settingsEl.classList.add('hidden');
         else if (!document.fullscreenElement) showIndex();
         break;
+      case 'l': case 'L': setLoop(!looping); break;
       case 'f': case 'F':
         if (document.fullscreenElement) document.exitFullscreen();
         else document.documentElement.requestFullscreen().catch(() => {});

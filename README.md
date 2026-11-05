@@ -29,6 +29,6 @@ Change the timings with the ⚙ button. They are saved in the browser.
 
 ## Controls
 
-Move the pointer to the bottom of the screen to show the controls: previous, play/pause, next, settings, back.
+Move the pointer to the bottom of the screen to show the controls: previous, play/pause, next, loop, settings, back. With loop on, the litany repeats from the start indefinitely.
 
-Keys: `Space` play/pause · `←` `→` previous/next · `F` fullscreen · `Esc` back to the index.
+Keys: `Space` play/pause · `←` `→` previous/next · `L` loop on/off · `F` fullscreen · `Esc` back to the index.
