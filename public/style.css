@@ -91,8 +91,15 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
   position: absolute; inset: 0; display: flex; flex-direction: column;
   align-items: center; justify-content: center; padding: 0 5vw;
 }
-/* Keep the whole-litany title clear of the buttons at the top. */
-#stage:has(#line.full) { padding-top: 70px; }
+/* Small title under the top buttons in one-line view (whole view has its own). */
+#reader-title {
+  position: absolute; top: 72px; left: 0; right: 0; z-index: 1; text-align: center;
+  font-size: 13px; letter-spacing: .16em; text-transform: uppercase; color: var(--muted);
+  padding: 0 16px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+#reader.full-view #reader-title { display: none; }
+/* Keep the line clear of the top buttons and title. */
+#stage { padding-top: 80px; }
 #line {
   width: 90vw; text-align: center; line-height: 1.15;
   transition: opacity .6s ease;

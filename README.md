@@ -109,7 +109,7 @@ The files are not changed. In the whole-litany view each line still appears as w
 
 ## Views
 
-- **One line at a time** (the default): each line fills the screen, as large as it fits.
+- **One line at a time** (the default): each line fills the screen, as large as it fits, with the litany's title small at the top.
 - **Whole litany** (the lines button, or `V`): the title, every line and the author credit on one screen. Lines already read keep a softer version of their breath colour, and lines to come stay dim. Click any line to jump to it.
 
 When a litany has been read once through, the breath ring and cue give way to a **Return to index** link. With repeat on it never finishes, so the link doesn't appear.

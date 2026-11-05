@@ -131,6 +131,7 @@
     title = data.title;
     author = data.author || '';
     document.title = data.title;
+    $('reader-title').textContent = data.title;
     indexEl.classList.add('hidden');
     readerEl.classList.remove('hidden');
     step = 0;
@@ -260,6 +261,7 @@
 
   function setFullView(on) {
     fullView = on;
+    readerEl.classList.toggle('full-view', on);
     viewBtn.classList.toggle('active', on);
     viewBtn.setAttribute('aria-pressed', String(on));
     viewBtn.title = on ? 'Whole litany: on (V)' : 'Whole litany: off (V)';
@@ -270,7 +272,7 @@
 
   // Largest font size that keeps the text within ~90% width and ~70% height.
   function fitText() {
-    const maxH = (fullView ? window.innerHeight * 0.72 - 70 : window.innerHeight * 0.7); // 70px = top padding in whole view
+    const maxH = window.innerHeight * (fullView ? 0.72 : 0.7) - 80; // 80px = stage top padding
     let lo = 12, hi = 600;
     while (hi - lo > 1) {
       const mid = (lo + hi) / 2;
