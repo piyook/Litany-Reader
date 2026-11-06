@@ -1,10 +1,10 @@
-# The quality checks the pre-push hook runs, again on GitHub: Biome (lint and
-# format), fallow (dead code, duplication, complexity) and npm audit.
+# The checks the pre-push hook runs, again on GitHub: Biome (lint and format),
+# the unit tests, fallow (dead code, duplication, complexity) and npm audit.
 name: Quality checks
 
 on:
   push:
-    branches: [main]
+    branches: [main, dev]
   pull_request:
   workflow_dispatch:
 
@@ -52,9 +52,23 @@ jobs:
           node-version-file: .nvmrc
           cache: npm
       - run: npm ci
-      # Compared with the branch a pull request goes into, or on a push to main
-      # with main as it was before the push.
-      - run: npx fallow audit --base ${{ github.event_name == 'pull_request' && format('origin/{0}', github.base_ref) || github.event.before || 'origin/main' }}
+      # The tests go first, as in the pre-push hook: fallow scores complexity
+      # from the coverage they write.
+      - run: npm run test:coverage
+      # Compared with the branch a pull request goes into; on a push to main,
+      # with main as it was before the push; on a push to dev, with main.
+      - run: npx fallow audit --base ${{ github.event_name == 'pull_request' && format('origin/{0}', github.base_ref) || github.ref_name == 'main' && github.event.before || 'origin/main' }}
+
+  unit_tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - run: npm run test:coverage
 
   branch_name:
     if: github.event_name == 'pull_request'

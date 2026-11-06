@@ -576,44 +576,67 @@
     lineEl.style.fontSize = `${lo}px`;
   }
 
+  // One frame: the line's colour, the breath indicator and the word cue.
+  // p is how far through the current phase we are (0 to 1); ease is p smoothed.
   function draw() {
     const kind = kindOf();
     const dur = phaseDuration();
     const p = dur > 0 ? Math.min(1, elapsed / dur) : 1;
     const ease = 0.5 - 0.5 * Math.cos(Math.PI * p);
+    const rgb = `rgb(${COL[kind].join(',')})`;
+    paintLine(kind, p, ease);
+    paintIndicator(kind, p, ease, dur, rgb);
+    paintCue(kind, rgb);
+    applyReveal();
+  }
+
+  function paintLine(kind, p, ease) {
     const n = chars.length;
     if (aloud && kind === 'in') {
       // Silent read: the whole line brightens evenly, ready to be spoken.
       const c = mix(DIM, PREVIEW, phase === 'breath' ? ease : 1);
       for (let i = 0; i < n; i++) chars[i].style.color = c;
-    } else {
-      // Fill left to right with a soft edge a few characters wide.
-      const from = aloud ? PREVIEW : DIM;
-      const fill = phase === 'breath' ? p : 1;
-      const edge = 3;
-      const front = fill * (n + edge);
-      for (let i = 0; i < n; i++) {
-        const t = Math.max(0, Math.min(1, (front - i) / edge));
-        chars[i].style.color = mix(from, COL[kind], t);
-      }
+      return;
     }
-    // Breath indicator: orb grows on the in-breath, shrinks on the out-breath,
-    // and stays still while the hold arc draws round it.
-    const rgb = `rgb(${COL[kind].join(',')})`;
+    // Fill left to right with a soft edge a few characters wide.
+    const from = aloud ? PREVIEW : DIM;
+    const fill = phase === 'breath' ? p : 1;
+    const edge = 3;
+    const front = fill * (n + edge);
+    for (let i = 0; i < n; i++) {
+      const t = Math.max(0, Math.min(1, (front - i) / edge));
+      chars[i].style.color = mix(from, COL[kind], t);
+    }
+  }
+
+  // The orb grows on the in-breath, shrinks on the out-breath,
+  // and stays still while the hold arc draws round it.
+  function paintIndicator(kind, p, ease, dur, rgb) {
     const holding = phase === 'hold';
-    const size = holding ? (kind === 'in' ? 1 : 0) : kind === 'in' ? ease : 1 - ease;
+    const inBreath = kind === 'in';
+    let size;
+    if (holding) size = inBreath ? 1 : 0;
+    else size = inBreath ? ease : 1 - ease;
     orbEl.setAttribute('r', (10 + 24 * size).toFixed(2));
     orbEl.style.fill = rgb;
     holdEl.classList.add('show');
     arcEl.style.stroke = HOLD; // one hold colour for both holds
-    arcEl.classList.toggle('on', holding && dur > 0);
-    arcEl.style.strokeDashoffset = holding && dur > 0 ? String(1 - p) : '1';
-    // Word cue
-    const word = holding ? 'hold' : kind === 'in' ? 'breathe in' : aloud ? 'speak' : 'breathe out';
+    const arcOn = holding && dur > 0;
+    arcEl.classList.toggle('on', arcOn);
+    arcEl.style.strokeDashoffset = arcOn ? String(1 - p) : '1';
+  }
+
+  function cueWord(kind) {
+    if (phase === 'hold') return 'hold';
+    if (kind === 'in') return 'breathe in';
+    return aloud ? 'speak' : 'breathe out';
+  }
+
+  function paintCue(kind, rgb) {
+    const word = cueWord(kind);
     if (cueEl.textContent !== word) cueEl.textContent = word;
     cueEl.style.color = rgb;
     cueEl.classList.add('show');
-    applyReveal();
   }
 
   // Learning by heart: hidden words come back in the hold after the line is breathed

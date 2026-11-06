@@ -5,5 +5,36 @@
   "ignorePatterns": [".claude/**"],
   // The browser side: the page loads app.js and style.css, and app.js
   // registers sw.js by its URL, which fallow can not follow.
-  "entry": ["public/index.html", "public/sw.js"]
+  "entry": ["public/index.html", "public/sw.js"],
+  "health": {
+    // Written by `npm run test:coverage`, which runs before fallow, so the
+    // CRAP scores use what the tests really run.
+    "coverage": "coverage/coverage-final.json",
+    "thresholdOverrides": [
+      {
+        // No unit tests reach these yet: the browser app is one big function
+        // in app.js, and the scripts run as programs. Untested, CRAP flags
+        // any function with 5 or more branches, so its ceiling is raised to
+        // what the cyclomatic limit of 20 gives untested (20² + 20). The
+        // cyclomatic and cognitive limits still apply. Lower it again for
+        // app.js once it is split into modules with tests.
+        "files": [
+          "public/**",
+          "scripts/browser.js",
+          "scripts/build-static.js",
+          "scripts/docker.js",
+          "scripts/start.js",
+          "scripts/stop.js"
+        ],
+        "maxCrap": 420,
+        "reason": "Not reachable by unit tests yet (browser app, command scripts)"
+      },
+      {
+        "files": ["scripts/validate-branch-name.js"],
+        "functions": ["main"],
+        "maxCrap": 420,
+        "reason": "Reads argv and exits; the rule itself, invalidBranches, is tested"
+      }
+    ]
+  }
 }

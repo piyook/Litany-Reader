@@ -3,10 +3,10 @@
 const fs = require('node:fs');
 const path = require('node:path');
 
-function loadEnv() {
+function loadEnv(file = path.join(__dirname, '..', '.env')) {
   let text;
   try {
-    text = fs.readFileSync(path.join(__dirname, '..', '.env'), 'utf8');
+    text = fs.readFileSync(file, 'utf8');
   } catch {
     return;
   }

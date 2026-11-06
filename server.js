@@ -88,16 +88,23 @@ function shutdown() {
   setTimeout(() => process.exit(0), 1000).unref();
 }
 
-process.on('SIGINT', shutdown);
-process.on('SIGTERM', shutdown);
+function start() {
+  process.on('SIGINT', shutdown);
+  process.on('SIGTERM', shutdown);
 
-server.on('error', (err) => {
-  if (err.code === 'EADDRINUSE') console.error(`Port ${PORT} is already in use. Is the reader already running?`);
-  else console.error(err);
-  process.exit(1);
-});
+  server.on('error', (err) => {
+    if (err.code === 'EADDRINUSE') console.error(`Port ${PORT} is already in use. Is the reader already running?`);
+    else console.error(err);
+    process.exit(1);
+  });
 
-server.listen(PORT, HOST, () => {
-  fsSync.writeFileSync(STATE_FILE, JSON.stringify({ pid: process.pid, port: PORT, token: TOKEN }));
-  console.log(`Litany Reader running at http://localhost:${PORT}`);
-});
+  server.listen(PORT, HOST, () => {
+    fsSync.writeFileSync(STATE_FILE, JSON.stringify({ pid: process.pid, port: PORT, token: TOKEN }));
+    console.log(`Litany Reader running at http://localhost:${PORT}`);
+  });
+}
+
+// `node server.js` starts it; the tests load it and listen on a port of their own.
+if (require.main === module) start();
+
+module.exports = { server };

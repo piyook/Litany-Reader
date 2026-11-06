@@ -13,5 +13,8 @@ fi
 # Compare against the real main, not a stale local copy.
 git fetch --quiet origin main
 npx biome ci
+# The tests go before fallow, which scores complexity from the coverage they
+# write. They fail below the minimum in vitest.config.mjs.
+npm run test:coverage
 npx fallow audit --base origin/main
 npm audit --omit=dev
