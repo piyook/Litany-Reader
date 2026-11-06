@@ -331,9 +331,47 @@ button {
 #reader.full-view #reader-title {
   display: none;
 }
-/* Keep the line clear of the top buttons and title. */
+/* Progress dots under the title (one-line view only): filled up to the current line. */
+#progress {
+  position: absolute;
+  top: 98px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1;
+  width: min(90vw, 480px);
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 7px;
+}
+#progress span {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  border: 1px solid var(--muted);
+  opacity: 0.6;
+  transition:
+    background 0.5s,
+    border-color 0.5s,
+    opacity 0.5s;
+}
+#progress span.done {
+  background: var(--muted);
+}
+#progress span.current {
+  background: var(--text);
+  border-color: var(--text);
+  opacity: 0.9;
+}
+#reader.full-view #progress {
+  display: none;
+}
+/* Keep the line clear of the top buttons and title (and the dots, in one-line view). */
 #stage {
   padding-top: 80px;
+}
+#reader:not(.full-view) #stage {
+  padding-top: 110px;
 }
 #line {
   width: 90vw;
@@ -661,6 +699,21 @@ button {
   }
   #reader-title {
     top: 60px;
+  }
+  #progress {
+    top: 84px;
+  }
+  /* At the end, the return link goes above the line, where the toolbar can't cover
+     it. The ring and cue keep their space, unseen, so the line doesn't jump. */
+  #reader.finished #end {
+    order: -1;
+    margin: 0 0 3vh;
+    min-height: 0;
+  }
+  #reader.finished #hold.hidden,
+  #reader.finished #cue.hidden {
+    display: block !important;
+    visibility: hidden;
   }
   #index {
     padding-top: 5vh;

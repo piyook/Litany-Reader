@@ -110,6 +110,29 @@ test.describe('reading', () => {
     await expect(page.locator('#reader')).toBeHidden();
   });
 
+  test('the dots show how many lines there are and fill up to the current one', async ({ page }) => {
+    await open(page, 'Alpha Litany');
+    await page.keyboard.press(' '); // pause
+    const dots = page.locator('#progress span');
+    await expect(dots).toHaveCount(3);
+    await expect(page.locator('#progress span.done')).toHaveCount(1);
+    await page.keyboard.press('ArrowRight');
+    await expect(page.locator('#progress span.done')).toHaveCount(2);
+    await expect(dots.nth(1)).toHaveClass(/current/);
+    await expect(page.locator('#progress')).toHaveAttribute('aria-label', 'Line 2 of 3');
+    await page.keyboard.press('v');
+    await expect(page.locator('#progress')).toBeHidden();
+  });
+
+  test('on a phone, the return link sits above the last line at the end', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 780 });
+    await open(page, 'Beta Litany');
+    await expect(page.locator('#end')).toBeVisible();
+    const link = await page.locator('#end-back').boundingBox();
+    const text = await line(page).boundingBox();
+    expect(link.y + link.height).toBeLessThan(text.y);
+  });
+
   test('loop (L) starts again from the first line instead of ending', async ({ page }) => {
     await open(page, 'Beta Litany');
     await page.keyboard.press('l');

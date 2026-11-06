@@ -147,11 +147,11 @@ The files are not changed. In the whole-litany view each line still appears as w
 
 ## Views
 
-- **One line at a time** (the default): each line fills the screen, as large as it fits, with the litany's title small at the top.
+- **One line at a time** (the default): each line fills the screen, as large as it fits, with the litany's title small at the top. Under the title is a row of dots, one for each line: they fill as you go, so you can see how long the litany is and how far through you are.
 - **Whole litany** (the lines button, or `V`): the title, every line and the author credit on one screen. Lines already read keep a softer version of their breath colour, and lines to come stay dim. Click any line to jump to it.
 - **Short form** (the fold button, two arrows pressing in on a line, or `S`): reads the litany's short version instead, starting from its first line. The title shows *· short* while it is on. The setting is saved in the browser and applies to every litany that has a short form; the button is greyed out for one that doesn't.
 
-When a litany has been read once through, the breath ring and cue give way to a **Return to index** link. With repeat on it never finishes, so the link doesn't appear.
+When a litany has been read once through, the breath ring and cue give way to a **Return to index** link. On a phone the link sits above the last line instead, where the toolbar can't cover it. With repeat on it never finishes, so the link doesn't appear.
 
 While a litany plays, the screen is kept awake so it doesn't dim or lock part way through. When you pause, it can sleep as normal.
 
