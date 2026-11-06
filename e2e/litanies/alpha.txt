@@ -1,0 +1,8 @@
+Alpha Litany
+First line of alpha.
+Second line of alpha.
+Third line of alpha.
+Short version:
+Short alpha one.
+Short alpha two.
+Author: Tester

@@ -2,7 +2,8 @@
 const fs = require('node:fs/promises');
 const path = require('node:path');
 
-const LITANY_DIR = path.join(__dirname, '..', 'litanies');
+// LITANY_DIR points the reader at another folder of litanies (the end-to-end tests use their own).
+const LITANY_DIR = path.resolve(process.env.LITANY_DIR || path.join(__dirname, '..', 'litanies'));
 
 async function listFiles(dir = LITANY_DIR) {
   const names = await fs.readdir(dir);

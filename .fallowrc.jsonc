@@ -5,7 +5,8 @@
   "ignorePatterns": [".claude/**"],
   // The browser side: the page loads app.js and style.css, and app.js
   // registers sw.js by its URL, which fallow can not follow.
-  "entry": ["public/index.html", "public/sw.js"],
+  // The end-to-end tests are .mjs, which fallow's Playwright support does not look for.
+  "entry": ["public/index.html", "public/sw.js", "e2e/**/*.spec.mjs"],
   "health": {
     // Written by `npm run test:coverage`, which runs before fallow, so the
     // CRAP scores use what the tests really run.

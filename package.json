@@ -19,8 +19,9 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
+    "test:e2e": "playwright test",
     "fallow": "fallow audit --base origin/main",
-    "quality": "biome ci && vitest run --coverage && fallow audit --base origin/main && npm audit --omit=dev",
+    "quality": "biome ci && vitest run --coverage && fallow audit --base origin/main && playwright test && npm audit --omit=dev",
     "prepare": "husky",
     "validate-branch-name": "node scripts/validate-branch-name.js"
   },
@@ -36,6 +37,7 @@
     "@biomejs/biome": "2.6.5",
     "@commitlint/cli": "^21.2.4",
     "@commitlint/config-conventional": "^21.2.4",
+    "@playwright/test": "^1.65.0",
     "@vitest/coverage-v8": "^5.1.0",
     "fallow": "3.39.0",
     "husky": "^9.1.7",

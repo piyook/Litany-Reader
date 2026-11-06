@@ -469,13 +469,6 @@ button {
 }
 
 /* Controls: appear only when the pointer is near the bottom */
-#hotzone {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  height: 120px;
-}
 #controls {
   position: absolute;
   left: 50%;

@@ -17,4 +17,6 @@ npx biome ci
 # write. They fail below the minimum in vitest.config.mjs.
 npm run test:coverage
 npx fallow audit --base origin/main
+# The reader in a real browser (about 10 seconds). Needs `npx playwright install chromium` once.
+npm run test:e2e
 npm audit --omit=dev
