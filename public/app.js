@@ -27,6 +27,7 @@ const indexEl = $('index'),
   msgEl = $('index-msg');
 const readerEl = $('reader'),
   lineEl = $('line'),
+  progressEl = $('progress'),
   holdEl = $('hold'),
   arcEl = holdEl.querySelector('.arc'),
   orbEl = holdEl.querySelector('.orb'),
@@ -295,6 +296,7 @@ function goTo(i) {
   half = 0;
   elapsed = 0;
   finished = false;
+  readerEl.classList.remove('finished');
   endEl.classList.add('hidden');
   holdEl.classList.remove('hidden');
   cueEl.classList.remove('hidden');
@@ -338,8 +340,22 @@ function buildWords(text, container, hidden, offset = 0) {
 
 const fadeIn = () => lineEl.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 600, easing: 'ease-out' });
 
+// The dots under the title: one per line shown, filled up to and including this one.
+function paintProgress() {
+  if (progressEl.childElementCount !== lines.length) {
+    progressEl.innerHTML = '';
+    for (let k = 0; k < lines.length; k++) progressEl.appendChild(document.createElement('span'));
+  }
+  [...progressEl.children].forEach((dot, k) => {
+    dot.classList.toggle('done', k <= idx);
+    dot.classList.toggle('current', k === idx);
+  });
+  progressEl.setAttribute('aria-label', `Line ${idx + 1} of ${lines.length}`);
+}
+
 function renderLine() {
   revealKey = '';
+  paintProgress();
   if (fullView) {
     if (!rowChars.length) buildAllRows();
     chars = partChars(idx);
@@ -410,7 +426,7 @@ function setFullView(on) {
 
 // Largest font size that keeps the text within ~90% width and ~70% height.
 function fitText() {
-  const maxH = window.innerHeight * (fullView ? 0.72 : 0.7) - 80; // 80px = stage top padding
+  const maxH = window.innerHeight * (fullView ? 0.72 : 0.7) - (fullView ? 80 : 110); // the stage's top padding
   let lo = 12,
     hi = 600;
   while (hi - lo > 1) {
@@ -515,7 +531,9 @@ function advance() {
 function finish() {
   finished = true;
   pause();
-  // The return link takes the place of the breath ring and cue, clear of the toolbar.
+  // The return link takes the place of the breath ring and cue (on phones it
+  // moves above the line instead, clear of the toolbar).
+  readerEl.classList.add('finished');
   holdEl.classList.add('hidden');
   cueEl.classList.add('hidden');
   endEl.classList.remove('hidden');
