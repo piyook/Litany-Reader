@@ -1,19 +1,37 @@
 // Litany Reader front end.
 (() => {
   const $ = (id) => document.getElementById(id);
-  const indexEl = $('index'), listEl = $('litany-list'), msgEl = $('index-msg');
-  const readerEl = $('reader'), lineEl = $('line'), holdEl = $('hold'), arcEl = holdEl.querySelector('.arc');
-  const orbEl = holdEl.querySelector('.orb'), cueEl = $('cue');
-  const controlsEl = $('controls'), playBtn = $('btn-play'), endEl = $('end'), settingsEl = $('settings');
+  const indexEl = $('index'),
+    listEl = $('litany-list'),
+    msgEl = $('index-msg');
+  const readerEl = $('reader'),
+    lineEl = $('line'),
+    holdEl = $('hold'),
+    arcEl = holdEl.querySelector('.arc');
+  const orbEl = holdEl.querySelector('.orb'),
+    cueEl = $('cue');
+  const controlsEl = $('controls'),
+    playBtn = $('btn-play'),
+    endEl = $('end'),
+    settingsEl = $('settings');
 
   // ---- Timings (seconds) ----
   const DEFAULTS = { in: 4, hold1: 4, out: 6, hold2: 2 };
   let timings = { ...DEFAULTS };
-  try { Object.assign(timings, JSON.parse(localStorage.getItem('litany-timings') || '{}')); } catch {}
-  const saveTimings = () => { try { localStorage.setItem('litany-timings', JSON.stringify(timings)); } catch {} };
+  try {
+    Object.assign(timings, JSON.parse(localStorage.getItem('litany-timings') || '{}'));
+  } catch {}
+  const saveTimings = () => {
+    try {
+      localStorage.setItem('litany-timings', JSON.stringify(timings));
+    } catch {}
+  };
 
   // ---- Colours for the fill ----
-  const hexToRgb = (h) => { h = h.trim().replace('#', ''); return [0, 2, 4].map((i) => parseInt(h.slice(i, i + 2), 16)); };
+  const hexToRgb = (h) => {
+    h = h.trim().replace('#', '');
+    return [0, 2, 4].map((i) => parseInt(h.slice(i, i + 2), 16));
+  };
   const lerp = (a, b, t) => a.map((v, i) => Math.round(v + (b[i] - v) * t));
   const mix = (a, b, t) => `rgb(${lerp(a, b, t).join(',')})`;
   // Read from the CSS, and again whenever the theme changes.
@@ -32,7 +50,8 @@
   // ---- Splitting long lines (off by default) ----
   // When on, a line longer than `splitWords` words is broken at its strongest
   // pause (. ! ? then ; : — then a comma) nearest the middle, so each part fits one breath.
-  let splitOn = false, splitWords = 12;
+  let splitOn = false,
+    splitWords = 12;
   try {
     splitOn = localStorage.getItem('litany-split') === '1';
     const w = parseInt(localStorage.getItem('litany-split-words'), 10);
@@ -43,12 +62,16 @@
   function splitText(text, max) {
     const words = text.split(/\s+/).filter(Boolean);
     if (words.length <= max) return [words.join(' ')];
-    let best = -1, bestScore = -Infinity;
+    let best = -1,
+      bestScore = -Infinity;
     for (let i = MIN_PART - 1; i < words.length - MIN_PART; i++) {
       const s = pauseStrength(words[i]);
       if (!s) continue;
       const score = s * 100 - Math.abs(i + 1 - words.length / 2);
-      if (score > bestScore) { bestScore = score; best = i; }
+      if (score > bestScore) {
+        bestScore = score;
+        best = i;
+      }
     }
     if (best < 0) return [words.join(' ')]; // no natural pause: leave it whole
     return [...splitText(words.slice(0, best + 1).join(' '), max), ...splitText(words.slice(best + 1).join(' '), max)];
@@ -60,33 +83,59 @@
   // unless splitting is on). For step k, partSrc[k] is its source line and
   // partStart[k] / partLen[k] its slice of that line's character spans.
   // partWord[k] is the position of the part's first word in its source line.
-  let src = [], partSrc = [], partStart = [], partLen = [], partWord = [];
-  let lines = [], idx = 0, phase = 'breath', elapsed = 0, playing = false, finished = false;
-  let chars = [], lastTs = null, rafId = null;
+  let src = [],
+    partSrc = [],
+    partStart = [],
+    partLen = [],
+    partWord = [];
+  let lines = [],
+    idx = 0,
+    phase = 'breath',
+    elapsed = 0,
+    playing = false,
+    finished = false;
+  let chars = [],
+    lastTs = null,
+    rafId = null;
   // Counts lines shown, across loops, so in/out keeps alternating even
   // when a litany with an odd number of lines wraps round.
   let step = 0;
 
   let looping = false;
-  try { looping = localStorage.getItem('litany-loop') === '1'; } catch {}
+  try {
+    looping = localStorage.getItem('litany-loop') === '1';
+  } catch {}
 
   // Whole-litany view state
-  let fullView = false, rowChars = [], rowEls = [], title = '', author = '';
-  try { fullView = localStorage.getItem('litany-full') === '1'; } catch {}
+  let fullView = false,
+    rowChars = [],
+    rowEls = [],
+    title = '',
+    author = '';
+  try {
+    fullView = localStorage.getItem('litany-full') === '1';
+  } catch {}
   const viewBtn = $('btn-view');
 
   // Read-aloud mode: you can only speak on the out-breath, so each line gets a
   // whole breath: read it silently breathing in, hold, speak it breathing out, hold.
   // `half` is 0 for the in-breath half of the line and 1 for the out-breath half.
-  let aloud = false, half = 0;
-  try { aloud = localStorage.getItem('litany-aloud') === '1'; } catch {}
+  let aloud = false,
+    half = 0;
+  try {
+    aloud = localStorage.getItem('litany-aloud') === '1';
+  } catch {}
   const aloudBtn = $('btn-aloud');
 
   // Short form: a quick version of the litany, for litanies whose file has one.
-  let shortForm = false, longLines = [], shortLines = [];
+  let shortForm = false,
+    longLines = [],
+    shortLines = [];
   const usingShort = () => shortForm && shortLines.length > 0;
-  const displayTitle = () => (usingShort() ? title + ' · short' : title);
-  try { shortForm = localStorage.getItem('litany-short') === '1'; } catch {}
+  const displayTitle = () => (usingShort() ? `${title} · short` : title);
+  try {
+    shortForm = localStorage.getItem('litany-short') === '1';
+  } catch {}
   const shortBtn = $('btn-short');
 
   // ---- Favourites ----
@@ -99,14 +148,17 @@
     if (Array.isArray(a)) favs = a.filter((x) => typeof x === 'string').slice(0, MAX_FAVS);
   } catch {}
   const saveFavs = () => {
+    // biome-ignore lint/suspicious/noDocumentCookie: one small cookie; the Cookie Store API is not in every browser.
     document.cookie = `litany-favs=${encodeURIComponent(JSON.stringify(favs))}; Max-Age=31536000; Path=/; SameSite=Lax`;
   };
   const isFav = (id) => favs.includes(id);
   // Adds or removes a favourite. Returns false when the limit stopped it.
   function toggleFav(id) {
     if (isFav(id)) favs = favs.filter((f) => f !== id);
-    else if (favs.length >= MAX_FAVS) { toast('You can have three favourites. Remove one first.'); return false; }
-    else favs.push(id);
+    else if (favs.length >= MAX_FAVS) {
+      toast('You can have three favourites. Remove one first.');
+      return false;
+    } else favs.push(id);
     saveFavs();
     return true;
   }
@@ -119,7 +171,9 @@
   const MEM_MAX = 4;
   const MEM_PILL = ['', 'Hide 25%', 'Hide 50%', 'Hide 75%', 'Hide all'];
   const MEM_TOAST = ['', 'a quarter of the words', 'half the words', 'three quarters of the words', 'every word'];
-  let memorise = false, memLevels = {}, memHidden = [];
+  let memorise = false,
+    memLevels = {},
+    memHidden = [];
   try {
     memorise = localStorage.getItem('litany-mem') === '1';
     const o = JSON.parse(localStorage.getItem('litany-mem-levels') || '{}');
@@ -127,8 +181,19 @@
   } catch {}
   const memKey = () => currentId + (usingShort() ? '#short' : '');
   const memLevel = () => Math.min(MEM_MAX, Math.max(1, parseInt(memLevels[memKey()], 10) || 1));
-  const saveMemLevels = () => { try { localStorage.setItem('litany-mem-levels', JSON.stringify(memLevels)); } catch {} };
-  const hash = (s) => { let h = 2166136261; for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } return h >>> 0; };
+  const saveMemLevels = () => {
+    try {
+      localStorage.setItem('litany-mem-levels', JSON.stringify(memLevels));
+    } catch {}
+  };
+  const hash = (s) => {
+    let h = 2166136261;
+    for (let i = 0; i < s.length; i++) {
+      h ^= s.charCodeAt(i);
+      h = Math.imul(h, 16777619);
+    }
+    return h >>> 0;
+  };
   const hasLetter = (s) => /[\p{L}\p{N}]/u.test(s);
   // For each source line, the positions of the words to hide at the current level.
   function buildHidden() {
@@ -136,34 +201,59 @@
       const set = new Set();
       if (!memorise) return set;
       const words = text.split(/\s+/);
-      const order = words.map((_, i) => i).filter((i) => hasLetter(words[i]))
-        .sort((a, b) => hash(text + '|' + a) - hash(text + '|' + b));
-      order.slice(0, Math.ceil(order.length * memLevel() / MEM_MAX)).forEach((i) => set.add(i));
+      const order = words
+        .map((_, i) => i)
+        .filter((i) => hasLetter(words[i]))
+        .sort((a, b) => hash(`${text}|${a}`) - hash(`${text}|${b}`));
+      order.slice(0, Math.ceil((order.length * memLevel()) / MEM_MAX)).forEach((i) => {
+        set.add(i);
+      });
       return set;
     });
   }
 
   // ---- Keep the screen awake while a litany plays ----
   // Browsers allow this only over https or on localhost; elsewhere it quietly does nothing.
-  let wakeLock = null, wantAwake = false, wakeRequesting = false;
+  let wakeLock = null,
+    wantAwake = false,
+    wakeRequesting = false;
   function keepAwake(on) {
     wantAwake = on;
     if (!('wakeLock' in navigator)) return;
-    if (!on) { if (wakeLock) { wakeLock.release().catch(() => {}); wakeLock = null; } return; }
+    if (!on) {
+      if (wakeLock) {
+        wakeLock.release().catch(() => {});
+        wakeLock = null;
+      }
+      return;
+    }
     if (wakeLock || wakeRequesting || document.visibilityState !== 'visible') return;
     wakeRequesting = true;
-    navigator.wakeLock.request('screen').then((lock) => {
-      wakeRequesting = false;
-      if (!wantAwake) { lock.release().catch(() => {}); return; }
-      wakeLock = lock;
-      lock.addEventListener('release', () => { if (wakeLock === lock) wakeLock = null; });
-    }, () => { wakeRequesting = false; });
+    navigator.wakeLock.request('screen').then(
+      (lock) => {
+        wakeRequesting = false;
+        if (!wantAwake) {
+          lock.release().catch(() => {});
+          return;
+        }
+        wakeLock = lock;
+        lock.addEventListener('release', () => {
+          if (wakeLock === lock) wakeLock = null;
+        });
+      },
+      () => {
+        wakeRequesting = false;
+      },
+    );
   }
   // The browser drops the lock when the tab is hidden; take it again on return.
-  document.addEventListener('visibilitychange', () => { if (wantAwake && document.visibilityState === 'visible') keepAwake(true); });
+  document.addEventListener('visibilitychange', () => {
+    if (wantAwake && document.visibilityState === 'visible') keepAwake(true);
+  });
 
-  const HEART = '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true">'
-    + '<path d="M12 20s-7.5-4.6-9-9.2C1.9 7.4 4 4.5 7.2 4.5c2 0 3.5 1.1 4.8 2.9 1.3-1.8 2.8-2.9 4.8-2.9 3.2 0 5.3 2.9 4.2 6.3-1.5 4.6-9 9.2-9 9.2z"/></svg>';
+  const HEART =
+    '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true">' +
+    '<path d="M12 20s-7.5-4.6-9-9.2C1.9 7.4 4 4.5 7.2 4.5c2 0 3.5 1.1 4.8 2.9 1.3-1.8 2.8-2.9 4.8-2.9 3.2 0 5.3 2.9 4.2 6.3-1.5 4.6-9 9.2-9 9.2z"/></svg>';
 
   // A short message near the bottom of the screen.
   const toastEl = $('toast');
@@ -199,7 +289,10 @@
       msgEl.textContent = indexItems.length ? '' : 'No litanies found. Add .txt files to the litanies folder.';
       // Forget favourites whose file has gone, so they don't hold a slot.
       const ids = new Set(indexItems.map((it) => it.id));
-      if (favs.some((f) => !ids.has(f))) { favs = favs.filter((f) => ids.has(f)); saveFavs(); }
+      if (favs.some((f) => !ids.has(f))) {
+        favs = favs.filter((f) => ids.has(f));
+        saveFavs();
+      }
       renderIndex();
       listEl.querySelector('.open')?.focus();
     } catch {
@@ -226,12 +319,12 @@
       b.onclick = () => openLitany(it.id);
       const h = document.createElement('button');
       const on = isFav(it.id);
-      h.className = 'fav' + (on ? ' on' : '');
+      h.className = `fav${on ? ' on' : ''}`;
       h.innerHTML = HEART;
       h.dataset.id = it.id;
       h.setAttribute('aria-pressed', String(on));
       h.title = on ? 'Remove from favourites' : 'Add to favourites';
-      h.setAttribute('aria-label', h.title + ': ' + it.title);
+      h.setAttribute('aria-label', `${h.title}: ${it.title}`);
       h.onclick = () => {
         if (!toggleFav(it.id)) return;
         renderIndex();
@@ -244,8 +337,11 @@
 
   // ---- Reader ----
   async function openLitany(id) {
-    const res = await fetch('api/litany/' + encodeURIComponent(id) + '.json', { cache: 'no-store' });
-    if (!res.ok) { msgEl.textContent = 'Could not open that litany.'; return; }
+    const res = await fetch(`api/litany/${encodeURIComponent(id)}.json`, { cache: 'no-store' });
+    if (!res.ok) {
+      msgEl.textContent = 'Could not open that litany.';
+      return;
+    }
     const data = await res.json();
     currentId = id;
     updateFavBtn();
@@ -279,14 +375,19 @@
     const on = shortForm && !shortBtn.disabled;
     shortBtn.classList.toggle('active', on);
     shortBtn.setAttribute('aria-pressed', String(on));
-    shortBtn.title = shortBtn.disabled ? 'No short form for this litany'
-      : on ? 'Short form: on (S)' : 'Short form: off (S)';
+    shortBtn.title = shortBtn.disabled
+      ? 'No short form for this litany'
+      : on
+        ? 'Short form: on (S)'
+        : 'Short form: off (S)';
   }
 
   function setShort(on) {
     if (src.length && !shortLines.length) return; // this litany has no short form
     shortForm = on;
-    try { localStorage.setItem('litany-short', on ? '1' : '0'); } catch {}
+    try {
+      localStorage.setItem('litany-short', on ? '1' : '0');
+    } catch {}
     if (!src.length) return updateShortBtn();
     const wasFinished = finished;
     loadForm();
@@ -294,12 +395,21 @@
   }
 
   function buildParts() {
-    lines = []; partSrc = []; partStart = []; partLen = []; partWord = [];
+    lines = [];
+    partSrc = [];
+    partStart = [];
+    partLen = [];
+    partWord = [];
     src.forEach((text, r) => {
-      let start = 0, word = 0;
+      let start = 0,
+        word = 0;
       for (const part of splitOn ? splitText(text, splitWords) : [text]) {
         const len = charCount(part);
-        lines.push(part); partSrc.push(r); partStart.push(start); partLen.push(len); partWord.push(word);
+        lines.push(part);
+        partSrc.push(r);
+        partStart.push(start);
+        partLen.push(len);
+        partWord.push(word);
         start += len;
         word += part.split(/\s+/).filter(Boolean).length;
       }
@@ -346,8 +456,9 @@
       const w = document.createElement('span');
       w.className = 'word';
       const chs = [...word];
-      let a = 0, b = -1;
-      if (hidden && hidden.has(offset + wi)) {
+      let a = 0,
+        b = -1;
+      if (hidden?.has(offset + wi)) {
         b = chs.length - 1;
         while (a <= b && !hasLetter(chs[a])) a++;
         while (b >= a && !hasLetter(chs[b])) b--;
@@ -414,7 +525,7 @@
     if (author) {
       const a = document.createElement('div');
       a.className = 'author';
-      a.textContent = '— ' + author;
+      a.textContent = `— ${author}`;
       lineEl.appendChild(a);
     }
     fitText();
@@ -423,7 +534,9 @@
 
   // Parts already read keep a softer version of their breath colour; parts to come stay dim.
   function paintRows() {
-    rowEls.forEach((el, r) => el.classList.toggle('current', r === partSrc[idx]));
+    rowEls.forEach((el, r) => {
+      el.classList.toggle('current', r === partSrc[idx]);
+    });
     for (let k = 0; k < lines.length; k++) {
       if (k === idx) continue; // draw() fills the current part
       const parity = aloud ? 1 : (((step - idx + k) % 2) + 2) % 2;
@@ -438,22 +551,29 @@
     viewBtn.classList.toggle('active', on);
     viewBtn.setAttribute('aria-pressed', String(on));
     viewBtn.title = on ? 'Whole litany: on (V)' : 'Whole litany: off (V)';
-    try { localStorage.setItem('litany-full', on ? '1' : '0'); } catch {}
+    try {
+      localStorage.setItem('litany-full', on ? '1' : '0');
+    } catch {}
     rowChars = [];
-    if (lines.length) { renderLine(); draw(); }
+    if (lines.length) {
+      renderLine();
+      draw();
+    }
   }
 
   // Largest font size that keeps the text within ~90% width and ~70% height.
   function fitText() {
     const maxH = window.innerHeight * (fullView ? 0.72 : 0.7) - 80; // 80px = stage top padding
-    let lo = 12, hi = 600;
+    let lo = 12,
+      hi = 600;
     while (hi - lo > 1) {
       const mid = (lo + hi) / 2;
-      lineEl.style.fontSize = mid + 'px';
+      lineEl.style.fontSize = `${mid}px`;
       const fits = lineEl.scrollHeight <= maxH && lineEl.scrollWidth <= lineEl.clientWidth + 1;
-      if (fits) lo = mid; else hi = mid;
+      if (fits) lo = mid;
+      else hi = mid;
     }
-    lineEl.style.fontSize = lo + 'px';
+    lineEl.style.fontSize = `${lo}px`;
   }
 
   function draw() {
@@ -481,7 +601,7 @@
     // and stays still while the hold arc draws round it.
     const rgb = `rgb(${COL[kind].join(',')})`;
     const holding = phase === 'hold';
-    const size = holding ? (kind === 'in' ? 1 : 0) : (kind === 'in' ? ease : 1 - ease);
+    const size = holding ? (kind === 'in' ? 1 : 0) : kind === 'in' ? ease : 1 - ease;
     orbEl.setAttribute('r', (10 + 24 * size).toFixed(2));
     orbEl.style.fill = rgb;
     holdEl.classList.add('show');
@@ -503,7 +623,7 @@
   function applyReveal() {
     if (!memorise || (fullView && !rowChars.length)) return;
     const now = phase === 'hold' && (!aloud || half === 1);
-    const key = idx + ':' + now;
+    const key = `${idx}:${now}`;
     if (key === revealKey) return; // only touch the page when something changes
     revealKey = key;
     if (fullView) {
@@ -524,7 +644,7 @@
     buildHidden();
     rowChars = []; // the whole-litany view is rebuilt with the new words hidden
     updateMemPill();
-    toast('Learn by heart: next time, ' + MEM_TOAST[memLevel()] + ' will be hidden.');
+    toast(`Learn by heart: next time, ${MEM_TOAST[memLevel()]} will be hidden.`);
   }
 
   function advance() {
@@ -591,20 +711,32 @@
     rafId = null;
     playBtn.innerHTML = '&#x25B6;&#xFE0E;';
   }
-  function stop() { pause(); lines = []; src = []; }
+  function stop() {
+    pause();
+    lines = [];
+    src = [];
+  }
   const toggle = () => (playing ? pause() : play());
   const prev = () => {
     if (finished) return goTo(lines.length - 1);
-    if (idx === 0 && looping) { step--; idx = lines.length - 1; return goTo(idx); }
+    if (idx === 0 && looping) {
+      step--;
+      idx = lines.length - 1;
+      return goTo(idx);
+    }
     goTo(idx - 1);
   };
   const next = () => {
     if (idx < lines.length - 1) goTo(idx + 1);
-    else if (looping) { step++; idx = 0; goTo(0); }
-    else finish();
+    else if (looping) {
+      step++;
+      idx = 0;
+      goTo(0);
+    } else finish();
   };
 
-  const loopBtn = $('btn-loop'), repeatPill = $('repeat-pill');
+  const loopBtn = $('btn-loop'),
+    repeatPill = $('repeat-pill');
   function setLoop(on) {
     looping = on;
     loopBtn.classList.toggle('active', on);
@@ -613,7 +745,9 @@
     repeatPill.classList.toggle('on', on);
     repeatPill.setAttribute('aria-pressed', String(on));
     repeatPill.title = on ? 'Repeat: on (L)' : 'Read once (L)';
-    try { localStorage.setItem('litany-loop', on ? '1' : '0'); } catch {}
+    try {
+      localStorage.setItem('litany-loop', on ? '1' : '0');
+    } catch {}
     // Turning loop on after the litany has ended starts it again from the top.
     if (on) restartIfFinished();
   }
@@ -634,7 +768,8 @@
 
   // Heart in the reader toolbar for the open litany.
   let currentId = null;
-  const favBtn = $('btn-fav'), favPill = $('fav-pill');
+  const favBtn = $('btn-fav'),
+    favPill = $('fav-pill');
   favBtn.innerHTML = HEART;
   favPill.innerHTML = HEART.replace(/width="20" height="20"/, 'width="16" height="16"');
   function updateFavBtn() {
@@ -644,7 +779,9 @@
     favBtn.setAttribute('aria-pressed', String(on));
     favBtn.title = on ? 'Favourite: on (H)' : 'Favourite: off (H)';
   }
-  const toggleCurrentFav = () => { if (currentId != null && toggleFav(currentId)) updateFavBtn(); };
+  const toggleCurrentFav = () => {
+    if (currentId != null && toggleFav(currentId)) updateFavBtn();
+  };
   favBtn.onclick = toggleCurrentFav;
   favPill.onclick = toggleCurrentFav;
 
@@ -655,7 +792,9 @@
     aloudBtn.title = on ? 'Read aloud: on (A)' : 'Read aloud: off (A)';
     modePill.textContent = on ? 'Spoken' : 'Silent';
     modePill.classList.toggle('spoken', on);
-    try { localStorage.setItem('litany-aloud', on ? '1' : '0'); } catch {}
+    try {
+      localStorage.setItem('litany-aloud', on ? '1' : '0');
+    } catch {}
     // Restart the current line so it begins on an in-breath in the new mode.
     if (!restartIfFinished() && lines.length) goTo(idx);
   }
@@ -664,7 +803,8 @@
 
   // Learn-by-heart button (M) turns it on and off; the pill shows the level and
   // steps through the levels when clicked.
-  const memBtn = $('btn-mem'), memPill = $('mem-pill');
+  const memBtn = $('btn-mem'),
+    memPill = $('mem-pill');
   function updateMemPill() {
     memPill.classList.toggle('hidden', !memorise);
     memPill.textContent = MEM_PILL[memLevel()];
@@ -681,7 +821,9 @@
     memBtn.classList.toggle('active', on);
     memBtn.setAttribute('aria-pressed', String(on));
     memBtn.title = on ? 'Learn by heart: on (M)' : 'Learn by heart: off (M)';
-    try { localStorage.setItem('litany-mem', on ? '1' : '0'); } catch {}
+    try {
+      localStorage.setItem('litany-mem', on ? '1' : '0');
+    } catch {}
     rehide();
   }
   setMemorise(memorise);
@@ -698,9 +840,14 @@
   const themeBtns = document.querySelectorAll('.btn-theme');
   function setTheme(t) {
     document.documentElement.dataset.theme = t;
-    try { localStorage.setItem('litany-theme', t); } catch {}
+    try {
+      localStorage.setItem('litany-theme', t);
+    } catch {}
     const label = t === 'dark' ? 'Switch to light mode (T)' : 'Switch to dark mode (T)';
-    themeBtns.forEach((b) => { b.title = label; b.setAttribute('aria-label', label); });
+    themeBtns.forEach((b) => {
+      b.title = label;
+      b.setAttribute('aria-label', label);
+    });
     readColours();
     if (lines.length && !readerEl.classList.contains('hidden')) {
       if (fullView && rowChars.length) paintRows();
@@ -709,7 +856,7 @@
   }
   const toggleTheme = () => setTheme(document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark');
   setTheme(document.documentElement.dataset.theme || 'dark');
-  themeBtns.forEach((b) => (b.onclick = toggleTheme));
+  for (const b of themeBtns) b.onclick = toggleTheme;
 
   // ---- Controls ----
   playBtn.onclick = toggle;
@@ -719,13 +866,16 @@
   $('end-back').onclick = showIndex;
 
   // Show controls only when the pointer is near the bottom; hide the cursor when idle.
-  let hideTimer = null, idleTimer = null;
+  let hideTimer = null,
+    idleTimer = null;
   const settingsOpen = () => !settingsEl.classList.contains('hidden');
   readerEl.addEventListener('pointermove', (e) => {
     if (e.pointerType !== 'mouse') return; // touch screens use the tap below
     readerEl.classList.remove('idle');
     clearTimeout(idleTimer);
-    idleTimer = setTimeout(() => { if (!settingsOpen()) readerEl.classList.add('idle'); }, 2500);
+    idleTimer = setTimeout(() => {
+      if (!settingsOpen()) readerEl.classList.add('idle');
+    }, 2500);
     if (e.clientY > window.innerHeight - 120 || settingsOpen()) {
       clearTimeout(hideTimer);
       controlsEl.classList.add('show');
@@ -741,7 +891,9 @@
   // controls, and they hide again after a few seconds untouched.
   const autoHide = () => {
     clearTimeout(hideTimer);
-    hideTimer = setTimeout(() => { if (!settingsOpen()) controlsEl.classList.remove('show'); }, 5000);
+    hideTimer = setTimeout(() => {
+      if (!settingsOpen()) controlsEl.classList.remove('show');
+    }, 5000);
   };
   readerEl.addEventListener('pointerup', (e) => {
     if (e.pointerType === 'mouse') return;
@@ -756,30 +908,48 @@
 
   // ---- Settings ----
   const fields = { in: $('t-in'), hold1: $('t-hold1'), out: $('t-out'), hold2: $('t-hold2') };
-  const fillFields = () => { for (const k in fields) fields[k].value = timings[k]; };
+  const fillFields = () => {
+    for (const k in fields) fields[k].value = timings[k];
+  };
   for (const k in fields) {
     fields[k].addEventListener('input', () => {
       const v = parseFloat(fields[k].value);
       const min = k.startsWith('hold') ? 0 : 0.5;
-      if (!isNaN(v)) { timings[k] = Math.max(min, Math.min(30, v)); saveTimings(); }
+      if (!Number.isNaN(v)) {
+        timings[k] = Math.max(min, Math.min(30, v));
+        saveTimings();
+      }
     });
   }
-  const splitBox = $('t-split'), splitField = $('t-split-words');
-  const fillSplit = () => { splitBox.checked = splitOn; splitField.value = splitWords; splitField.disabled = !splitOn; };
+  const splitBox = $('t-split'),
+    splitField = $('t-split-words');
+  const fillSplit = () => {
+    splitBox.checked = splitOn;
+    splitField.value = splitWords;
+    splitField.disabled = !splitOn;
+  };
   splitBox.addEventListener('change', () => {
     splitOn = splitBox.checked;
-    try { localStorage.setItem('litany-split', splitOn ? '1' : '0'); } catch {}
+    try {
+      localStorage.setItem('litany-split', splitOn ? '1' : '0');
+    } catch {}
     fillSplit();
     resplit();
   });
   splitField.addEventListener('input', () => {
     const v = parseInt(splitField.value, 10);
-    if (isNaN(v)) return;
+    if (Number.isNaN(v)) return;
     splitWords = Math.max(4, Math.min(40, v));
-    try { localStorage.setItem('litany-split-words', String(splitWords)); } catch {}
+    try {
+      localStorage.setItem('litany-split-words', String(splitWords));
+    } catch {}
     if (splitOn) resplit();
   });
-  $('btn-settings').onclick = () => { fillFields(); fillSplit(); settingsEl.classList.toggle('hidden'); };
+  $('btn-settings').onclick = () => {
+    fillFields();
+    fillSplit();
+    settingsEl.classList.toggle('hidden');
+  };
   // A click anywhere outside the panel (other than the gear itself) closes it.
   document.addEventListener('click', (e) => {
     if (settingsOpen() && !settingsEl.contains(e.target) && !$('btn-settings').contains(e.target)) {
@@ -787,34 +957,69 @@
     }
   });
   $('t-done').onclick = () => settingsEl.classList.add('hidden');
-  $('t-reset').onclick = () => { timings = { ...DEFAULTS }; saveTimings(); fillFields(); };
+  $('t-reset').onclick = () => {
+    timings = { ...DEFAULTS };
+    saveTimings();
+    fillFields();
+  };
 
   // ---- Keyboard ----
   document.addEventListener('keydown', (e) => {
-    if (e.target.tagName === 'INPUT') { if (e.key === 'Escape') settingsEl.classList.add('hidden'); return; }
+    if (e.target.tagName === 'INPUT') {
+      if (e.key === 'Escape') settingsEl.classList.add('hidden');
+      return;
+    }
     if (e.key === 't' || e.key === 'T') return toggleTheme();
     if (readerEl.classList.contains('hidden')) return;
     switch (e.key) {
-      case ' ': e.preventDefault(); toggle(); break;
-      case 'ArrowLeft': prev(); break;
-      case 'ArrowRight': next(); break;
+      case ' ':
+        e.preventDefault();
+        toggle();
+        break;
+      case 'ArrowLeft':
+        prev();
+        break;
+      case 'ArrowRight':
+        next();
+        break;
       case 'Escape':
         if (settingsOpen()) settingsEl.classList.add('hidden');
         else if (!document.fullscreenElement) showIndex();
         break;
-      case 'l': case 'L': setLoop(!looping); break;
-      case 'v': case 'V': setFullView(!fullView); break;
-      case 's': case 'S': setShort(!shortForm); break;
-      case 'a': case 'A': setAloud(!aloud); break;
-      case 'h': case 'H': toggleCurrentFav(); break;
-      case 'm': case 'M': setMemorise(!memorise); break;
-      case 'f': case 'F':
+      case 'l':
+      case 'L':
+        setLoop(!looping);
+        break;
+      case 'v':
+      case 'V':
+        setFullView(!fullView);
+        break;
+      case 's':
+      case 'S':
+        setShort(!shortForm);
+        break;
+      case 'a':
+      case 'A':
+        setAloud(!aloud);
+        break;
+      case 'h':
+      case 'H':
+        toggleCurrentFav();
+        break;
+      case 'm':
+      case 'M':
+        setMemorise(!memorise);
+        break;
+      case 'f':
+      case 'F':
         if (document.fullscreenElement) document.exitFullscreen();
         else document.documentElement.requestFullscreen().catch(() => {});
         break;
     }
   });
 
-  window.addEventListener('resize', () => { if (lines.length) fitText(); });
+  window.addEventListener('resize', () => {
+    if (lines.length) fitText();
+  });
   showIndex();
 })();

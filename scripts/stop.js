@@ -1,6 +1,6 @@
 // `npm stop`: asks the background server to shut down.
-const fs = require('fs');
-const path = require('path');
+const fs = require('node:fs');
+const path = require('node:path');
 
 const stateFile = path.join(__dirname, '..', '.server.json');
 
@@ -27,6 +27,8 @@ const stateFile = path.join(__dirname, '..', '.server.json');
     } catch {
       console.log('Litany Reader was not running.');
     }
-    try { fs.unlinkSync(stateFile); } catch {}
+    try {
+      fs.unlinkSync(stateFile);
+    } catch {}
   }
 })();

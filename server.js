@@ -1,10 +1,10 @@
 // Litany Reader: a tiny local server with no dependencies.
 // It reads the litanies folder fresh on every request.
-const http = require('http');
-const fs = require('fs/promises');
-const fsSync = require('fs');
-const path = require('path');
-const crypto = require('crypto');
+const http = require('node:http');
+const fs = require('node:fs/promises');
+const fsSync = require('node:fs');
+const path = require('node:path');
+const crypto = require('node:crypto');
 
 const { loadEnv, DEFAULT_PORT } = require('./scripts/env');
 const { listFiles, parseLitany, listLitanies } = require('./scripts/litanies');

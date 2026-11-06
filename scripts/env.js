@@ -1,11 +1,15 @@
 // Loads KEY=value lines from .env in the project root, if there is one.
 // Values already set in the environment win. No dependencies.
-const fs = require('fs');
-const path = require('path');
+const fs = require('node:fs');
+const path = require('node:path');
 
 function loadEnv() {
   let text;
-  try { text = fs.readFileSync(path.join(__dirname, '..', '.env'), 'utf8'); } catch { return; }
+  try {
+    text = fs.readFileSync(path.join(__dirname, '..', '.env'), 'utf8');
+  } catch {
+    return;
+  }
   for (const raw of text.split(/\r?\n/)) {
     const line = raw.trim();
     if (!line || line.startsWith('#')) continue;

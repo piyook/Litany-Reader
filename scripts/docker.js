@@ -1,7 +1,7 @@
 // `npm run docker:start` / `npm run docker:stop`: runs the reader in Docker.
 // start builds the image if needed, starts the container in the background and opens the browser.
-const { spawnSync } = require('child_process');
-const path = require('path');
+const { spawnSync } = require('node:child_process');
+const path = require('node:path');
 const { loadEnv, DEFAULT_PORT } = require('./env');
 const { waitUntilUp, openBrowser } = require('./browser');
 

@@ -1,0 +1,9 @@
+{
+  "$schema": "./node_modules/fallow/schema.json",
+  // Claude Code's local settings, which nothing in the app imports. Naming the
+  // folder stops fallow warning that it skipped it.
+  "ignorePatterns": [".claude/**"],
+  // The browser side: the page loads app.js and style.css, and app.js
+  // registers sw.js by its URL, which fallow can not follow.
+  "entry": ["public/index.html", "public/sw.js"]
+}
