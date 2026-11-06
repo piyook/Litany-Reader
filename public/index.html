@@ -136,7 +136,7 @@
 
   <div id="toast" role="status" aria-live="polite"></div>
 
-  <script src="app.js"></script>
+  <script type="module" src="app.js"></script>
   <script>
     // Offline support and "install" on phones. Browsers only allow it over https or on localhost.
     if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});

@@ -12,14 +12,17 @@
     "coverage": "coverage/coverage-final.json",
     "thresholdOverrides": [
       {
-        // No unit tests reach these yet: the browser app is one big function
-        // in app.js, and the scripts run as programs. Untested, CRAP flags
-        // any function with 5 or more branches, so its ceiling is raised to
-        // what the cyclomatic limit of 20 gives untested (20² + 20). The
-        // cyclomatic and cognitive limits still apply. Lower it again for
-        // app.js once it is split into modules with tests.
+        // No unit tests reach these: the page wiring in app.js and wake-lock.js
+        // and the offline helper sw.js need a browser, and the scripts run as
+        // programs. (The reader's rules are in public/lib, which is tested and
+        // keeps the normal limit.) Untested, CRAP flags any function with 5 or
+        // more branches, so its ceiling is raised to what the cyclomatic limit
+        // of 20 gives untested (20² + 20). The cyclomatic and cognitive limits
+        // still apply.
         "files": [
-          "public/**",
+          "public/app.js",
+          "public/wake-lock.js",
+          "public/sw.js",
           "scripts/browser.js",
           "scripts/build-static.js",
           "scripts/docker.js",

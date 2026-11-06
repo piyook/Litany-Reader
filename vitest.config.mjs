@@ -9,14 +9,16 @@ export default defineConfig({
     // `npm run test:coverage`. The json report is the one fallow reads.
     coverage: {
       provider: 'v8',
-      include: ['server.js', 'scripts/**/*.js'],
+      include: ['server.js', 'scripts/**/*.js', 'public/lib/**/*.js'],
       reporter: ['text', 'html', 'json'],
       // The least the tests must run of the code that reads the litanies and
-      // the settings. The server's start and shutdown, and the command
-      // scripts, run as programs and have no minimum.
+      // the settings, and of the reader's rules in public/lib. The server's
+      // start and shutdown, and the command scripts, run as programs and have
+      // no minimum.
       thresholds: {
         'scripts/litanies.js': MINIMUM,
         'scripts/env.js': MINIMUM,
+        'public/lib/**/*.js': MINIMUM,
       },
     },
   },

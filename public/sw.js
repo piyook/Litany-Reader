@@ -1,11 +1,18 @@
 // Offline support. Every request goes to the network first, so edits show up as
 // before; if the network is missing or slow, the last saved copy is used instead.
 // On install, the page and every litany are saved, so all of them work offline.
-const CACHE = 'litany-reader-v1';
+const CACHE = 'litany-reader-v2';
 const SHELL = [
   './',
   'index.html',
   'app.js',
+  'wake-lock.js',
+  'lib/breath.js',
+  'lib/colour.js',
+  'lib/favs.js',
+  'lib/memorise.js',
+  'lib/prefs.js',
+  'lib/text.js',
   'style.css',
   'manifest.webmanifest',
   'icon-192.png',
