@@ -5,6 +5,9 @@ Thumbs.db
 server.log
 .env
 dist/
+coverage/
+test-results/
+playwright-report/
 
 # Local Claude Code settings
 .claude/

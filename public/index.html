@@ -27,7 +27,7 @@
   <main id="index" class="screen">
     <div class="index-head">
       <h1>Litany Reader</h1>
-      <button class="btn-theme" title="Light / dark (T)">
+      <button type="button" class="btn-theme" title="Light / dark (T)">
         <svg class="icon-sun" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true">
           <circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>
         </svg>
@@ -43,9 +43,9 @@
   <!-- Reader -->
   <section id="reader" class="screen hidden">
     <div id="top-bar">
-      <button id="mode-pill" title="Switch silent / spoken (A)">Silent</button>
+      <button type="button" id="mode-pill" title="Switch silent / spoken (A)">Silent</button>
       <!-- Repeat toggle: shows "read once" (arrow to a stop) when off, the repeat arrows when on. -->
-      <button id="repeat-pill" aria-pressed="false" title="Read once (L)">
+      <button type="button" id="repeat-pill" aria-pressed="false" title="Read once (L)">
         <svg class="icon-once" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
           <path d="M3 12h14"/><path d="M13 8l4 4-4 4"/><path d="M21 6v12"/>
         </svg>
@@ -55,9 +55,9 @@
         </svg>
       </button>
       <!-- Shown only while this litany is a favourite. Click to remove it. -->
-      <button id="fav-pill" class="hidden" title="Favourite (H): click to remove"></button>
+      <button type="button" id="fav-pill" class="hidden" title="Favourite (H): click to remove"></button>
       <!-- Shown only in learn-by-heart mode: how many words are hidden. Click for the next level. -->
-      <button id="mem-pill" class="hidden" title="Learn by heart: click to hide more or fewer words"></button>
+      <button type="button" id="mem-pill" class="hidden" title="Learn by heart: click to hide more or fewer words"></button>
     </div>
     <div id="reader-title"></div>
     <div id="stage">
@@ -68,45 +68,44 @@
         <circle class="arc" cx="50" cy="50" r="40" pathLength="1"></circle>
       </svg>
       <div id="cue"></div>
-      <div id="end" class="hidden"><button id="end-back" class="link">Return to index</button></div>
+      <div id="end" class="hidden"><button type="button" id="end-back" class="link">Return to index</button></div>
     </div>
 
-    <div id="hotzone"></div>
     <nav id="controls">
-      <button id="btn-prev" title="Previous (←)">&#x23EE;&#xFE0E;</button>
-      <button id="btn-play" title="Play / pause (Space)">&#x23F8;&#xFE0E;</button>
-      <button id="btn-next" title="Next (→)">&#x23ED;&#xFE0E;</button>
+      <button type="button" id="btn-prev" title="Previous (←)">&#x23EE;&#xFE0E;</button>
+      <button type="button" id="btn-play" title="Play / pause (Space)">&#x23F8;&#xFE0E;</button>
+      <button type="button" id="btn-next" title="Next (→)">&#x23ED;&#xFE0E;</button>
       <span class="spacer"></span>
-      <button id="btn-fav" class="small" aria-pressed="false" title="Favourite: off (H)"></button>
-      <button id="btn-loop" class="small" aria-pressed="false" title="Loop: off (L)">
+      <button type="button" id="btn-fav" class="small" aria-pressed="false" title="Favourite: off (H)"></button>
+      <button type="button" id="btn-loop" class="small" aria-pressed="false" title="Loop: off (L)">
         <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
           <path d="M17 2l4 4-4 4"/><path d="M3 11V9a3 3 0 0 1 3-3h15"/>
           <path d="M7 22l-4-4 4-4"/><path d="M21 13v2a3 3 0 0 1-3 3H3"/>
         </svg>
       </button>
-      <button id="btn-short" class="small" aria-pressed="false" title="Short form: off (S)">
+      <button type="button" id="btn-short" class="small" aria-pressed="false" title="Short form: off (S)">
         <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
           <path d="M4 12h16"/><path d="M12 3v6"/><path d="M9 6l3 3 3-3"/><path d="M12 21v-6"/><path d="M9 18l3-3 3 3"/>
         </svg>
       </button>
-      <button id="btn-mem" class="small" aria-pressed="false" title="Learn by heart: off (M)">
+      <button type="button" id="btn-mem" class="small" aria-pressed="false" title="Learn by heart: off (M)">
         <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true">
           <path d="M3 7h5"/><path d="M12 7h9" stroke-dasharray="1.5 2.5"/><path d="M3 12h9" stroke-dasharray="1.5 2.5"/><path d="M16 12h5"/>
           <path d="M3 17h7"/><path d="M14 17h7" stroke-dasharray="1.5 2.5"/>
         </svg>
       </button>
-      <button id="btn-view" class="small" aria-pressed="false" title="Whole litany: off (V)">
+      <button type="button" id="btn-view" class="small" aria-pressed="false" title="Whole litany: off (V)">
         <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true">
           <path d="M5 6h14"/><path d="M3 10h18"/><path d="M6 14h12"/><path d="M4 18h16"/>
         </svg>
       </button>
-      <button id="btn-aloud" class="small" aria-pressed="false" title="Read aloud: off (A)">
+      <button type="button" id="btn-aloud" class="small" aria-pressed="false" title="Read aloud: off (A)">
         <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
           <path d="M4 5h11a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2H9l-4 3v-3H4a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2z"/>
           <path d="M20 8c1 1 1.5 2 1.5 3s-.5 2-1.5 3"/>
         </svg>
       </button>
-      <button class="btn-theme small" title="Light / dark (T)">
+      <button type="button" class="btn-theme small" title="Light / dark (T)">
         <svg class="icon-sun" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true">
           <circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>
         </svg>
@@ -114,8 +113,8 @@
           <path d="M20 14.5A8 8 0 0 1 9.5 4 8 8 0 1 0 20 14.5z"/>
         </svg>
       </button>
-      <button id="btn-settings" class="small" title="Breathing timings">&#x2699;&#xFE0E;</button>
-      <button id="btn-close" class="small" title="Back to index (Esc)">&#x2715;</button>
+      <button type="button" id="btn-settings" class="small" title="Breathing timings">&#x2699;&#xFE0E;</button>
+      <button type="button" id="btn-close" class="small" title="Back to index (Esc)">&#x2715;</button>
     </nav>
 
     <div id="settings" class="hidden">
@@ -125,8 +124,8 @@
       <label>Out-breath <input type="number" id="t-out" min="0.5" max="30" step="0.5"></label>
       <label>Hold <input type="number" id="t-hold2" min="0" max="30" step="0.5"></label>
       <div class="row">
-        <button id="t-reset" class="link">Reset to 4 / 4 / 6 / 2</button>
-        <button id="t-done">Done</button>
+        <button type="button" id="t-reset" class="link">Reset to 4 / 4 / 6 / 2</button>
+        <button type="button" id="t-done">Done</button>
       </div>
       <h2 class="sub">Long lines</h2>
       <label>Split to fit a breath <input type="checkbox" id="t-split"></label>
@@ -136,7 +135,7 @@
 
   <div id="toast" role="status" aria-live="polite"></div>
 
-  <script src="app.js"></script>
+  <script type="module" src="app.js"></script>
   <script>
     // Offline support and "install" on phones. Browsers only allow it over https or on localhost.
     if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});

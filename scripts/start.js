@@ -1,7 +1,7 @@
 // `npm start`: runs the server in the background and opens the browser.
-const { spawn } = require('child_process');
-const fs = require('fs');
-const path = require('path');
+const { spawn } = require('node:child_process');
+const fs = require('node:fs');
+const path = require('node:path');
 const { loadEnv, DEFAULT_PORT } = require('./env');
 const { isUp, waitUntilUp, openBrowser } = require('./browser');
 
