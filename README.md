@@ -6,7 +6,7 @@
 [![Dependencies: none](https://img.shields.io/badge/dependencies-none-brightgreen)](package.json)
 [![Docker](https://img.shields.io/badge/Docker-ready-2496ED?logo=docker&logoColor=white)](#docker)
 
-A very simple app that shows a litany one line at a time, in large text, paced to guide calm breathing. You can also see the whole litany on one screen if you prefer, or read a three-line short form when you only have a moment.
+A very simple app that shows a litany one line at a time, in large text, paced to guide calm breathing. You can also see the whole litany on one screen if you prefer, or read a three-line short form when you only have a moment. An optional [heartbeat](#heartbeat), seen and heard, slows as you read to help you settle.
 
 | One line at a time | Whole litany |
 |---|---|
@@ -34,9 +34,9 @@ These help me. I hope they help someone else.
 ## Install as an app
 
 <p align="center">
-  <img src="docs/phone-short-line.png" width="260" alt="Installed on an iPhone, the short form one line at a time: 'I am the centre of the storm.' fills in blue on the out-breath, with five dots under the title for the five lines">
+  <img src="docs/phone-short-line.png" width="260" alt="Installed on an iPhone, the short form one line at a time: 'I am the centre of the storm.' fills in blue on the out-breath, with five dots under the title for the five lines, and a soft blue heartbeat behind the breath ring">
   &nbsp;&nbsp;
-  <img src="docs/phone-short-whole.png" width="260" alt="Installed on an iPhone, the whole short form on one screen: the first two lines keep their breath colour and the third fills in amber on the in-breath">
+  <img src="docs/phone-short-whole.png" width="260" alt="Installed on an iPhone, the whole short form on one screen: the first two lines keep their breath colour and the third fills in amber on the in-breath, with a soft amber heartbeat behind the breath ring">
 </p>
 
 The reader is online at **https://piyook.github.io/Litany-Reader/**. You can use it in the browser as it is, or install it as an app on a computer, phone or tablet. Installed, it has its own icon, opens in its own window with no address bar or browser toolbars, and works with no internet connection: every litany is saved on the device the first time it opens.
@@ -216,9 +216,28 @@ Each time you read the litany through, more words are hidden: a quarter, then ha
 
 ## Heartbeat
 
-Turn it on with the heartbeat button (a heart with a pulse line through it), `B`, or **Heartbeat** under **Calming** in the ⚙ settings. A soft heart in the breath colour sits behind the breath ring and fades smoothly in and out with each beat. There is no flash or sudden change. It starts at about 80 beats a minute and slows to about 54 by the end of the litany, most of the slowing early on, to help you settle with it. With repeat on it keeps slowing each time through: about 39 after the second, 31 after the third, and on down toward 20. Both ends can be changed under **Calming**: **Start heart rate** (default 80) and **Slowest heart rate** (default 20), each between 10 and 150. A change takes effect straight away, the beat gliding to the new rate. It never speeds up again: going back a line or switching form keeps the rate where it is. Opening a litany starts it afresh. It is a calming cue, not a real pulse. It is off by default, and the setting is saved in the browser. With *reduce motion* turned on in your device settings, the heart stays still.
+An optional calming cue alongside the breath: a soft heart behind the breath ring that fades in and out like a heartbeat, with a quiet "lub-dub" sound if you want it. It starts at about the pace of a resting heart and slows as you read, and keeps slowing if you repeat the litany. Watching or listening to a rhythm that gradually slows gives you something steady to settle into. It is a calming cue, not a measure of your own pulse.
 
-**Heartbeat sound**, also under **Calming**, adds a soft "lub-dub" thump on each beat. It can be on with or without the heart, and it follows the same slowing beat. Browsers only allow sound after you tap or press a key, so it starts from your first tap after the page opens. On an iPhone or iPad, the silent switch mutes it. It is off by default, and the setting is saved in the browser.
+### Using it to calm down
+
+1. Open a litany and turn on **Repeat** (the button at the top, or `L`), so it keeps going for as long as you need.
+2. Turn on the heart with the heartbeat button (a heart with a pulse line through it) or `B`.
+3. For sound too, open ⚙ settings and tick **Heartbeat sound** under **Calming**. Turn the volume low: it should be a soft thump you can just hear. On an iPhone or iPad, flick the silent switch off.
+4. Breathe with the ring and the line, and let the heartbeat sit in the background. Don't try to match it; just notice it slowing.
+5. Stay for several times through. The first time through it eases from about 80 beats a minute to about 54; then about 39, then 31, and on down toward 20.
+6. When you feel settled, pause (`Space`) or close the litany. Opening a litany starts the heartbeat fresh.
+
+On a phone, the sound plays through earphones or the speaker; with earphones it is easier to hear at a low volume. If the screen locks, the litany and the sound stop, so the app keeps the screen awake while a litany plays.
+
+### Settings
+
+All under **Calming** in the ⚙ settings, off by default and saved in the browser:
+
+- **Heartbeat**: the heart behind the breath ring. Also the heartbeat button and `B`. It fades smoothly in and out with each beat, in the breath colour, with no flash or sudden change. With *reduce motion* turned on in your device settings, the heart stays still.
+- **Heartbeat sound**: a soft "lub-dub" on each beat, made by the browser (no sound file, so it works offline). It can be on with or without the heart. Browsers only allow sound after you tap or press a key, so it starts from your first tap after the page opens.
+- **Start heart rate** (default 80) and **Slowest heart rate** (default 20), in beats a minute, each between 10 and 150. A change takes effect straight away, the beat gliding to the new rate. Lower the start rate if 80 feels too quick to begin with.
+
+The beat never speeds up while a litany is open: going back a line or switching between the long and short form keeps the rate where it is.
 
 ## Favourites
 
