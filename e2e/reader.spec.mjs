@@ -53,6 +53,17 @@ test.describe('index', () => {
     await expect(page.locator('#litany-list .fav').first()).toHaveAttribute('aria-pressed', 'true');
   });
 
+  test('a favourite shows a small heart after its title, for information only', async ({ page }) => {
+    await open(page, 'Alpha Litany');
+    const heart = page.locator('#reader-title .title-fav');
+    await expect(heart).toHaveCount(0);
+    await page.keyboard.press('h');
+    await expect(heart).toBeVisible();
+    await expect(page.locator('#reader-title button')).toHaveCount(0); // not something to click
+    await page.keyboard.press('h');
+    await expect(heart).toHaveCount(0);
+  });
+
   test('refuses a fourth favourite', async ({ page }) => {
     for (const title of ['Alpha Litany', 'Beta Litany', 'Delta Litany', 'Gamma Litany']) {
       const row = page.locator('#litany-list li', { hasText: title });
@@ -128,6 +139,17 @@ test.describe('reading', () => {
     await expect(page.locator('#progress')).toBeHidden();
   });
 
+  test('the breath ring stays in the same place whatever the line and view', async ({ page }) => {
+    await open(page, 'Alpha Litany');
+    await page.keyboard.press(' ');
+    const ringY = async () => (await page.locator('#hold').boundingBox()).y;
+    const first = await ringY();
+    await page.keyboard.press('ArrowRight');
+    expect(await ringY()).toBeCloseTo(first, 0);
+    await page.keyboard.press('v'); // whole litany
+    expect(await ringY()).toBeCloseTo(first, 0);
+  });
+
   test('on a phone, the return link sits above the last line at the end', async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 780 });
     await open(page, 'Beta Litany');
@@ -196,6 +218,81 @@ test.describe('modes', () => {
     await page.keyboard.press('m');
     await expect(pill).toBeHidden();
     await expect(page.locator('#line .mem')).toHaveCount(0);
+  });
+
+  test('heartbeat (B) is off at first, beats when on, and is remembered', async ({ page }) => {
+    await open(page, 'Alpha Litany');
+    const pulse = page.locator('#pulse');
+    const box = page.locator('#t-beat');
+    await expect(pulse).toBeHidden();
+    await page.keyboard.press('b');
+    await expect(pulse).toBeVisible();
+    await expect(page.locator('#btn-beat')).toHaveAttribute('aria-pressed', 'true');
+    // It beats: the heart fades in and out over a second or so.
+    const beat = () => pulse.evaluate((el) => el.style.getPropertyValue('--beat'));
+    const seen = new Set();
+    for (let i = 0; i < 12; i++) {
+      seen.add(await beat());
+      await page.waitForTimeout(100);
+    }
+    expect(seen.size).toBeGreaterThan(2);
+    // The settings checkbox agrees, and turns it off too.
+    await showControls(page);
+    await page.locator('#btn-settings').click();
+    await expect(box).toBeChecked();
+    await box.uncheck();
+    await expect(pulse).toBeHidden();
+    await expect(page.locator('#btn-beat')).toHaveAttribute('aria-pressed', 'false');
+    await box.check();
+    await page.reload();
+    await open(page, 'Alpha Litany');
+    await expect(pulse).toBeVisible();
+  });
+
+  test('the top bar switches the heartbeat and mutes its sound', async ({ page }) => {
+    await open(page, 'Alpha Litany');
+    const beatPill = page.locator('#beat-pill');
+    const soundPill = page.locator('#sound-pill');
+    await expect(beatPill).toHaveAttribute('aria-pressed', 'false');
+    await expect(soundPill).toHaveAttribute('aria-pressed', 'false');
+    await beatPill.click();
+    await expect(page.locator('#pulse')).toBeVisible();
+    await expect(page.locator('#btn-beat')).toHaveAttribute('aria-pressed', 'true');
+    await soundPill.click();
+    await expect(soundPill).toHaveAttribute('aria-pressed', 'true');
+    await expect(page.locator('#t-beat-sound')).toBeChecked();
+    await soundPill.click(); // mute
+    await expect(page.locator('#t-beat-sound')).not.toBeChecked();
+    await beatPill.click();
+    await expect(page.locator('#pulse')).toBeHidden();
+  });
+
+  test('heartbeat sound and heart rates are set in the settings and remembered', async ({ page }) => {
+    const errors = [];
+    page.on('pageerror', (e) => errors.push(e.message));
+    await open(page, 'Alpha Litany');
+    await showControls(page);
+    await page.locator('#btn-settings').click();
+    const box = page.locator('#t-beat-sound');
+    await expect(box).not.toBeChecked();
+    await box.check();
+    // The heart rates start at 80 and 20, and a change is saved.
+    await expect(page.locator('#t-hr-start')).toHaveValue('80');
+    await expect(page.locator('#t-hr-end')).toHaveValue('20');
+    await page.locator('#t-hr-end').fill('35');
+    expect(await page.evaluate(() => JSON.parse(localStorage.getItem('litany-heart-rates')))).toEqual({
+      start: 80,
+      end: 35,
+    });
+    await page.locator('#t-done').click();
+    await page.waitForTimeout(2000); // a couple of beats play without errors
+    expect(errors).toEqual([]);
+    await page.reload();
+    await open(page, 'Alpha Litany');
+    await showControls(page);
+    await page.locator('#btn-settings').click();
+    await expect(box).toBeChecked();
+    await expect(page.locator('#t-hr-end')).toHaveValue('35');
   });
 
   test('the theme (T) switches and is remembered', async ({ page }) => {

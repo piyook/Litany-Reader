@@ -6,11 +6,11 @@
 [![Dependencies: none](https://img.shields.io/badge/dependencies-none-brightgreen)](package.json)
 [![Docker](https://img.shields.io/badge/Docker-ready-2496ED?logo=docker&logoColor=white)](#docker)
 
-A very simple app that shows a litany one line at a time, in large text, paced to guide calm breathing. You can also see the whole litany on one screen if you prefer, or read a three-line short form when you only have a moment.
+A very simple app that shows a litany one line at a time, in large text, paced to guide calm breathing. You can also see the whole litany on one screen if you prefer, or read a three-line short form when you only have a moment. An optional [heartbeat](#heartbeat), seen and heard, slows as you read to help you settle.
 
 | One line at a time | Whole litany |
 |---|---|
-| ![One line at a time: the line fills in amber on the in-breath; the dots under the title show how far through you are, and the heart at the top marks a favourite](docs/single-line.png) | ![Whole litany: lines already read keep their breath colour, the current line fills in amber; the heart at the top marks a favourite](docs/whole-litany.png) |
+| ![One line at a time: the line fills in amber on the in-breath; the dots under the title show how far through you are, a small heart after the title marks a favourite, and a soft heartbeat glows behind the breath ring](docs/single-line.png) | ![Whole litany: lines already read keep their breath colour, the current line fills in amber; a small heart after the title marks a favourite, and a soft heartbeat glows behind the breath ring](docs/whole-litany.png) |
 
 The idea comes from the **Litany Against Fear** in Frank Herbert's *Dune* (1965), recited by the Bene Gesserit to calm the mind in the face of fear. The litanies here are written in the same spirit: short lines, spoken slowly, in time with the breath.
 
@@ -34,9 +34,9 @@ These help me. I hope they help someone else.
 ## Install as an app
 
 <p align="center">
-  <img src="docs/phone-short-line.png" width="260" alt="Installed on an iPhone, the short form one line at a time: 'I am the centre of the storm.' fills in blue on the out-breath, with five dots under the title for the five lines">
+  <img src="docs/phone-short-line.png" width="260" alt="Installed on an iPhone, the short form one line at a time: 'I am the centre of the storm.' fills in blue on the out-breath, with five dots under the title for the five lines, and a soft blue heartbeat behind the breath ring">
   &nbsp;&nbsp;
-  <img src="docs/phone-short-whole.png" width="260" alt="Installed on an iPhone, the whole short form on one screen: the first two lines keep their breath colour and the third fills in amber on the in-breath">
+  <img src="docs/phone-short-whole.png" width="260" alt="Installed on an iPhone, the whole short form on one screen: the first two lines keep their breath colour and the third fills in amber on the in-breath, with a soft amber heartbeat behind the breath ring">
 </p>
 
 The reader is online at **https://piyook.github.io/Litany-Reader/**. You can use it in the browser as it is, or install it as an app on a computer, phone or tablet. Installed, it has its own icon, opens in its own window with no address bar or browser toolbars, and works with no internet connection: every litany is saved on the device the first time it opens.
@@ -214,15 +214,40 @@ Turn it on with the gaps button (three lines with gaps in them) or `M`. Some of 
 
 Each time you read the litany through, more words are hidden: a quarter, then half, then three quarters, then all of them. A green pill at the top shows the level, for example **Hide 50%**; click it to choose another. The level is kept for each litany (and its short form separately), and the same words are hidden each time, so you are learning the same gaps. In the whole-litany view, lines you have read stay revealed and lines to come stay hidden.
 
+## Heartbeat
+
+An optional calming cue alongside the breath: a soft heart behind the breath ring that fades in and out like a heartbeat, with a quiet "lub-dub" sound if you want it. It starts at about the pace of a resting heart and slows as you read, and keeps slowing if you repeat the litany. Watching or listening to a rhythm that gradually slows gives you something steady to settle into. It is a calming cue, not a measure of your own pulse.
+
+### Using it to calm down
+
+1. Open a litany and turn on **Repeat** (the button at the top, or `L`), so it keeps going for as long as you need.
+2. Turn on the heart with the heartbeat button at the top of the screen (a heart with a pulse line through it), or `B`.
+3. For sound too, click the speaker button beside it. It shows a crossed-out speaker while muted. Turn the volume low: it should be a soft thump you can just hear. On an iPhone or iPad, flick the silent switch off.
+4. Breathe with the ring and the line, and let the heartbeat sit in the background. Don't try to match it; just notice it slowing.
+5. Stay for several times through. The first time through it eases from about 80 beats a minute to about 54; then about 39, then 31, and on down toward 20.
+6. When you feel settled, pause (`Space`) or close the litany. Opening a litany starts the heartbeat fresh.
+
+On a phone, the sound plays through earphones or the speaker; with earphones it is easier to hear at a low volume. If the screen locks, the litany and the sound stop, so the app keeps the screen awake while a litany plays.
+
+### Settings
+
+All under **Calming** in the ⚙ settings, off by default and saved in the browser:
+
+- **Heartbeat**: the heart behind the breath ring. Also the heartbeat buttons at the top of the screen and in the toolbar, and `B`. It fades smoothly in and out with each beat, in the breath colour, with no flash or sudden change. With *reduce motion* turned on in your device settings, the heart stays still.
+- **Heartbeat sound**: a soft "lub-dub" on each beat, made by the browser (no sound file, so it works offline). It can be on with or without the heart. The speaker button at the top of the screen turns it on and mutes it. Browsers only allow sound after you tap or press a key, so it starts from your first tap after the page opens.
+- **Start heart rate** (default 80) and **Slowest heart rate** (default 20), in beats a minute, each between 10 and 150. A change takes effect straight away, the beat gliding to the new rate. Lower the start rate if 80 feels too quick to begin with.
+
+The beat never speeds up while a litany is open: going back a line or switching between the long and short form keeps the rate where it is.
+
 ## Favourites
 
-You can keep up to three favourites. On the index, hover over a litany and click the heart on the right; in the reader, use the heart button or `H`. Favourites show a filled heart and sit at the top of the index. While you read a favourite, a heart also shows at the top of the screen beside the Silent and repeat buttons; click it to remove the favourite. To pick a fourth, remove one first. They are kept in a cookie in your browser.
+You can keep up to three favourites. On the index, hover over a litany and click the heart on the right; in the reader, use the heart button or `H`. Favourites show a filled heart and sit at the top of the index. While you read a favourite, a small rose heart shows after its title, just so you can see it is one; to remove it, use the heart button or `H`. To pick a fourth, remove one first. They are kept in a cookie in your browser.
 
 ## Controls
 
-Move the pointer to the bottom of the screen to show the controls: previous, play/pause, next, favourite, loop, short form, learn by heart, whole litany, read aloud, light/dark, settings, back. They hide again when the pointer moves away, and the cursor hides after a few seconds without movement. The light/dark button is also on the index page; the reader follows your system setting until you choose. Loop can also be switched with the repeat button at the top of the screen. With loop on, the litany repeats from the start indefinitely. Turning loop on after a litany has finished starts it again.
+Move the pointer to the bottom of the screen to show the controls: previous, play/pause, next, favourite, loop, short form, learn by heart, heartbeat, whole litany, read aloud, light/dark, settings, back. They hide again when the pointer moves away, and the cursor hides after a few seconds without movement. The light/dark button is also on the index page; the reader follows your system setting until you choose. Loop can also be switched with the repeat button at the top of the screen. With loop on, the litany repeats from the start indefinitely. Turning loop on after a litany has finished starts it again.
 
-Keys: `Space` play/pause · `←` `→` previous/next · `H` favourite on/off · `L` loop on/off · `S` short form on/off · `M` learn by heart on/off · `V` whole litany on one screen · `A` read aloud on/off · `T` light/dark · `F` fullscreen · `Esc` close settings, leave fullscreen, or go back to the index.
+Keys: `Space` play/pause · `←` `→` previous/next · `H` favourite on/off · `L` loop on/off · `S` short form on/off · `M` learn by heart on/off · `B` heartbeat on/off · `V` whole litany on one screen · `A` read aloud on/off · `T` light/dark · `F` fullscreen · `Esc` close settings, leave fullscreen, or go back to the index.
 
 ## Files
 

@@ -58,8 +58,21 @@
           <path d="M7 22l-4-4 4-4"/><path d="M21 13v2a3 3 0 0 1-3 3H3"/>
         </svg>
       </button>
-      <!-- Shown only while this litany is a favourite. Click to remove it. -->
-      <button type="button" id="fav-pill" class="hidden" title="Favourite (H): click to remove"></button>
+      <!-- Heartbeat on/off (same as B), and its sound: a crossed-out speaker when muted. -->
+      <button type="button" id="beat-pill" class="round-pill" aria-pressed="false" title="Heartbeat: off (B)">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M12 20s-7.5-4.6-9-9.2C1.9 7.4 4 4.5 7.2 4.5c2 0 3.5 1.1 4.8 2.9 1.3-1.8 2.8-2.9 4.8-2.9 3.2 0 5.3 2.9 4.2 6.3-1.5 4.6-9 9.2-9 9.2z" opacity="0.55"/>
+          <path d="M4 12h4l1.5-3 3 6 1.5-3h6"/>
+        </svg>
+      </button>
+      <button type="button" id="sound-pill" class="round-pill" aria-pressed="false" title="Heartbeat sound: off">
+        <svg class="icon-muted" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M4 9h4l5-4v14l-5-4H4z"/><path d="M17 9l5 6"/><path d="M22 9l-5 6"/>
+        </svg>
+        <svg class="icon-sound" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M4 9h4l5-4v14l-5-4H4z"/><path d="M16.5 9a4 4 0 0 1 0 6"/><path d="M19 6.5a7.5 7.5 0 0 1 0 11"/>
+        </svg>
+      </button>
       <!-- Shown only in learn-by-heart mode: how many words are hidden. Click for the next level. -->
       <button type="button" id="mem-pill" class="hidden" title="Learn by heart: click to hide more or fewer words"></button>
     </div>
@@ -68,12 +81,21 @@
     <div id="progress" role="img"></div>
     <div id="stage">
       <div id="line"></div>
-      <svg id="hold" viewBox="0 0 100 100" aria-hidden="true">
-        <circle class="track" cx="50" cy="50" r="40"></circle>
-        <circle class="orb" cx="50" cy="50" r="12"></circle>
-        <circle class="arc" cx="50" cy="50" r="40" pathLength="1"></circle>
-      </svg>
-      <div id="cue"></div>
+      <!-- The breath ring, heartbeat and cue stay fixed near the bottom, whatever the text does. -->
+      <div id="breath-area">
+        <div id="breath-mark">
+          <!-- Heartbeat (B): a soft heart behind the breath ring that fades in and out, slowing as the litany goes on. -->
+          <svg id="pulse" class="hidden" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M12 20s-7.5-4.6-9-9.2C1.9 7.4 4 4.5 7.2 4.5c2 0 3.5 1.1 4.8 2.9 1.3-1.8 2.8-2.9 4.8-2.9 3.2 0 5.3 2.9 4.2 6.3-1.5 4.6-9 9.2-9 9.2z"/>
+          </svg>
+          <svg id="hold" viewBox="0 0 100 100" aria-hidden="true">
+            <circle class="track" cx="50" cy="50" r="40"></circle>
+            <circle class="orb" cx="50" cy="50" r="12"></circle>
+            <circle class="arc" cx="50" cy="50" r="40" pathLength="1"></circle>
+          </svg>
+        </div>
+        <div id="cue"></div>
+      </div>
       <div id="end" class="hidden"><button type="button" id="end-back" class="link">Return to index</button></div>
     </div>
 
@@ -98,6 +120,13 @@
         <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true">
           <path d="M3 7h5"/><path d="M12 7h9" stroke-dasharray="1.5 2.5"/><path d="M3 12h9" stroke-dasharray="1.5 2.5"/><path d="M16 12h5"/>
           <path d="M3 17h7"/><path d="M14 17h7" stroke-dasharray="1.5 2.5"/>
+        </svg>
+      </button>
+      <!-- A heart with a pulse line through it, so it isn't mistaken for the favourite heart. -->
+      <button type="button" id="btn-beat" class="small" aria-pressed="false" title="Heartbeat: off (B)">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M12 20s-7.5-4.6-9-9.2C1.9 7.4 4 4.5 7.2 4.5c2 0 3.5 1.1 4.8 2.9 1.3-1.8 2.8-2.9 4.8-2.9 3.2 0 5.3 2.9 4.2 6.3-1.5 4.6-9 9.2-9 9.2z" opacity="0.55"/>
+          <path d="M4 12h4l1.5-3 3 6 1.5-3h6"/>
         </svg>
       </button>
       <button type="button" id="btn-view" class="small" aria-pressed="false" title="Whole litany: off (V)">
@@ -136,6 +165,11 @@
       <h2 class="sub">Long lines</h2>
       <label>Split to fit a breath <input type="checkbox" id="t-split"></label>
       <label>Max words per breath <input type="number" id="t-split-words" min="4" max="40" step="1"></label>
+      <h2 class="sub">Calming</h2>
+      <label>Heartbeat <input type="checkbox" id="t-beat"></label>
+      <label>Heartbeat sound <input type="checkbox" id="t-beat-sound"></label>
+      <label>Start heart rate <input type="number" id="t-hr-start" min="10" max="150" step="1"></label>
+      <label>Slowest heart rate <input type="number" id="t-hr-end" min="10" max="150" step="1"></label>
     </div>
   </section>
 

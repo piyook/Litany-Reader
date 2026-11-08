@@ -11,6 +11,7 @@
   --line: #2a2a33;
   --bar: rgba(22, 22, 29, 0.85);
   --hover-text: #ffffff;
+  --pulse-peak: 0.4; /* how strong the heartbeat colour is at its fullest */
   color-scheme: dark;
   /* Space taken by a phone's notch, rounded corners and home bar (0 elsewhere).
      The page fills the whole screen (viewport-fit=cover), so edge controls add these. */
@@ -33,6 +34,7 @@
   --line: #e0dacd;
   --bar: rgba(251, 248, 242, 0.9);
   --hover-text: #000000;
+  --pulse-peak: 0.4;
   color-scheme: light;
 }
 
@@ -53,6 +55,61 @@
   display: flex;
   align-items: center;
   gap: 10px;
+}
+/* A small filled heart just above the end of the litany's title while it is a
+   favourite, like a superscript. It takes no space, so the title stays centred.
+   Just to show it: favourites are changed with the toolbar heart or H. */
+.title-text {
+  position: relative;
+}
+.title-fav {
+  position: absolute;
+  left: 100%;
+  top: -0.4em;
+  width: 0.75em;
+  height: 0.75em;
+  margin-left: 0.2em;
+  color: var(--fav);
+  opacity: 0.85;
+}
+.title-fav svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.title-fav path {
+  fill: currentColor;
+}
+/* Heartbeat and sound toggles beside the repeat button: muted when off, amber when on. */
+.round-pill {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 1px solid currentColor;
+  color: var(--muted);
+  opacity: 0.8;
+  transition:
+    color 0.4s,
+    background 0.4s,
+    opacity 0.3s;
+}
+.round-pill:hover {
+  opacity: 1;
+}
+.round-pill svg {
+  display: block;
+  margin: auto;
+}
+.round-pill.on {
+  color: var(--in);
+  background: color-mix(in srgb, var(--in) 14%, transparent);
+}
+#sound-pill .icon-sound,
+#sound-pill.on .icon-muted {
+  display: none;
+}
+#sound-pill.on .icon-sound {
+  display: block;
 }
 /* Repeat toggle beside the mode pill: muted "read once" icon when off, coloured repeat icon when on. */
 #repeat-pill {
@@ -84,27 +141,6 @@
 #repeat-pill.on {
   color: var(--in);
   background: color-mix(in srgb, var(--in) 14%, transparent);
-}
-/* Heart beside the pills, only while the open litany is a favourite. */
-#fav-pill {
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  border: 1px solid currentColor;
-  color: var(--fav);
-  background: color-mix(in srgb, var(--fav) 14%, transparent);
-  opacity: 0.8;
-  transition: opacity 0.3s;
-}
-#fav-pill:hover {
-  opacity: 1;
-}
-#fav-pill svg {
-  display: block;
-  margin: auto;
-}
-#fav-pill path {
-  fill: currentColor;
 }
 #mode-pill {
   padding: 5px 14px;
@@ -313,6 +349,7 @@ button {
 }
 #stage {
   position: absolute;
+  z-index: 0;
   inset: 0;
   display: flex;
   flex-direction: column;
@@ -332,7 +369,9 @@ button {
   letter-spacing: 0.16em;
   text-transform: uppercase;
   color: var(--muted);
-  padding: 0 16px;
+  /* Room above for the favourite heart, which sits raised after the title. */
+  padding: 6px 16px 0;
+  margin-top: -6px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -375,13 +414,62 @@ button {
 #reader.full-view #progress {
   display: none;
 }
-/* Keep the line clear of the top buttons and title (and the dots, in one-line view). */
+/* Keep the line clear of the top buttons and title (and the dots, in one-line view),
+   and of the breath ring and cue fixed near the bottom. */
 #stage {
+  --breath-bottom: calc(6vh + var(--safe-bottom)); /* gap under the cue */
+  --breath-height: calc(10vmin + 1.6vh + 1.4em); /* ring, gap, cue */
   padding-top: calc(80px + var(--safe-top));
+  padding-bottom: calc(var(--breath-bottom) + var(--breath-height) + 3vh);
+}
+/* The breath ring, heartbeat and cue: fixed near the bottom, so they don't move
+   when the line grows, shrinks or wraps. The return link takes their place at the end. */
+#breath-area,
+#end {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: var(--breath-bottom);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 #reader:not(.full-view) #stage {
   padding-top: calc(110px + var(--safe-top));
 }
+/* Heartbeat: a soft heart in the breath colour behind the breath ring, blurred
+   so it has no hard edge, fading in and out. app.js sets --beat (0 unseen,
+   1 fullest) each frame. The ring is the bottom of #breath-mark, so the heart
+   is centred half a ring (5vmin) above that. The stage's z-index keeps it
+   behind the ring but above the page. */
+#breath-mark {
+  position: relative;
+}
+#pulse {
+  --beat: 0;
+  position: absolute;
+  left: 50%;
+  bottom: 5vmin;
+  z-index: -1;
+  width: 20vmin;
+  height: 20vmin;
+  overflow: visible;
+  fill: currentColor;
+  -webkit-filter: blur(0.6vmin);
+  filter: blur(0.6vmin);
+  color: var(--in);
+  pointer-events: none;
+  opacity: calc(var(--pulse-peak) * var(--beat));
+  transform: translate(-50%, 50%);
+  transition: color 1.5s;
+}
+/* Reduce motion: the heart stays, faint and still. */
+@media (prefers-reduced-motion: reduce) {
+  #pulse {
+    opacity: calc(var(--pulse-peak) * 0.5);
+  }
+}
+
 #line {
   width: 90vw;
   text-align: center;
@@ -415,6 +503,13 @@ button {
   margin: 0.18em 0;
   cursor: pointer;
 }
+/* The title and its favourite heart keep their own colours, not the line's dim one. */
+#line .title-text {
+  color: inherit;
+}
+#line .title-fav {
+  color: var(--fav);
+}
 #line.full .title {
   font-size: 0.8em;
   letter-spacing: 0.16em;
@@ -437,9 +532,9 @@ button {
 /* Breath indicator: the orb grows on the in-breath and shrinks on the out-breath;
    the arc draws round it during a hold. */
 #hold {
+  display: block; /* no gap under it, so the heart lines up with it */
   width: 10vmin;
   height: 10vmin;
-  margin-top: 5vh;
   opacity: 0;
   transition: opacity 0.5s;
   transform: rotate(-90deg);
@@ -488,12 +583,9 @@ button {
   opacity: 0.85;
 }
 
-/* Sits where the breath ring and cue were, about the same height, so the text doesn't jump. */
+/* Sits where the breath ring and cue were, the same height. */
 #end {
-  margin-top: 5vh;
-  min-height: calc(10vmin + 1.6vh + 1.4em);
-  display: flex;
-  align-items: center;
+  min-height: var(--breath-height);
   justify-content: center;
   animation: fade-in 0.8s ease-out;
 }
@@ -593,6 +685,9 @@ button {
   border-radius: 12px;
   font-family: system-ui, sans-serif;
   font-size: 14px;
+  /* Scrolls on short screens rather than running off the top. */
+  max-height: calc(100% - 120px - var(--safe-top) - var(--safe-bottom));
+  overflow-y: auto;
 }
 #settings h2 {
   font-size: 13px;
@@ -712,17 +807,12 @@ button {
   #progress {
     top: calc(84px + var(--safe-top));
   }
-  /* At the end, the return link goes above the line, where the toolbar can't cover
-     it. The ring and cue keep their space, unseen, so the line doesn't jump. */
+  /* At the end, the return link goes above the line, where the toolbar can't cover it. */
   #reader.finished #end {
+    position: static;
     order: -1;
     margin: 0 0 3vh;
     min-height: 0;
-  }
-  #reader.finished #hold.hidden,
-  #reader.finished #cue.hidden {
-    display: block !important;
-    visibility: hidden;
   }
   #index {
     padding-top: calc(5vh + var(--safe-top));

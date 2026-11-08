@@ -1,5 +1,7 @@
 // Litany Reader front end: the page itself. The rules it follows (breathing,
 // splitting lines, learning by heart, favourites) live in lib/, with tests.
+
+import { playBeat, readySound } from './heart-sound.js';
 import {
   clampTiming,
   cueWord,
@@ -16,6 +18,7 @@ import {
 } from './lib/breath.js';
 import { hexToRgb, lerp, mix, rgb } from './lib/colour.js';
 import { favsCookie, favsFirst, parseFavs, toggled } from './lib/favs.js';
+import { beatPulse, bpmAt, clampRate, DEFAULT_RATES, furthest, glide, passed } from './lib/heartbeat.js';
 import { hiddenWords, levelOf, MEM_MAX, MEM_PILL, MEM_TOAST, memKey } from './lib/memorise.js';
 import { read, readFlag, readObject, save, saveFlag, saveObject } from './lib/prefs.js';
 import { buildParts, letterRange } from './lib/text.js';
@@ -44,9 +47,14 @@ const viewBtn = $('btn-view'),
   loopBtn = $('btn-loop'),
   repeatPill = $('repeat-pill'),
   favBtn = $('btn-fav'),
-  favPill = $('fav-pill'),
   memBtn = $('btn-mem'),
-  memPill = $('mem-pill');
+  memPill = $('mem-pill'),
+  beatBtn = $('btn-beat'),
+  beatBox = $('t-beat'),
+  soundBox = $('t-beat-sound'),
+  beatPill = $('beat-pill'),
+  soundPill = $('sound-pill'),
+  pulseEl = $('pulse');
 
 // ---- Settings, as saved last time ----
 let timings = { ...DEFAULT_TIMINGS, ...readObject('litany-timings', {}) };
@@ -63,6 +71,10 @@ let fullView = readFlag('litany-full'); // whole-litany view
 let aloud = readFlag('litany-aloud');
 let shortForm = readFlag('litany-short');
 let memorise = readFlag('litany-mem');
+let beatOn = readFlag('litany-beat'); // heartbeat, off unless turned on
+let soundOn = readFlag('litany-beat-sound'); // heartbeat sound, separate from the heart
+// Heart rates (beats a minute): at the start, and the slowest it gets.
+const heartRates = { ...DEFAULT_RATES, ...readObject('litany-heart-rates', {}) };
 const memLevels = readObject('litany-mem-levels', {});
 let favs = parseFavs(document.cookie);
 
@@ -95,6 +107,11 @@ let indexItems = [],
   shortLines = [],
   memHidden = []; // for each source line, the positions of its hidden words
 let revealKey = ''; // what applyReveal last showed, so it only touches the page on a change
+// Heartbeat: how many times through the litany (never going back), the rate
+// shown, and the point in the current beat (0 to 1).
+let beatDone = 0,
+  bpm = 0, // set from the start rate when a litany opens
+  beatAt = 0;
 
 const usingShort = () => shortForm && shortLines.length > 0;
 const displayTitle = () => (usingShort() ? `${title} · short` : title);
@@ -133,6 +150,13 @@ function showToggle(btn, on, label, key) {
   btn.classList.toggle('active', on);
   btn.setAttribute('aria-pressed', String(on));
   btn.title = `${label}: ${on ? 'on' : 'off'} (${key})`;
+}
+
+// Shows a round toggle's state in the top bar.
+function showPill(pill, on, title) {
+  pill.classList.toggle('on', on);
+  pill.setAttribute('aria-pressed', String(on));
+  pill.title = title;
 }
 
 // ---- Favourites ----
@@ -233,6 +257,10 @@ async function openLitany(id) {
   document.title = data.title;
   indexEl.classList.add('hidden');
   readerEl.classList.remove('hidden');
+  // A new litany starts the heartbeat quick again.
+  beatDone = 0;
+  bpm = heartRates.start;
+  beatAt = 0;
   loadForm();
   play();
 }
@@ -240,7 +268,7 @@ async function openLitany(id) {
 // Shows the long or short form from the first line. With no short form, the long one.
 function loadForm() {
   src = usingShort() ? shortLines : longLines;
-  $('reader-title').textContent = displayTitle();
+  setTitle($('reader-title'));
   shortBtn.disabled = !shortLines.length;
   updateShortBtn();
   splitLines();
@@ -300,6 +328,7 @@ function goTo(i) {
   endEl.classList.add('hidden');
   holdEl.classList.remove('hidden');
   cueEl.classList.remove('hidden');
+  showPulse();
   renderLine();
   draw();
 }
@@ -377,7 +406,7 @@ function buildAllRows() {
   if (title) {
     const h = document.createElement('div');
     h.className = 'title';
-    h.textContent = displayTitle();
+    setTitle(h);
     lineEl.appendChild(h);
   }
   rowEls = [];
@@ -450,7 +479,40 @@ function draw() {
   paintLine(k, p, eased);
   paintIndicator(k, p, eased, dur, colour);
   paintCue(k, colour);
+  paintPulse(colour);
   applyReveal();
+}
+
+// ---- Heartbeat ----
+// Moves the heartbeat on by `ms`: the rate glides toward where the reader has got to.
+function beatTick(ms) {
+  beatDone = furthest(beatDone, step, lines.length);
+  bpm = glide(bpm, bpmAt(beatDone, heartRates), ms);
+  const before = beatAt;
+  beatAt = (beatAt + (ms * bpm) / 60000) % 1;
+  // Sound just before the heart is fullest (half way through the beat).
+  if (soundOn && passed(before, beatAt, 0.45)) playBeat();
+}
+function setSound(on) {
+  soundOn = on;
+  soundBox.checked = on;
+  showPill(soundPill, on, on ? 'Heartbeat sound: on (click to mute)' : 'Heartbeat sound: muted (click to turn on)');
+  saveFlag('litany-beat-sound', on);
+}
+function paintPulse(colour) {
+  if (!beatOn) return;
+  pulseEl.style.color = colour;
+  pulseEl.style.setProperty('--beat', beatPulse(beatAt).toFixed(3));
+}
+const showPulse = () => pulseEl.classList.toggle('hidden', !beatOn || finished || !lines.length);
+function setBeat(on) {
+  beatOn = on;
+  showToggle(beatBtn, on, 'Heartbeat', 'B');
+  showPill(beatPill, on, `Heartbeat: ${on ? 'on' : 'off'} (B)`);
+  beatBox.checked = on;
+  saveFlag('litany-beat', on);
+  showPulse();
+  if (on && lines.length) draw();
 }
 
 function paintLine(k, p, eased) {
@@ -536,14 +598,17 @@ function finish() {
   readerEl.classList.add('finished');
   holdEl.classList.add('hidden');
   cueEl.classList.add('hidden');
+  showPulse();
   endEl.classList.remove('hidden');
 }
 
 function tick(ts) {
   if (!playing) return;
   if (lastTs == null) lastTs = ts;
-  elapsed += Math.min(100, ts - lastTs); // cap jumps, e.g. after the tab was hidden
+  const ms = Math.min(100, ts - lastTs); // cap jumps, e.g. after the tab was hidden
+  elapsed += ms;
   lastTs = ts;
+  beatTick(ms);
   // Loop handles zero-length holds without stalling a frame.
   let guard = 4;
   while (playing && elapsed >= phaseDuration() && guard--) {
@@ -622,11 +687,33 @@ function setAloud(on) {
   if (!restartIfFinished() && lines.length) goTo(idx);
 }
 
-// The heart in the reader toolbar, and in the top bar, for the open litany.
+// The heart in the reader toolbar, and the small one after the title, for the open litany.
 function updateFavBtn() {
   const on = currentId != null && favs.includes(currentId);
-  favPill.classList.toggle('hidden', !on);
   showToggle(favBtn, on, 'Favourite', 'H');
+  paintTitles();
+}
+// Sets a title element's text. While the litany is a favourite, a small heart
+// sits just above the end of it, like a superscript, taking no space so the
+// title stays centred.
+function setTitle(el) {
+  el.textContent = '';
+  const text = document.createElement('span');
+  text.className = 'title-text';
+  text.textContent = displayTitle();
+  el.append(text);
+  if (currentId == null || !favs.includes(currentId)) return;
+  const h = document.createElement('span');
+  h.className = 'title-fav';
+  h.title = 'Favourite';
+  h.innerHTML = HEART;
+  text.append(h);
+}
+// The title at the top (one-line view) and the one in the whole-litany view.
+function paintTitles() {
+  setTitle($('reader-title'));
+  const t = lineEl.querySelector('.title');
+  if (t) setTitle(t);
 }
 const toggleCurrentFav = () => {
   if (currentId != null && toggleFav(currentId)) updateFavBtn();
@@ -689,9 +776,11 @@ setLoop(looping);
 setFullView(fullView);
 updateShortBtn();
 favBtn.innerHTML = HEART;
-favPill.innerHTML = HEART.replace(/width="20" height="20"/, 'width="16" height="16"');
 setAloud(aloud);
 setMemorise(memorise);
+setBeat(beatOn);
+setSound(soundOn);
+readySound();
 setTheme(document.documentElement.dataset.theme || 'dark');
 
 loopBtn.onclick = () => setLoop(!looping);
@@ -699,9 +788,13 @@ repeatPill.onclick = () => setLoop(!looping);
 viewBtn.onclick = () => setFullView(!fullView);
 shortBtn.onclick = () => setShort(!shortForm);
 favBtn.onclick = toggleCurrentFav;
-favPill.onclick = toggleCurrentFav;
 memBtn.onclick = () => setMemorise(!memorise);
 memPill.onclick = nextMemLevel;
+beatBtn.onclick = () => setBeat(!beatOn);
+beatBox.addEventListener('change', () => setBeat(beatBox.checked));
+soundBox.addEventListener('change', () => setSound(soundBox.checked));
+beatPill.onclick = () => setBeat(!beatOn);
+soundPill.onclick = () => setSound(!soundOn);
 aloudBtn.onclick = () => setAloud(!aloud);
 modePill.onclick = () => setAloud(!aloud);
 for (const b of themeBtns) b.onclick = toggleTheme;
@@ -763,6 +856,19 @@ for (const k in fields) {
     saveObject('litany-timings', timings);
   });
 }
+// Heart rates: a change takes effect at once, the beat gliding to the new rate.
+const rateFields = { start: $('t-hr-start'), end: $('t-hr-end') };
+const fillRates = () => {
+  for (const k in rateFields) rateFields[k].value = heartRates[k];
+};
+for (const k in rateFields) {
+  rateFields[k].addEventListener('input', () => {
+    const v = parseFloat(rateFields[k].value);
+    if (Number.isNaN(v)) return;
+    heartRates[k] = clampRate(v);
+    saveObject('litany-heart-rates', heartRates);
+  });
+}
 const splitBox = $('t-split'),
   splitField = $('t-split-words');
 const fillSplit = () => {
@@ -786,6 +892,7 @@ splitField.addEventListener('input', () => {
 $('btn-settings').onclick = () => {
   fillFields();
   fillSplit();
+  fillRates();
   settingsEl.classList.toggle('hidden');
 };
 // A click anywhere outside the panel (other than the gear itself) closes it.
@@ -824,6 +931,7 @@ const KEYS = new Map([
   ['a', () => setAloud(!aloud)],
   ['h', toggleCurrentFav],
   ['m', () => setMemorise(!memorise)],
+  ['b', () => setBeat(!beatOn)],
   ['f', toggleFullscreen],
 ]);
 document.addEventListener('keydown', (e) => {
