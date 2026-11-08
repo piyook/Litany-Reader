@@ -680,7 +680,8 @@ const toggleTheme = () => setTheme(document.documentElement.dataset.theme === 'd
 
 function toggleFullscreen() {
   if (document.fullscreenElement) document.exitFullscreen();
-  else document.documentElement.requestFullscreen().catch(() => {});
+  // Missing on older iPads (before iPadOS 16.4) and on iPhone: do nothing there.
+  else document.documentElement.requestFullscreen?.().catch(() => {});
 }
 
 // ---- Start-up: show the saved settings and wire up the buttons ----
