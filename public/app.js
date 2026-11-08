@@ -668,6 +668,9 @@ function setTheme(t) {
     b.setAttribute('aria-label', label);
   });
   readColours();
+  // Status bar and browser colour follow the page background.
+  const bg = getComputedStyle(document.documentElement).getPropertyValue('--bg').trim();
+  document.querySelector('meta[name="theme-color"]')?.setAttribute('content', bg);
   if (lines.length && !readerEl.classList.contains('hidden')) {
     if (fullView && rowChars.length) paintRows();
     draw();
@@ -677,7 +680,8 @@ const toggleTheme = () => setTheme(document.documentElement.dataset.theme === 'd
 
 function toggleFullscreen() {
   if (document.fullscreenElement) document.exitFullscreen();
-  else document.documentElement.requestFullscreen().catch(() => {});
+  // Missing on older iPads (before iPadOS 16.4) and on iPhone: do nothing there.
+  else document.documentElement.requestFullscreen?.().catch(() => {});
 }
 
 // ---- Start-up: show the saved settings and wire up the buttons ----

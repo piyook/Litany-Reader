@@ -15,7 +15,12 @@ export default defineConfig({
     baseURL: `http://127.0.0.1:${PORT}/`,
     trace: 'retain-on-failure',
   },
-  projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }],
+  projects: [
+    { name: 'chromium', use: { ...devices['Desktop Chrome'] } },
+    // Safari's engine (WebKit) on an iPhone-sized touch screen. Not a real iPhone:
+    // home-screen install, the notch and the home bar can't be tested here.
+    { name: 'iphone', use: { ...devices['iPhone 15'] } },
+  ],
   webServer: {
     command: 'node e2e/serve.js',
     url: `http://127.0.0.1:${PORT}/api/index.json`,
