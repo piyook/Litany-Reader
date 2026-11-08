@@ -273,6 +273,8 @@ test.describe('modes', () => {
     await open(page, 'Alpha Litany');
     await showControls(page);
     await page.locator('#btn-settings').click();
+    // The app's version sits at the foot of the panel.
+    await expect(page.locator('#app-version')).toHaveText(/^Version \d+\.\d+\.\d+$/);
     const box = page.locator('#t-beat-sound');
     await expect(box).not.toBeChecked();
     await box.check();

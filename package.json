@@ -1,6 +1,6 @@
 {
   "name": "litany-reader",
-  "version": "1.7.3",
+  "version": "1.7.4",
   "private": true,
   "license": "MIT",
   "description": "Shows a litany one line at a time, paced to guide calm breathing.",
@@ -23,7 +23,8 @@
     "fallow": "fallow audit --base origin/main",
     "quality": "biome ci && vitest run --coverage && fallow audit --base origin/main && playwright test && npm audit --omit=dev",
     "prepare": "husky",
-    "validate-branch-name": "node scripts/validate-branch-name.js"
+    "validate-branch-name": "node scripts/validate-branch-name.js",
+    "version": "node scripts/write-version.js && git add public/version.js"
   },
   "commitlint": {
     "extends": [

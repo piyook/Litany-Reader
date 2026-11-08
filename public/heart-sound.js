@@ -45,8 +45,8 @@ function thump(a, at, loudness) {
   osc.stop(at + 0.2);
 }
 
-// 16-bit mono WAV of the samples.
-function wav(samples) {
+// 16-bit mono WAV of the samples, taken `rate` times a second.
+function wav(samples, rate) {
   const n = samples.length;
   const view = new DataView(new ArrayBuffer(44 + n * 2));
   const text = (at, s) => {
@@ -58,8 +58,8 @@ function wav(samples) {
   view.setUint32(16, 16, true);
   view.setUint16(20, 1, true);
   view.setUint16(22, 1, true);
-  view.setUint32(24, RATE, true);
-  view.setUint32(28, RATE * 2, true);
+  view.setUint32(24, rate, true);
+  view.setUint32(28, rate * 2, true);
   view.setUint16(32, 2, true);
   view.setUint16(34, 16, true);
   text(36, 'data');
@@ -78,7 +78,9 @@ async function renderBeat(gain) {
   thump(a, 0.01, 0.35 * gain);
   thump(a, 0.17, 0.2 * gain);
   const buffer = await a.startRendering();
-  return wav(buffer.getChannelData(0));
+  // Older iOS may draw at its own rate (often 48000) rather than the one asked
+  // for; labelling the WAV with the asked-for rate then plays it slow and deep.
+  return wav(buffer.getChannelData(0), buffer.sampleRate || a.sampleRate || RATE);
 }
 
 // Sets how loud the beat plays, drawing it afresh when the level changes.
