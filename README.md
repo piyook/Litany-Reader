@@ -33,6 +33,12 @@ These help me. I hope they help someone else.
 
 ## Install as an app
 
+<p align="center">
+  <img src="docs/phone-short-line.png" width="260" alt="Installed on an iPhone, the short form one line at a time: 'I am the centre of the storm.' fills in blue on the out-breath, with five dots under the title for the five lines">
+  &nbsp;&nbsp;
+  <img src="docs/phone-short-whole.png" width="260" alt="Installed on an iPhone, the whole short form on one screen: the first two lines keep their breath colour and the third fills in amber on the in-breath">
+</p>
+
 The reader is online at **https://piyook.github.io/Litany-Reader/**. You can use it in the browser as it is, or install it as an app on a computer, phone or tablet. Installed, it has its own icon, opens in its own window with no address bar or browser toolbars, and works with no internet connection: every litany is saved on the device the first time it opens.
 
 Nothing is downloaded from an app store, and there is no account. It updates itself when you open it while online.
