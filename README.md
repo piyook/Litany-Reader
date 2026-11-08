@@ -216,7 +216,7 @@ Each time you read the litany through, more words are hidden: a quarter, then ha
 
 ## Heartbeat
 
-Turn it on with the heartbeat button (a heart with a pulse line through it), `B`, or **Heartbeat** under **Calming** in the ⚙ settings. A large, faint heart in the breath colour sits behind the text and fades smoothly in and out with each beat. There is no flash or sudden change. It starts at about 80 beats a minute and slows to about 54 as you go through the litany, most of the slowing early on, to help you settle with it. Once slowed it stays slow: repeating, going back a line or switching form never speeds it up again. Opening a litany starts it afresh. It is off by default, and the setting is saved in the browser. With *reduce motion* turned on in your device settings, the heart stays still.
+Turn it on with the heartbeat button (a heart with a pulse line through it), `B`, or **Heartbeat** under **Calming** in the ⚙ settings. A soft heart in the breath colour sits behind the breath ring and fades smoothly in and out with each beat. There is no flash or sudden change. It starts at about 80 beats a minute and slows to about 54 as you go through the litany, most of the slowing early on, to help you settle with it. Once slowed it stays slow: repeating, going back a line or switching form never speeds it up again. Opening a litany starts it afresh. It is off by default, and the setting is saved in the browser. With *reduce motion* turned on in your device settings, the heart stays still.
 
 ## Favourites
 

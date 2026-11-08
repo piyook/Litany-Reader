@@ -452,8 +452,6 @@ function fitText() {
     else hi = mid;
   }
   lineEl.style.fontSize = `${lo}px`;
-  // The heartbeat heart sits behind the middle of the text.
-  pulseEl.style.setProperty('--pulse-y', `${lineEl.offsetTop + lineEl.offsetHeight / 2}px`);
 }
 
 // One frame: the line's colour, the breath indicator and the word cue.
