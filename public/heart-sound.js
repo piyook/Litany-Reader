@@ -5,25 +5,37 @@
 // the audio engine, it was silent on some Android phone speakers (fine on
 // headphones); played as media, like any sound file, it is heard there too.
 //
-// Browsers only allow sound after a tap or key press, so the player is started
-// on the first one.
+// Browsers only allow sound after a tap or key press, so the players are
+// started on the first one.
+//
+// A few players take turns, and each is wound back once it has finished. Older
+// iOS winds back slowly and not quite to the start: wound back just before
+// playing, the beat came in late and lost its opening click.
 
 const OAC = globalThis.OfflineAudioContext || globalThis.webkitOfflineAudioContext;
 const RATE = 44100;
 const LENGTH = 0.45; // seconds: both thumps and their fade
+const PLAYERS = 3;
 
-let player = null,
+let players = null,
+  turn = 0,
   url = null,
   gainNow = -1,
   ready = Promise.resolve(),
   unlocked = false;
 
-const audioEl = () => {
-  if (!player && typeof Audio !== 'undefined') {
-    player = new Audio();
-    player.preload = 'auto';
+const audioEls = () => {
+  if (!players && typeof Audio !== 'undefined') {
+    players = Array.from({ length: PLAYERS }, () => {
+      const p = new Audio();
+      p.preload = 'auto';
+      p.addEventListener('ended', () => {
+        p.currentTime = 0;
+      });
+      return p;
+    });
   }
-  return player;
+  return players;
 };
 
 // One soft thump at `at` seconds. The pitch falls from about 110Hz to 45Hz:
@@ -85,8 +97,8 @@ async function renderBeat(gain) {
 
 // Sets how loud the beat plays, drawing it afresh when the level changes.
 export function setSoundGain(gain) {
-  const p = audioEl();
-  if (!OAC || !p || gain === gainNow) return;
+  const ps = audioEls();
+  if (!OAC || !ps || gain === gainNow) return;
   gainNow = gain;
   if (gain <= 0) return;
   ready = renderBeat(gain)
@@ -94,29 +106,37 @@ export function setSoundGain(gain) {
       if (gain !== gainNow) return; // a newer level has taken over
       if (url) URL.revokeObjectURL(url);
       url = URL.createObjectURL(blob);
-      p.src = url;
+      for (const p of ps) p.src = url;
     })
     .catch(() => {});
 }
 
-// Lets the player make sound: browsers allow it once it has played during a
+// Lets the players make sound: browsers allow it once each has played during a
 // tap or key press. Chrome on Android only counts a finished tap (the finger
 // lifting, or a click), so listen for all of them until it works.
 export function readySound() {
-  const unlock = () => {
-    const p = audioEl();
-    if (unlocked || !p?.src) return;
+  const unlockOne = (p) => {
     p.muted = true;
-    p.play().then(
+    return p.play().then(
       () => {
         p.pause();
         p.currentTime = 0;
         p.muted = false;
+      },
+      (err) => {
+        p.muted = false;
+        throw err;
+      },
+    );
+  };
+  const unlock = () => {
+    const ps = audioEls();
+    if (unlocked || !ps?.[0].src) return;
+    Promise.all(ps.map(unlockOne)).then(
+      () => {
         unlocked = true;
       },
-      () => {
-        p.muted = false;
-      },
+      () => {},
     );
   };
   for (const type of ['pointerdown', 'pointerup', 'touchend', 'click', 'keydown']) {
@@ -126,12 +146,16 @@ export function readySound() {
 
 // Plays one heartbeat at the level last set.
 export function playBeat() {
-  const p = audioEl();
-  if (!p || gainNow <= 0) return;
+  const ps = audioEls();
+  if (!ps || gainNow <= 0) return;
   ready.then(() => {
+    const p = ps[turn];
+    turn = (turn + 1) % ps.length;
     if (!p.src) return;
     p.muted = false;
-    p.currentTime = 0;
+    // Normally already wound back when it ended; only if it hasn't (cut short,
+    // or a new level just loaded) wind it back here.
+    if (p.currentTime > 0) p.currentTime = 0;
     p.play().catch(() => {});
   });
 }
