@@ -19,10 +19,13 @@ function audio() {
 }
 
 // Starts the audio on a tap or key press, which is when browsers allow it.
+// Chrome on Android only counts a finished tap (the finger lifting, or a click),
+// not the finger touching down, so listen for all of them.
 export function readySound() {
   const unlock = () => audio();
-  document.addEventListener('pointerdown', unlock, { passive: true });
-  document.addEventListener('keydown', unlock);
+  for (const type of ['pointerdown', 'pointerup', 'touchend', 'click', 'keydown']) {
+    document.addEventListener(type, unlock, { passive: true });
+  }
 }
 
 // One soft thump at `at` seconds on the audio clock. The pitch falls from about
