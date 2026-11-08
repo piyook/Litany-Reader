@@ -31,6 +31,14 @@ export const furthest = (before, step, count) => (count > 0 ? Math.max(before, s
 // line: about two thirds of the way there every 3 seconds.
 export const glide = (bpm, target, ms) => bpm + (target - bpm) * (1 - Math.exp(-ms / 3000));
 
+// Heartbeat sound volume, 0 to 100, set with the slider in the settings. The
+// default plays about 1.8 times the original quiet level, loud enough for a
+// phone speaker; 100 is the loudest the sound goes without distorting.
+export const DEFAULT_VOLUME = 70;
+const MAX_GAIN = 2.6;
+export const clampVolume = (v) => Math.max(0, Math.min(100, Math.round(v)));
+export const volumeGain = (v) => (clampVolume(v) / 100) * MAX_GAIN;
+
 // True when the beat moved past point `at` going from `before` to `after`
 // (all 0 to 1, wrapping round at 1). Used to sound each beat once.
 export const passed = (before, after, at) =>

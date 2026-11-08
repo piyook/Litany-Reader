@@ -280,6 +280,11 @@ test.describe('modes', () => {
     await expect(page.locator('#t-hr-start')).toHaveValue('80');
     await expect(page.locator('#t-hr-end')).toHaveValue('20');
     await page.locator('#t-hr-end').fill('35');
+    // Volume starts at 70 and is saved when moved.
+    const volume = page.locator('#t-beat-volume');
+    await expect(volume).toHaveValue('70');
+    await volume.fill('90');
+    expect(await page.evaluate(() => localStorage.getItem('litany-beat-volume'))).toBe('90');
     expect(await page.evaluate(() => JSON.parse(localStorage.getItem('litany-heart-rates')))).toEqual({
       start: 80,
       end: 35,
@@ -293,6 +298,7 @@ test.describe('modes', () => {
     await page.locator('#btn-settings').click();
     await expect(box).toBeChecked();
     await expect(page.locator('#t-hr-end')).toHaveValue('35');
+    await expect(page.locator('#t-beat-volume')).toHaveValue('90');
   });
 
   test('the theme (T) switches and is remembered', async ({ page }) => {

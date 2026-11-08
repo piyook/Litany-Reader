@@ -18,7 +18,18 @@ import {
 } from './lib/breath.js';
 import { hexToRgb, lerp, mix, rgb } from './lib/colour.js';
 import { favsCookie, favsFirst, parseFavs, toggled } from './lib/favs.js';
-import { beatPulse, bpmAt, clampRate, DEFAULT_RATES, furthest, glide, passed } from './lib/heartbeat.js';
+import {
+  beatPulse,
+  bpmAt,
+  clampRate,
+  clampVolume,
+  DEFAULT_RATES,
+  DEFAULT_VOLUME,
+  furthest,
+  glide,
+  passed,
+  volumeGain,
+} from './lib/heartbeat.js';
 import { hiddenWords, levelOf, MEM_MAX, MEM_PILL, MEM_TOAST, memKey } from './lib/memorise.js';
 import { read, readFlag, readObject, save, saveFlag, saveObject } from './lib/prefs.js';
 import { buildParts, letterRange } from './lib/text.js';
@@ -75,6 +86,9 @@ let beatOn = readFlag('litany-beat'); // heartbeat, off unless turned on
 let soundOn = readFlag('litany-beat-sound'); // heartbeat sound, separate from the heart
 // Heart rates (beats a minute): at the start, and the slowest it gets.
 const heartRates = { ...DEFAULT_RATES, ...readObject('litany-heart-rates', {}) };
+// Heartbeat sound volume, 0 to 100.
+const savedVolume = parseInt(read('litany-beat-volume'), 10);
+let beatVolume = Number.isNaN(savedVolume) ? DEFAULT_VOLUME : clampVolume(savedVolume);
 const memLevels = readObject('litany-mem-levels', {});
 let favs = parseFavs(document.cookie);
 
@@ -491,7 +505,7 @@ function beatTick(ms) {
   const before = beatAt;
   beatAt = (beatAt + (ms * bpm) / 60000) % 1;
   // Sound just before the heart is fullest (half way through the beat).
-  if (soundOn && passed(before, beatAt, 0.45)) playBeat();
+  if (soundOn && passed(before, beatAt, 0.45)) playBeat(volumeGain(beatVolume));
 }
 function setSound(on) {
   soundOn = on;
@@ -858,9 +872,17 @@ for (const k in fields) {
 }
 // Heart rates: a change takes effect at once, the beat gliding to the new rate.
 const rateFields = { start: $('t-hr-start'), end: $('t-hr-end') };
+const volumeField = $('t-beat-volume');
 const fillRates = () => {
   for (const k in rateFields) rateFields[k].value = heartRates[k];
+  volumeField.value = beatVolume;
 };
+// Volume: saved as it moves; one beat plays on letting go, to hear the new level.
+volumeField.addEventListener('input', () => {
+  beatVolume = clampVolume(parseFloat(volumeField.value));
+  save('litany-beat-volume', String(beatVolume));
+});
+volumeField.addEventListener('change', () => playBeat(volumeGain(beatVolume)));
 for (const k in rateFields) {
   rateFields[k].addEventListener('input', () => {
     const v = parseFloat(rateFields[k].value);

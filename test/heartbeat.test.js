@@ -1,5 +1,16 @@
 import { describe, expect, it } from 'vitest';
-import { beatPulse, bpmAt, clampRate, DEFAULT_RATES, furthest, glide, passed } from '../public/lib/heartbeat.js';
+import {
+  beatPulse,
+  bpmAt,
+  clampRate,
+  clampVolume,
+  DEFAULT_RATES,
+  DEFAULT_VOLUME,
+  furthest,
+  glide,
+  passed,
+  volumeGain,
+} from '../public/lib/heartbeat.js';
 
 describe('passed', () => {
   it('is true only on the frame that moves past the point', () => {
@@ -46,6 +57,22 @@ describe('bpmAt', () => {
   it('never speeds up, even when the slowest rate is set above the start', () => {
     expect(bpmAt(0, { start: 60, end: 90 })).toBe(60);
     expect(bpmAt(5, { start: 60, end: 90 })).toBe(60);
+  });
+});
+
+describe('volumeGain', () => {
+  it('is silent at 0 and loudest at 100, without distorting', () => {
+    expect(volumeGain(0)).toBe(0);
+    // The loud thump peaks at 0.35 times the gain; keep it under full scale.
+    expect(0.35 * volumeGain(100)).toBeLessThan(1);
+  });
+  it('plays the default louder than the original quiet level, for phone speakers', () => {
+    expect(volumeGain(DEFAULT_VOLUME)).toBeGreaterThan(1.5);
+  });
+  it('keeps a typed or saved volume between 0 and 100', () => {
+    expect(clampVolume(-5)).toBe(0);
+    expect(clampVolume(140)).toBe(100);
+    expect(volumeGain(140)).toBe(volumeGain(100));
   });
 });
 
