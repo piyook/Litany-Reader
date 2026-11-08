@@ -11,7 +11,7 @@
   --line: #2a2a33;
   --bar: rgba(22, 22, 29, 0.85);
   --hover-text: #ffffff;
-  --pulse-peak: 0.3; /* how strong the heartbeat colour is at its fullest */
+  --pulse-peak: 0.4; /* how strong the heartbeat colour is at its fullest */
   color-scheme: dark;
   /* Space taken by a phone's notch, rounded corners and home bar (0 elsewhere).
      The page fills the whole screen (viewport-fit=cover), so edge controls add these. */
@@ -34,7 +34,7 @@
   --line: #e0dacd;
   --bar: rgba(251, 248, 242, 0.9);
   --hover-text: #000000;
-  --pulse-peak: 0.3;
+  --pulse-peak: 0.4;
   color-scheme: light;
 }
 
