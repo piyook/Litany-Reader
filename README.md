@@ -16,6 +16,8 @@ The idea comes from the **Litany Against Fear** in Frank Herbert's *Dune* (1965)
 
 A litany takes practice before it works in real situations. This tool helps by linking your breathing to the litany you are reading, so you can focus on the meaning of each line. Reading it the same way, at the same pace, again and again also helps you learn it by heart, so it is there when you need it without the screen.
 
+**Use it online at https://piyook.github.io/Litany-Reader/**, or install it as an app on your phone, tablet or computer: see [Install as an app](#install-as-an-app).
+
 Add your own as `.txt` files in the `litanies` folder (see [File format](#file-format)).
 
 These help me. I hope they help someone else.
@@ -29,6 +31,56 @@ These help me. I hope they help someone else.
 >
 > If you are in immediate danger, call your local emergency number.
 
+## Install as an app
+
+The reader is online at **https://piyook.github.io/Litany-Reader/**. You can use it in the browser as it is, or install it as an app on a computer, phone or tablet. Installed, it has its own icon, opens in its own window with no address bar or browser toolbars, and works with no internet connection: every litany is saved on the device the first time it opens.
+
+Nothing is downloaded from an app store, and there is no account. It updates itself when you open it while online.
+
+### Android phone or tablet
+
+Use **Chrome** (or Samsung Internet or Edge).
+
+1. Open https://piyook.github.io/Litany-Reader/ in Chrome.
+2. Tap the **⋮** menu (top right).
+3. Tap **Install app**. If you only see **Add to Home screen**, tap that, then choose **Install**.
+4. Open it from the new **Litanies** icon on your home screen or in your app list.
+
+Samsung Internet: tap the **≡** menu, then **Add page to**, then **Home screen**.
+
+> [!IMPORTANT]
+> Some browsers, such as **DuckDuckGo**, can only add a bookmark to the home screen. That opens the site inside the browser, with its address bar and toolbars, not as an app. If that happens, remove the icon (press and hold it, then **Remove**) and install from Chrome instead. Your default browser can stay as it is.
+
+### iPhone or iPad
+
+Use **Safari** (Chrome and Edge on iPhone also work, from their own Share button).
+
+1. Open https://piyook.github.io/Litany-Reader/ in Safari.
+2. Tap the **Share** button (the square with an arrow pointing up). On iPhone it is at the bottom of the screen; on iPad, at the top.
+3. Scroll down and tap **Add to Home Screen**. If you see an **Open as Web App** switch, leave it on.
+4. Tap **Add**, then open it from the new **Litanies** icon.
+
+### Windows, Mac, Linux or Chromebook
+
+Use **Chrome** or **Edge**.
+
+1. Open https://piyook.github.io/Litany-Reader/.
+2. Click the **install** icon at the right-hand end of the address bar (a small screen with a down arrow), then **Install**.
+   - If there is no icon in Chrome: **⋮** menu, then **Cast, save and share**, then **Install page as app**.
+   - If there is no icon in Edge: **⋯** menu, then **Apps**, then **Install this site as an app**.
+3. It opens in its own window and is added to your Start menu, Dock or app launcher. You can pin it to the taskbar like any other app.
+
+Safari on a Mac (macOS Sonoma or later): **File** menu, then **Add to Dock**.
+
+Firefox on the desktop does not install web apps, so use Chrome or Edge for this.
+
+### Good to know
+
+- **Controls:** tap or click the screen to show them; they hide again after a few seconds.
+- **Favourites and settings** are kept by the browser you installed from. If you used the site in a different browser before, set them again in the app.
+- **Removing it:** on a phone or tablet, press and hold the icon, then **Uninstall** or **Remove**. On a computer, open the app, click the **⋮** or **⋯** menu in its title bar, then **Uninstall**.
+- The online copy has only the litanies in this repository, not ones you add to your own `litanies` folder. To use your own, run it on your computer as below.
+
 ## Run
 
 ```
@@ -38,13 +90,7 @@ npm stop     # stops it
 
 Or double-click `start.bat` and `stop.bat`. The reader is at http://localhost:8484. It needs Node.js; there is nothing to install.
 
-### On your phone
-
-The reader is also online at **https://piyook.github.io/Litany-Reader/**, published from this repository each time `main` changes. Open it on your phone and add it to the home screen (Safari: Share, *Add to Home Screen*; Chrome: menu, *Install app* or *Add to Home screen*). It then opens like an app and works with no signal: every litany is saved on the phone the first time it loads.
-
-Tap the screen to show the controls; they hide again after a few seconds. The online copy has only the litanies in this repository, not ones you add to your own `litanies` folder.
-
-To build the same static copy yourself: `npm run build` writes it to `dist/`.
+The online copy is published from this repository by GitHub Pages each time `main` changes. To build the same static copy yourself: `npm run build` writes it to `dist/`.
 
 ### Docker
 
