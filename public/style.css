@@ -630,6 +630,9 @@ button {
   border-radius: 12px;
   font-family: system-ui, sans-serif;
   font-size: 14px;
+  /* Scrolls on short screens rather than running off the top. */
+  max-height: calc(100% - 120px - var(--safe-top) - var(--safe-bottom));
+  overflow-y: auto;
 }
 #settings h2 {
   font-size: 13px;

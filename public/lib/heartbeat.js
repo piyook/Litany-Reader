@@ -2,18 +2,24 @@
 // a little quick at first and slower as the litany goes on, so watching it
 // (or listening) helps you settle too. It is a calming cue, not a real pulse.
 
-export const BPM_START = 80;
-export const BPM_ONCE = 54; // after one time through
-export const BPM_FLOOR = 20; // the slowest it ever gets, after many times through
+// Beats per minute at the start, and the slowest it gets after many times through.
+// Both can be changed in the settings.
+export const DEFAULT_RATES = { start: 80, end: 20 };
 
-// How quickly it slows: chosen so one time through lands on BPM_ONCE.
-const RATE = Math.log((BPM_START - BPM_FLOOR) / (BPM_ONCE - BPM_FLOOR));
+// A rate typed into the settings, kept between 10 and 150 beats a minute.
+export const clampRate = (v) => Math.max(10, Math.min(150, Math.round(v)));
+
+// How quickly it slows: one time through covers about 43% of the way from the
+// start rate to the slowest (80 to 54 with the defaults), two about 68%, three 82%.
+const SLOWING = Math.log(60 / 34);
 
 // Beats per minute after `done` times through the litany (0.5 is half way
 // through the first reading, 2 is two whole readings). It slows most at first,
-// then keeps easing down with each repeat toward BPM_FLOOR.
-export function bpmAt(done) {
-  return BPM_FLOOR + (BPM_START - BPM_FLOOR) * Math.exp(-RATE * Math.max(0, done));
+// then keeps easing down with each repeat toward the slowest rate. A slowest
+// rate set above the start rate is treated as the start rate, so it never speeds up.
+export function bpmAt(done, rates = DEFAULT_RATES) {
+  const end = Math.min(rates.end, rates.start);
+  return end + (rates.start - end) * Math.exp(-SLOWING * Math.max(0, done));
 }
 
 // How many times through the litany a reader has got, never going back:

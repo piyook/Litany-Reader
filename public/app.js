@@ -18,7 +18,7 @@ import {
 } from './lib/breath.js';
 import { hexToRgb, lerp, mix, rgb } from './lib/colour.js';
 import { favsCookie, favsFirst, parseFavs, toggled } from './lib/favs.js';
-import { BPM_START, beatPulse, bpmAt, furthest, glide, passed } from './lib/heartbeat.js';
+import { beatPulse, bpmAt, clampRate, DEFAULT_RATES, furthest, glide, passed } from './lib/heartbeat.js';
 import { hiddenWords, levelOf, MEM_MAX, MEM_PILL, MEM_TOAST, memKey } from './lib/memorise.js';
 import { read, readFlag, readObject, save, saveFlag, saveObject } from './lib/prefs.js';
 import { buildParts, letterRange } from './lib/text.js';
@@ -72,6 +72,8 @@ let shortForm = readFlag('litany-short');
 let memorise = readFlag('litany-mem');
 let beatOn = readFlag('litany-beat'); // heartbeat, off unless turned on
 let soundOn = readFlag('litany-beat-sound'); // heartbeat sound, separate from the heart
+// Heart rates (beats a minute): at the start, and the slowest it gets.
+const heartRates = { ...DEFAULT_RATES, ...readObject('litany-heart-rates', {}) };
 const memLevels = readObject('litany-mem-levels', {});
 let favs = parseFavs(document.cookie);
 
@@ -107,7 +109,7 @@ let revealKey = ''; // what applyReveal last showed, so it only touches the page
 // Heartbeat: how many times through the litany (never going back), the rate
 // shown, and the point in the current beat (0 to 1).
 let beatDone = 0,
-  bpm = BPM_START,
+  bpm = 0, // set from the start rate when a litany opens
   beatAt = 0;
 
 const usingShort = () => shortForm && shortLines.length > 0;
@@ -249,7 +251,7 @@ async function openLitany(id) {
   readerEl.classList.remove('hidden');
   // A new litany starts the heartbeat quick again.
   beatDone = 0;
-  bpm = BPM_START;
+  bpm = heartRates.start;
   beatAt = 0;
   loadForm();
   play();
@@ -477,7 +479,7 @@ function draw() {
 // Moves the heartbeat on by `ms`: the rate glides toward where the reader has got to.
 function beatTick(ms) {
   beatDone = furthest(beatDone, step, lines.length);
-  bpm = glide(bpm, bpmAt(beatDone), ms);
+  bpm = glide(bpm, bpmAt(beatDone, heartRates), ms);
   const before = beatAt;
   beatAt = (beatAt + (ms * bpm) / 60000) % 1;
   // Sound just before the heart is fullest (half way through the beat).
@@ -822,6 +824,19 @@ for (const k in fields) {
     saveObject('litany-timings', timings);
   });
 }
+// Heart rates: a change takes effect at once, the beat gliding to the new rate.
+const rateFields = { start: $('t-hr-start'), end: $('t-hr-end') };
+const fillRates = () => {
+  for (const k in rateFields) rateFields[k].value = heartRates[k];
+};
+for (const k in rateFields) {
+  rateFields[k].addEventListener('input', () => {
+    const v = parseFloat(rateFields[k].value);
+    if (Number.isNaN(v)) return;
+    heartRates[k] = clampRate(v);
+    saveObject('litany-heart-rates', heartRates);
+  });
+}
 const splitBox = $('t-split'),
   splitField = $('t-split-words');
 const fillSplit = () => {
@@ -845,6 +860,7 @@ splitField.addEventListener('input', () => {
 $('btn-settings').onclick = () => {
   fillFields();
   fillSplit();
+  fillRates();
   settingsEl.classList.toggle('hidden');
 };
 // A click anywhere outside the panel (other than the gear itself) closes it.

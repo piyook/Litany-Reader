@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { BPM_FLOOR, BPM_ONCE, BPM_START, beatPulse, bpmAt, furthest, glide, passed } from '../public/lib/heartbeat.js';
+import { beatPulse, bpmAt, clampRate, DEFAULT_RATES, furthest, glide, passed } from '../public/lib/heartbeat.js';
 
 describe('passed', () => {
   it('is true only on the frame that moves past the point', () => {
@@ -18,25 +18,42 @@ describe('passed', () => {
 });
 
 describe('bpmAt', () => {
-  it('starts quicker and is slower after one time through', () => {
-    expect(bpmAt(0)).toBe(BPM_START);
-    expect(bpmAt(1)).toBeCloseTo(BPM_ONCE, 5);
+  const { start, end } = DEFAULT_RATES;
+  it('starts at 80 and is about 54 after one time through, by default', () => {
+    expect(bpmAt(0)).toBe(start);
+    expect(bpmAt(1)).toBeCloseTo(54, 5);
   });
-  it('keeps slowing with each repeat, never below the floor', () => {
+  it('keeps slowing with each repeat, never below the slowest rate', () => {
     let last = Infinity;
     for (let d = 0; d <= 10; d += 0.1) {
       expect(bpmAt(d)).toBeLessThan(last);
-      expect(bpmAt(d)).toBeGreaterThan(BPM_FLOOR);
+      expect(bpmAt(d)).toBeGreaterThan(end);
       last = bpmAt(d);
     }
-    expect(bpmAt(2)).toBeLessThan(BPM_ONCE - 5);
-    expect(bpmAt(20)).toBeCloseTo(BPM_FLOOR, 1);
+    expect(bpmAt(20)).toBeCloseTo(end, 1);
   });
   it('slows most at first', () => {
-    expect(BPM_START - bpmAt(0.5)).toBeGreaterThan(bpmAt(0.5) - BPM_ONCE);
+    expect(start - bpmAt(1)).toBeGreaterThan(bpmAt(1) - bpmAt(2));
   });
   it('starts at the start rate before the first line', () => {
-    expect(bpmAt(-1)).toBe(BPM_START);
+    expect(bpmAt(-1)).toBe(start);
+  });
+  it('follows rates set in the settings', () => {
+    const rates = { start: 70, end: 40 };
+    expect(bpmAt(0, rates)).toBe(70);
+    expect(bpmAt(30, rates)).toBeCloseTo(40, 3);
+  });
+  it('never speeds up, even when the slowest rate is set above the start', () => {
+    expect(bpmAt(0, { start: 60, end: 90 })).toBe(60);
+    expect(bpmAt(5, { start: 60, end: 90 })).toBe(60);
+  });
+});
+
+describe('clampRate', () => {
+  it('keeps a typed rate between 10 and 150, in whole beats', () => {
+    expect(clampRate(5)).toBe(10);
+    expect(clampRate(500)).toBe(150);
+    expect(clampRate(62.4)).toBe(62);
   });
 });
 

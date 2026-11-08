@@ -227,7 +227,7 @@ test.describe('modes', () => {
     await expect(pulse).toBeVisible();
   });
 
-  test('heartbeat sound is off at first, can be turned on, and is remembered', async ({ page }) => {
+  test('heartbeat sound and heart rates are set in the settings and remembered', async ({ page }) => {
     const errors = [];
     page.on('pageerror', (e) => errors.push(e.message));
     await open(page, 'Alpha Litany');
@@ -236,6 +236,14 @@ test.describe('modes', () => {
     const box = page.locator('#t-beat-sound');
     await expect(box).not.toBeChecked();
     await box.check();
+    // The heart rates start at 80 and 20, and a change is saved.
+    await expect(page.locator('#t-hr-start')).toHaveValue('80');
+    await expect(page.locator('#t-hr-end')).toHaveValue('20');
+    await page.locator('#t-hr-end').fill('35');
+    expect(await page.evaluate(() => JSON.parse(localStorage.getItem('litany-heart-rates')))).toEqual({
+      start: 80,
+      end: 35,
+    });
     await page.locator('#t-done').click();
     await page.waitForTimeout(2000); // a couple of beats play without errors
     expect(errors).toEqual([]);
@@ -244,6 +252,7 @@ test.describe('modes', () => {
     await showControls(page);
     await page.locator('#btn-settings').click();
     await expect(box).toBeChecked();
+    await expect(page.locator('#t-hr-end')).toHaveValue('35');
   });
 
   test('the theme (T) switches and is remembered', async ({ page }) => {
