@@ -12,6 +12,12 @@
   --bar: rgba(22, 22, 29, 0.85);
   --hover-text: #ffffff;
   color-scheme: dark;
+  /* Space taken by a phone's notch, rounded corners and home bar (0 elsewhere).
+     The page fills the whole screen (viewport-fit=cover), so edge controls add these. */
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-right: env(safe-area-inset-right, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left: env(safe-area-inset-left, 0px);
 }
 /* Light theme: warm paper, darker breath colours so they read on a light ground. */
 :root[data-theme="light"] {
@@ -40,7 +46,7 @@
 /* Mode pill at the top of the reader: silent or spoken. Click to switch. */
 #top-bar {
   position: absolute;
-  top: 20px;
+  top: calc(20px + var(--safe-top));
   left: 50%;
   transform: translateX(-50%);
   z-index: 2;
@@ -193,7 +199,10 @@ button {
 /* Content up to 1200px wide, centred by the side padding, so the scroll box stays full width
    and any scrollbar (only on short windows) sits at the window edge. */
 #index {
-  padding: 8vh max(clamp(24px, 6vw, 96px), calc((100% - 1200px) / 2));
+  padding-top: calc(8vh + var(--safe-top));
+  padding-bottom: calc(8vh + var(--safe-bottom));
+  padding-left: max(clamp(24px, 6vw, 96px), calc((100% - 1200px) / 2), calc(16px + var(--safe-left)));
+  padding-right: max(clamp(24px, 6vw, 96px), calc((100% - 1200px) / 2), calc(16px + var(--safe-right)));
   overflow-y: auto;
   height: 100%;
 }
@@ -309,12 +318,12 @@ button {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 0 5vw;
+  padding: 0 max(5vw, calc(16px + var(--safe-right))) var(--safe-bottom) max(5vw, calc(16px + var(--safe-left)));
 }
 /* Small title under the top buttons in one-line view (whole view has its own). */
 #reader-title {
   position: absolute;
-  top: 72px;
+  top: calc(72px + var(--safe-top));
   left: 0;
   right: 0;
   z-index: 1;
@@ -334,7 +343,7 @@ button {
 /* Progress dots under the title (one-line view only): filled up to the current line. */
 #progress {
   position: absolute;
-  top: 98px;
+  top: calc(98px + var(--safe-top));
   left: 50%;
   transform: translateX(-50%);
   z-index: 1;
@@ -368,10 +377,10 @@ button {
 }
 /* Keep the line clear of the top buttons and title (and the dots, in one-line view). */
 #stage {
-  padding-top: 80px;
+  padding-top: calc(80px + var(--safe-top));
 }
 #reader:not(.full-view) #stage {
-  padding-top: 110px;
+  padding-top: calc(110px + var(--safe-top));
 }
 #line {
   width: 90vw;
@@ -510,7 +519,7 @@ button {
 #controls {
   position: absolute;
   left: 50%;
-  bottom: 24px;
+  bottom: calc(24px + var(--safe-bottom));
   transform: translate(-50%, 12px);
   display: flex;
   align-items: center;
@@ -575,8 +584,8 @@ button {
 /* Settings */
 #settings {
   position: absolute;
-  right: 24px;
-  bottom: 100px;
+  right: calc(24px + var(--safe-right));
+  bottom: calc(100px + var(--safe-bottom));
   width: 260px;
   padding: 18px 20px;
   background: var(--panel);
@@ -640,7 +649,7 @@ button {
 #toast {
   position: fixed;
   left: 50%;
-  bottom: 100px;
+  bottom: calc(100px + var(--safe-bottom));
   transform: translate(-50%, 8px);
   z-index: 10;
   max-width: calc(100% - 32px);
@@ -673,23 +682,23 @@ button {
     padding: 8px;
     width: calc(100% - 24px);
     max-width: 480px;
-    bottom: 12px;
+    bottom: calc(12px + var(--safe-bottom));
     border-radius: 24px;
   }
   #controls .spacer {
     display: none;
   }
   #settings {
-    left: 12px;
-    right: 12px;
+    left: calc(12px + var(--safe-left));
+    right: calc(12px + var(--safe-right));
     width: auto;
-    bottom: 150px;
+    bottom: calc(150px + var(--safe-bottom));
   }
   #toast {
-    bottom: 150px;
+    bottom: calc(150px + var(--safe-bottom));
   }
   #top-bar {
-    top: 14px;
+    top: calc(14px + var(--safe-top));
     gap: 8px;
   }
   #mode-pill,
@@ -698,10 +707,10 @@ button {
     padding: 5px 10px;
   }
   #reader-title {
-    top: 60px;
+    top: calc(60px + var(--safe-top));
   }
   #progress {
-    top: 84px;
+    top: calc(84px + var(--safe-top));
   }
   /* At the end, the return link goes above the line, where the toolbar can't cover
      it. The ring and cue keep their space, unseen, so the line doesn't jump. */
@@ -716,7 +725,7 @@ button {
     visibility: hidden;
   }
   #index {
-    padding-top: 5vh;
+    padding-top: calc(5vh + var(--safe-top));
   }
   #litany-list .open {
     font-size: 1.4rem;

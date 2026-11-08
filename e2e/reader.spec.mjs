@@ -196,12 +196,18 @@ test.describe('modes', () => {
 
   test('the theme (T) switches and is remembered', async ({ page }) => {
     const theme = () => page.locator('html').getAttribute('data-theme');
+    // The status bar / browser colour follows the theme's background.
+    const barColour = () => page.locator('meta[name="theme-color"]').getAttribute('content');
+    const colours = { dark: '#0b0b0f', light: '#f3efe6' };
     const before = await theme();
+    expect(await barColour()).toBe(colours[before]);
     await page.keyboard.press('t');
     const after = await theme();
     expect(after).not.toBe(before);
+    expect(await barColour()).toBe(colours[after]);
     await page.reload();
     expect(await theme()).toBe(after);
+    expect(await barColour()).toBe(colours[after]);
   });
 });
 

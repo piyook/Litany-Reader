@@ -2,14 +2,16 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Litany Reader</title>
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="icon" href="icon-192.png" type="image/png">
   <link rel="apple-touch-icon" href="apple-touch-icon.png">
   <meta name="theme-color" content="#0b0b0f">
+  <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <!-- "default": an opaque status bar in the theme-color, with dark or light text to suit. -->
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="Litanies">
   <script>
     // Set the theme before first paint: saved choice, else the system setting.
@@ -18,6 +20,8 @@
       try { t = localStorage.getItem('litany-theme'); } catch {}
       if (t !== 'light' && t !== 'dark') t = matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
       document.documentElement.dataset.theme = t;
+      // Status bar and browser colour match the page (same as --bg in style.css).
+      document.querySelector('meta[name="theme-color"]').content = t === 'light' ? '#f3efe6' : '#0b0b0f';
     })();
   </script>
   <link rel="stylesheet" href="style.css">

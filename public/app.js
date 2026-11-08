@@ -668,6 +668,9 @@ function setTheme(t) {
     b.setAttribute('aria-label', label);
   });
   readColours();
+  // Status bar and browser colour follow the page background.
+  const bg = getComputedStyle(document.documentElement).getPropertyValue('--bg').trim();
+  document.querySelector('meta[name="theme-color"]')?.setAttribute('content', bg);
   if (lines.length && !readerEl.classList.contains('hidden')) {
     if (fullView && rowChars.length) paintRows();
     draw();
