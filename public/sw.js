@@ -7,6 +7,7 @@ const SHELL = [
   'index.html',
   'app.js',
   'wake-lock.js',
+  'heart-sound.js',
   'lib/breath.js',
   'lib/colour.js',
   'lib/favs.js',

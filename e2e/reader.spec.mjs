@@ -227,6 +227,25 @@ test.describe('modes', () => {
     await expect(pulse).toBeVisible();
   });
 
+  test('heartbeat sound is off at first, can be turned on, and is remembered', async ({ page }) => {
+    const errors = [];
+    page.on('pageerror', (e) => errors.push(e.message));
+    await open(page, 'Alpha Litany');
+    await showControls(page);
+    await page.locator('#btn-settings').click();
+    const box = page.locator('#t-beat-sound');
+    await expect(box).not.toBeChecked();
+    await box.check();
+    await page.locator('#t-done').click();
+    await page.waitForTimeout(2000); // a couple of beats play without errors
+    expect(errors).toEqual([]);
+    await page.reload();
+    await open(page, 'Alpha Litany');
+    await showControls(page);
+    await page.locator('#btn-settings').click();
+    await expect(box).toBeChecked();
+  });
+
   test('the theme (T) switches and is remembered', async ({ page }) => {
     const theme = () => page.locator('html').getAttribute('data-theme');
     // The status bar / browser colour follows the theme's background.

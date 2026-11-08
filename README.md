@@ -216,7 +216,9 @@ Each time you read the litany through, more words are hidden: a quarter, then ha
 
 ## Heartbeat
 
-Turn it on with the heartbeat button (a heart with a pulse line through it), `B`, or **Heartbeat** under **Calming** in the ⚙ settings. A soft heart in the breath colour sits behind the breath ring and fades smoothly in and out with each beat. There is no flash or sudden change. It starts at about 80 beats a minute and slows to about 54 as you go through the litany, most of the slowing early on, to help you settle with it. Once slowed it stays slow: repeating, going back a line or switching form never speeds it up again. Opening a litany starts it afresh. It is off by default, and the setting is saved in the browser. With *reduce motion* turned on in your device settings, the heart stays still.
+Turn it on with the heartbeat button (a heart with a pulse line through it), `B`, or **Heartbeat** under **Calming** in the ⚙ settings. A soft heart in the breath colour sits behind the breath ring and fades smoothly in and out with each beat. There is no flash or sudden change. It starts at about 80 beats a minute and slows to about 54 by the end of the litany, most of the slowing early on, to help you settle with it. With repeat on it keeps slowing a little more each time through, down toward about 42. It never speeds up again: going back a line or switching form keeps the rate where it is. Opening a litany starts it afresh. It is a calming cue, not a real pulse. It is off by default, and the setting is saved in the browser. With *reduce motion* turned on in your device settings, the heart stays still.
+
+**Heartbeat sound**, also under **Calming**, adds a soft "lub-dub" thump on each beat. It can be on with or without the heart, and it follows the same slowing beat. Browsers only allow sound after you tap or press a key, so it starts from your first tap after the page opens. On an iPhone or iPad, the silent switch mutes it. It is off by default, and the setting is saved in the browser.
 
 ## Favourites
 

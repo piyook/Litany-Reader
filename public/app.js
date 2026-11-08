@@ -1,5 +1,7 @@
 // Litany Reader front end: the page itself. The rules it follows (breathing,
 // splitting lines, learning by heart, favourites) live in lib/, with tests.
+
+import { playBeat, readySound } from './heart-sound.js';
 import {
   clampTiming,
   cueWord,
@@ -16,7 +18,7 @@ import {
 } from './lib/breath.js';
 import { hexToRgb, lerp, mix, rgb } from './lib/colour.js';
 import { favsCookie, favsFirst, parseFavs, toggled } from './lib/favs.js';
-import { BPM_START, beatPulse, bpmAt, furthest, glide } from './lib/heartbeat.js';
+import { BPM_START, beatPulse, bpmAt, furthest, glide, passed } from './lib/heartbeat.js';
 import { hiddenWords, levelOf, MEM_MAX, MEM_PILL, MEM_TOAST, memKey } from './lib/memorise.js';
 import { read, readFlag, readObject, save, saveFlag, saveObject } from './lib/prefs.js';
 import { buildParts, letterRange } from './lib/text.js';
@@ -50,6 +52,7 @@ const viewBtn = $('btn-view'),
   memPill = $('mem-pill'),
   beatBtn = $('btn-beat'),
   beatBox = $('t-beat'),
+  soundBox = $('t-beat-sound'),
   pulseEl = $('pulse');
 
 // ---- Settings, as saved last time ----
@@ -68,6 +71,7 @@ let aloud = readFlag('litany-aloud');
 let shortForm = readFlag('litany-short');
 let memorise = readFlag('litany-mem');
 let beatOn = readFlag('litany-beat'); // heartbeat, off unless turned on
+let soundOn = readFlag('litany-beat-sound'); // heartbeat sound, separate from the heart
 const memLevels = readObject('litany-mem-levels', {});
 let favs = parseFavs(document.cookie);
 
@@ -100,7 +104,7 @@ let indexItems = [],
   shortLines = [],
   memHidden = []; // for each source line, the positions of its hidden words
 let revealKey = ''; // what applyReveal last showed, so it only touches the page on a change
-// Heartbeat: how far through the litany (0 to 1, never going back), the rate
+// Heartbeat: how many times through the litany (never going back), the rate
 // shown, and the point in the current beat (0 to 1).
 let beatDone = 0,
   bpm = BPM_START,
@@ -474,7 +478,15 @@ function draw() {
 function beatTick(ms) {
   beatDone = furthest(beatDone, step, lines.length);
   bpm = glide(bpm, bpmAt(beatDone), ms);
+  const before = beatAt;
   beatAt = (beatAt + (ms * bpm) / 60000) % 1;
+  // Sound just before the heart is fullest (half way through the beat).
+  if (soundOn && passed(before, beatAt, 0.45)) playBeat();
+}
+function setSound(on) {
+  soundOn = on;
+  soundBox.checked = on;
+  saveFlag('litany-beat-sound', on);
 }
 function paintPulse(colour) {
   if (!beatOn) return;
@@ -734,6 +746,8 @@ favPill.innerHTML = HEART.replace(/width="20" height="20"/, 'width="16" height="
 setAloud(aloud);
 setMemorise(memorise);
 setBeat(beatOn);
+setSound(soundOn);
+readySound();
 setTheme(document.documentElement.dataset.theme || 'dark');
 
 loopBtn.onclick = () => setLoop(!looping);
@@ -746,6 +760,7 @@ memBtn.onclick = () => setMemorise(!memorise);
 memPill.onclick = nextMemLevel;
 beatBtn.onclick = () => setBeat(!beatOn);
 beatBox.addEventListener('change', () => setBeat(beatBox.checked));
+soundBox.addEventListener('change', () => setSound(soundBox.checked));
 aloudBtn.onclick = () => setAloud(!aloud);
 modePill.onclick = () => setAloud(!aloud);
 for (const b of themeBtns) b.onclick = toggleTheme;
