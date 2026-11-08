@@ -1,36 +1,33 @@
 // A soft heartbeat sound, "lub-dub", made by the browser (no audio file).
-// Browsers only allow sound after a tap or key press, so the audio is started
-// on the first one. On iPhone and iPad the silent switch mutes it.
+//
+// The beat is drawn once with the browser's audio engine, turned into a short
+// WAV in memory and played with an ordinary audio player. Played straight from
+// the audio engine, it was silent on some Android phone speakers (fine on
+// headphones); played as media, like any sound file, it is heard there too.
+//
+// Browsers only allow sound after a tap or key press, so the player is started
+// on the first one.
 
-const AC = globalThis.AudioContext || globalThis.webkitAudioContext;
-let ctx = null;
+const OAC = globalThis.OfflineAudioContext || globalThis.webkitOfflineAudioContext;
+const RATE = 44100;
+const LENGTH = 0.45; // seconds: both thumps and their fade
 
-function audio() {
-  if (!AC) return null;
-  if (!ctx) {
-    try {
-      ctx = new AC();
-    } catch {
-      return null;
-    }
+let player = null,
+  url = null,
+  gainNow = -1,
+  ready = Promise.resolve(),
+  unlocked = false;
+
+const audioEl = () => {
+  if (!player && typeof Audio !== 'undefined') {
+    player = new Audio();
+    player.preload = 'auto';
   }
-  if (ctx.state === 'suspended') ctx.resume().catch(() => {});
-  return ctx;
-}
+  return player;
+};
 
-// Starts the audio on a tap or key press, which is when browsers allow it.
-// Chrome on Android only counts a finished tap (the finger lifting, or a click),
-// not the finger touching down, so listen for all of them.
-export function readySound() {
-  const unlock = () => audio();
-  for (const type of ['pointerdown', 'pointerup', 'touchend', 'click', 'keydown']) {
-    document.addEventListener(type, unlock, { passive: true });
-  }
-}
-
-// One soft thump at `at` seconds on the audio clock. The pitch falls from about
-// 110Hz to 45Hz: deep enough to feel like a heartbeat, high enough at the start
-// that small phone speakers still play it.
+// One soft thump at `at` seconds. The pitch falls from about 110Hz to 45Hz:
+// deep enough to feel like a heartbeat.
 function thump(a, at, loudness) {
   const osc = a.createOscillator();
   const filter = a.createBiquadFilter();
@@ -48,12 +45,91 @@ function thump(a, at, loudness) {
   osc.stop(at + 0.2);
 }
 
-// One heartbeat: a thump, then a softer one just after. `gain` scales both:
-// 1 is the original quiet level, about 2.6 the loudest that doesn't distort.
-export function playBeat(gain = 1) {
-  const a = audio();
-  if (a?.state !== 'running' || gain <= 0) return;
-  const now = a.currentTime + 0.01;
-  thump(a, now, 0.35 * gain);
-  thump(a, now + 0.16, 0.2 * gain);
+// 16-bit mono WAV of the samples.
+function wav(samples) {
+  const n = samples.length;
+  const view = new DataView(new ArrayBuffer(44 + n * 2));
+  const text = (at, s) => {
+    for (let i = 0; i < s.length; i++) view.setUint8(at + i, s.charCodeAt(i));
+  };
+  text(0, 'RIFF');
+  view.setUint32(4, 36 + n * 2, true);
+  text(8, 'WAVEfmt ');
+  view.setUint32(16, 16, true);
+  view.setUint16(20, 1, true);
+  view.setUint16(22, 1, true);
+  view.setUint32(24, RATE, true);
+  view.setUint32(28, RATE * 2, true);
+  view.setUint16(32, 2, true);
+  view.setUint16(34, 16, true);
+  text(36, 'data');
+  view.setUint32(40, n * 2, true);
+  for (let i = 0; i < n; i++) {
+    const v = Math.max(-1, Math.min(1, samples[i]));
+    view.setInt16(44 + i * 2, Math.round(v * 32767), true);
+  }
+  return new Blob([view], { type: 'audio/wav' });
+}
+
+// One heartbeat, a thump then a softer one just after, at `gain`
+// (1 the original quiet level, about 2.6 the loudest that doesn't distort).
+async function renderBeat(gain) {
+  const a = new OAC(1, Math.ceil(RATE * LENGTH), RATE);
+  thump(a, 0.01, 0.35 * gain);
+  thump(a, 0.17, 0.2 * gain);
+  const buffer = await a.startRendering();
+  return wav(buffer.getChannelData(0));
+}
+
+// Sets how loud the beat plays, drawing it afresh when the level changes.
+export function setSoundGain(gain) {
+  const p = audioEl();
+  if (!OAC || !p || gain === gainNow) return;
+  gainNow = gain;
+  if (gain <= 0) return;
+  ready = renderBeat(gain)
+    .then((blob) => {
+      if (gain !== gainNow) return; // a newer level has taken over
+      if (url) URL.revokeObjectURL(url);
+      url = URL.createObjectURL(blob);
+      p.src = url;
+    })
+    .catch(() => {});
+}
+
+// Lets the player make sound: browsers allow it once it has played during a
+// tap or key press. Chrome on Android only counts a finished tap (the finger
+// lifting, or a click), so listen for all of them until it works.
+export function readySound() {
+  const unlock = () => {
+    const p = audioEl();
+    if (unlocked || !p?.src) return;
+    p.muted = true;
+    p.play().then(
+      () => {
+        p.pause();
+        p.currentTime = 0;
+        p.muted = false;
+        unlocked = true;
+      },
+      () => {
+        p.muted = false;
+      },
+    );
+  };
+  for (const type of ['pointerdown', 'pointerup', 'touchend', 'click', 'keydown']) {
+    document.addEventListener(type, unlock, { passive: true });
+  }
+}
+
+// Plays one heartbeat at the level last set.
+export function playBeat() {
+  const p = audioEl();
+  if (!p || gainNow <= 0) return;
+  ready.then(() => {
+    if (!p.src) return;
+    p.muted = false;
+    p.currentTime = 0;
+    p.play().catch(() => {});
+  });
 }
