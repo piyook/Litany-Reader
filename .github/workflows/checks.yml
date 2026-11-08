@@ -80,7 +80,8 @@ jobs:
           node-version-file: .nvmrc
           cache: npm
       - run: npm ci
-      - run: npx playwright install --with-deps chromium
+      # Chromium for desktop Chrome, WebKit for Safari on an iPhone-sized screen.
+      - run: npx playwright install --with-deps chromium webkit
       - run: npm run test:e2e
       # The report, with a trace of each failed test, to download from the run page.
       - if: failure()
