@@ -16,6 +16,7 @@ import {
 } from './lib/breath.js';
 import { hexToRgb, lerp, mix, rgb } from './lib/colour.js';
 import { favsCookie, favsFirst, parseFavs, toggled } from './lib/favs.js';
+import { BPM_START, beatPulse, bpmAt, furthest, glide } from './lib/heartbeat.js';
 import { hiddenWords, levelOf, MEM_MAX, MEM_PILL, MEM_TOAST, memKey } from './lib/memorise.js';
 import { read, readFlag, readObject, save, saveFlag, saveObject } from './lib/prefs.js';
 import { buildParts, letterRange } from './lib/text.js';
@@ -46,7 +47,10 @@ const viewBtn = $('btn-view'),
   favBtn = $('btn-fav'),
   favPill = $('fav-pill'),
   memBtn = $('btn-mem'),
-  memPill = $('mem-pill');
+  memPill = $('mem-pill'),
+  beatBtn = $('btn-beat'),
+  beatBox = $('t-beat'),
+  pulseEl = $('pulse');
 
 // ---- Settings, as saved last time ----
 let timings = { ...DEFAULT_TIMINGS, ...readObject('litany-timings', {}) };
@@ -63,6 +67,7 @@ let fullView = readFlag('litany-full'); // whole-litany view
 let aloud = readFlag('litany-aloud');
 let shortForm = readFlag('litany-short');
 let memorise = readFlag('litany-mem');
+let beatOn = readFlag('litany-beat'); // heartbeat glow, off unless turned on
 const memLevels = readObject('litany-mem-levels', {});
 let favs = parseFavs(document.cookie);
 
@@ -95,6 +100,11 @@ let indexItems = [],
   shortLines = [],
   memHidden = []; // for each source line, the positions of its hidden words
 let revealKey = ''; // what applyReveal last showed, so it only touches the page on a change
+// Heartbeat: how far through the litany (0 to 1, never going back), the rate
+// shown, and the point in the current beat (0 to 1).
+let beatDone = 0,
+  bpm = BPM_START,
+  beatAt = 0;
 
 const usingShort = () => shortForm && shortLines.length > 0;
 const displayTitle = () => (usingShort() ? `${title} · short` : title);
@@ -233,6 +243,10 @@ async function openLitany(id) {
   document.title = data.title;
   indexEl.classList.add('hidden');
   readerEl.classList.remove('hidden');
+  // A new litany starts the heartbeat quick again.
+  beatDone = 0;
+  bpm = BPM_START;
+  beatAt = 0;
   loadForm();
   play();
 }
@@ -300,6 +314,7 @@ function goTo(i) {
   endEl.classList.add('hidden');
   holdEl.classList.remove('hidden');
   cueEl.classList.remove('hidden');
+  showPulse();
   renderLine();
   draw();
 }
@@ -437,6 +452,8 @@ function fitText() {
     else hi = mid;
   }
   lineEl.style.fontSize = `${lo}px`;
+  // The heartbeat glow sits behind the middle of the text.
+  pulseEl.style.setProperty('--pulse-y', `${lineEl.offsetTop + lineEl.offsetHeight / 2}px`);
 }
 
 // One frame: the line's colour, the breath indicator and the word cue.
@@ -450,7 +467,30 @@ function draw() {
   paintLine(k, p, eased);
   paintIndicator(k, p, eased, dur, colour);
   paintCue(k, colour);
+  paintPulse(colour);
   applyReveal();
+}
+
+// ---- Heartbeat glow ----
+// Moves the heartbeat on by `ms`: the rate glides toward where the reader has got to.
+function beatTick(ms) {
+  beatDone = furthest(beatDone, step, lines.length);
+  bpm = glide(bpm, bpmAt(beatDone), ms);
+  beatAt = (beatAt + (ms * bpm) / 60000) % 1;
+}
+function paintPulse(colour) {
+  if (!beatOn) return;
+  pulseEl.style.color = colour;
+  pulseEl.style.setProperty('--beat', beatPulse(beatAt).toFixed(3));
+}
+const showPulse = () => pulseEl.classList.toggle('hidden', !beatOn || finished || !lines.length);
+function setBeat(on) {
+  beatOn = on;
+  showToggle(beatBtn, on, 'Heartbeat glow', 'B');
+  beatBox.checked = on;
+  saveFlag('litany-beat', on);
+  showPulse();
+  if (on && lines.length) draw();
 }
 
 function paintLine(k, p, eased) {
@@ -536,14 +576,17 @@ function finish() {
   readerEl.classList.add('finished');
   holdEl.classList.add('hidden');
   cueEl.classList.add('hidden');
+  showPulse();
   endEl.classList.remove('hidden');
 }
 
 function tick(ts) {
   if (!playing) return;
   if (lastTs == null) lastTs = ts;
-  elapsed += Math.min(100, ts - lastTs); // cap jumps, e.g. after the tab was hidden
+  const ms = Math.min(100, ts - lastTs); // cap jumps, e.g. after the tab was hidden
+  elapsed += ms;
   lastTs = ts;
+  beatTick(ms);
   // Loop handles zero-length holds without stalling a frame.
   let guard = 4;
   while (playing && elapsed >= phaseDuration() && guard--) {
@@ -692,6 +735,7 @@ favBtn.innerHTML = HEART;
 favPill.innerHTML = HEART.replace(/width="20" height="20"/, 'width="16" height="16"');
 setAloud(aloud);
 setMemorise(memorise);
+setBeat(beatOn);
 setTheme(document.documentElement.dataset.theme || 'dark');
 
 loopBtn.onclick = () => setLoop(!looping);
@@ -702,6 +746,8 @@ favBtn.onclick = toggleCurrentFav;
 favPill.onclick = toggleCurrentFav;
 memBtn.onclick = () => setMemorise(!memorise);
 memPill.onclick = nextMemLevel;
+beatBtn.onclick = () => setBeat(!beatOn);
+beatBox.addEventListener('change', () => setBeat(beatBox.checked));
 aloudBtn.onclick = () => setAloud(!aloud);
 modePill.onclick = () => setAloud(!aloud);
 for (const b of themeBtns) b.onclick = toggleTheme;
@@ -824,6 +870,7 @@ const KEYS = new Map([
   ['a', () => setAloud(!aloud)],
   ['h', toggleCurrentFav],
   ['m', () => setMemorise(!memorise)],
+  ['b', () => setBeat(!beatOn)],
   ['f', toggleFullscreen],
 ]);
 document.addEventListener('keydown', (e) => {

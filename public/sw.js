@@ -10,6 +10,7 @@ const SHELL = [
   'lib/breath.js',
   'lib/colour.js',
   'lib/favs.js',
+  'lib/heartbeat.js',
   'lib/memorise.js',
   'lib/prefs.js',
   'lib/text.js',

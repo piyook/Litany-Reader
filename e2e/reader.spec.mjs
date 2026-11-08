@@ -198,6 +198,35 @@ test.describe('modes', () => {
     await expect(page.locator('#line .mem')).toHaveCount(0);
   });
 
+  test('heartbeat glow (B) is off at first, beats when on, and is remembered', async ({ page }) => {
+    await open(page, 'Alpha Litany');
+    const pulse = page.locator('#pulse');
+    const box = page.locator('#t-beat');
+    await expect(pulse).toBeHidden();
+    await page.keyboard.press('b');
+    await expect(pulse).toBeVisible();
+    await expect(page.locator('#btn-beat')).toHaveAttribute('aria-pressed', 'true');
+    // It beats: the glow strength changes over a second or so.
+    const beat = () => pulse.evaluate((el) => el.style.getPropertyValue('--beat'));
+    const seen = new Set();
+    for (let i = 0; i < 12; i++) {
+      seen.add(await beat());
+      await page.waitForTimeout(100);
+    }
+    expect(seen.size).toBeGreaterThan(2);
+    // The settings checkbox agrees, and turns it off too.
+    await showControls(page);
+    await page.locator('#btn-settings').click();
+    await expect(box).toBeChecked();
+    await box.uncheck();
+    await expect(pulse).toBeHidden();
+    await expect(page.locator('#btn-beat')).toHaveAttribute('aria-pressed', 'false');
+    await box.check();
+    await page.reload();
+    await open(page, 'Alpha Litany');
+    await expect(pulse).toBeVisible();
+  });
+
   test('the theme (T) switches and is remembered', async ({ page }) => {
     const theme = () => page.locator('html').getAttribute('data-theme');
     // The status bar / browser colour follows the theme's background.

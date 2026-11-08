@@ -67,6 +67,8 @@
     <!-- One-line view: a dot for each line, filled up to the line being read. -->
     <div id="progress" role="img"></div>
     <div id="stage">
+      <!-- Heartbeat glow (B): a soft light behind the text that beats, slowing as the litany goes on. -->
+      <div id="pulse" class="hidden" aria-hidden="true"></div>
       <div id="line"></div>
       <svg id="hold" viewBox="0 0 100 100" aria-hidden="true">
         <circle class="track" cx="50" cy="50" r="40"></circle>
@@ -98,6 +100,11 @@
         <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true">
           <path d="M3 7h5"/><path d="M12 7h9" stroke-dasharray="1.5 2.5"/><path d="M3 12h9" stroke-dasharray="1.5 2.5"/><path d="M16 12h5"/>
           <path d="M3 17h7"/><path d="M14 17h7" stroke-dasharray="1.5 2.5"/>
+        </svg>
+      </button>
+      <button type="button" id="btn-beat" class="small" aria-pressed="false" title="Heartbeat glow: off (B)">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true">
+          <circle cx="12" cy="12" r="2.5" fill="currentColor"/><circle cx="12" cy="12" r="6" opacity="0.6"/><circle cx="12" cy="12" r="9.5" opacity="0.3"/>
         </svg>
       </button>
       <button type="button" id="btn-view" class="small" aria-pressed="false" title="Whole litany: off (V)">
@@ -136,6 +143,8 @@
       <h2 class="sub">Long lines</h2>
       <label>Split to fit a breath <input type="checkbox" id="t-split"></label>
       <label>Max words per breath <input type="number" id="t-split-words" min="4" max="40" step="1"></label>
+      <h2 class="sub">Calming</h2>
+      <label>Heartbeat glow <input type="checkbox" id="t-beat"></label>
     </div>
   </section>
 
