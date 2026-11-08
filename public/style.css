@@ -414,9 +414,25 @@ button {
 #reader.full-view #progress {
   display: none;
 }
-/* Keep the line clear of the top buttons and title (and the dots, in one-line view). */
+/* Keep the line clear of the top buttons and title (and the dots, in one-line view),
+   and of the breath ring and cue fixed near the bottom. */
 #stage {
+  --breath-bottom: calc(6vh + var(--safe-bottom)); /* gap under the cue */
+  --breath-height: calc(10vmin + 1.6vh + 1.4em); /* ring, gap, cue */
   padding-top: calc(80px + var(--safe-top));
+  padding-bottom: calc(var(--breath-bottom) + var(--breath-height) + 3vh);
+}
+/* The breath ring, heartbeat and cue: fixed near the bottom, so they don't move
+   when the line grows, shrinks or wraps. The return link takes their place at the end. */
+#breath-area,
+#end {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: var(--breath-bottom);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 #reader:not(.full-view) #stage {
   padding-top: calc(110px + var(--safe-top));
@@ -519,7 +535,6 @@ button {
   display: block; /* no gap under it, so the heart lines up with it */
   width: 10vmin;
   height: 10vmin;
-  margin-top: 5vh;
   opacity: 0;
   transition: opacity 0.5s;
   transform: rotate(-90deg);
@@ -568,12 +583,9 @@ button {
   opacity: 0.85;
 }
 
-/* Sits where the breath ring and cue were, about the same height, so the text doesn't jump. */
+/* Sits where the breath ring and cue were, the same height. */
 #end {
-  margin-top: 5vh;
-  min-height: calc(10vmin + 1.6vh + 1.4em);
-  display: flex;
-  align-items: center;
+  min-height: var(--breath-height);
   justify-content: center;
   animation: fade-in 0.8s ease-out;
 }
@@ -795,17 +807,12 @@ button {
   #progress {
     top: calc(84px + var(--safe-top));
   }
-  /* At the end, the return link goes above the line, where the toolbar can't cover
-     it. The ring and cue keep their space, unseen, so the line doesn't jump. */
+  /* At the end, the return link goes above the line, where the toolbar can't cover it. */
   #reader.finished #end {
+    position: static;
     order: -1;
     margin: 0 0 3vh;
     min-height: 0;
-  }
-  #reader.finished #hold.hidden,
-  #reader.finished #cue.hidden {
-    display: block !important;
-    visibility: hidden;
   }
   #index {
     padding-top: calc(5vh + var(--safe-top));

@@ -139,6 +139,17 @@ test.describe('reading', () => {
     await expect(page.locator('#progress')).toBeHidden();
   });
 
+  test('the breath ring stays in the same place whatever the line and view', async ({ page }) => {
+    await open(page, 'Alpha Litany');
+    await page.keyboard.press(' ');
+    const ringY = async () => (await page.locator('#hold').boundingBox()).y;
+    const first = await ringY();
+    await page.keyboard.press('ArrowRight');
+    expect(await ringY()).toBeCloseTo(first, 0);
+    await page.keyboard.press('v'); // whole litany
+    expect(await ringY()).toBeCloseTo(first, 0);
+  });
+
   test('on a phone, the return link sits above the last line at the end', async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 780 });
     await open(page, 'Beta Litany');

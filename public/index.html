@@ -81,18 +81,21 @@
     <div id="progress" role="img"></div>
     <div id="stage">
       <div id="line"></div>
-      <div id="breath-mark">
-        <!-- Heartbeat (B): a soft heart behind the breath ring that fades in and out, slowing as the litany goes on. -->
-        <svg id="pulse" class="hidden" viewBox="0 0 24 24" aria-hidden="true">
-          <path d="M12 20s-7.5-4.6-9-9.2C1.9 7.4 4 4.5 7.2 4.5c2 0 3.5 1.1 4.8 2.9 1.3-1.8 2.8-2.9 4.8-2.9 3.2 0 5.3 2.9 4.2 6.3-1.5 4.6-9 9.2-9 9.2z"/>
-        </svg>
-        <svg id="hold" viewBox="0 0 100 100" aria-hidden="true">
-          <circle class="track" cx="50" cy="50" r="40"></circle>
-          <circle class="orb" cx="50" cy="50" r="12"></circle>
-          <circle class="arc" cx="50" cy="50" r="40" pathLength="1"></circle>
-        </svg>
+      <!-- The breath ring, heartbeat and cue stay fixed near the bottom, whatever the text does. -->
+      <div id="breath-area">
+        <div id="breath-mark">
+          <!-- Heartbeat (B): a soft heart behind the breath ring that fades in and out, slowing as the litany goes on. -->
+          <svg id="pulse" class="hidden" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M12 20s-7.5-4.6-9-9.2C1.9 7.4 4 4.5 7.2 4.5c2 0 3.5 1.1 4.8 2.9 1.3-1.8 2.8-2.9 4.8-2.9 3.2 0 5.3 2.9 4.2 6.3-1.5 4.6-9 9.2-9 9.2z"/>
+          </svg>
+          <svg id="hold" viewBox="0 0 100 100" aria-hidden="true">
+            <circle class="track" cx="50" cy="50" r="40"></circle>
+            <circle class="orb" cx="50" cy="50" r="12"></circle>
+            <circle class="arc" cx="50" cy="50" r="40" pathLength="1"></circle>
+          </svg>
+        </div>
+        <div id="cue"></div>
       </div>
-      <div id="cue"></div>
       <div id="end" class="hidden"><button type="button" id="end-back" class="link">Return to index</button></div>
     </div>
 
