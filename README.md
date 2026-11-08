@@ -10,7 +10,7 @@ A very simple app that shows a litany one line at a time, in large text, paced t
 
 | One line at a time | Whole litany |
 |---|---|
-| ![One line at a time: the line fills in blue on the out-breath; the heart at the top marks a favourite](docs/single-line.png) | ![Whole litany: lines already read keep their breath colour, the current line fills in amber; the heart at the top marks a favourite](docs/whole-litany.png) |
+| ![One line at a time: the line fills in amber on the in-breath; the dots under the title show how far through you are, and the heart at the top marks a favourite](docs/single-line.png) | ![Whole litany: lines already read keep their breath colour, the current line fills in amber; the heart at the top marks a favourite](docs/whole-litany.png) |
 
 The idea comes from the **Litany Against Fear** in Frank Herbert's *Dune* (1965), recited by the Bene Gesserit to calm the mind in the face of fear. The litanies here are written in the same spirit: short lines, spoken slowly, in time with the breath.
 
