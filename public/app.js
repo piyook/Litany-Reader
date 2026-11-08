@@ -67,7 +67,7 @@ let fullView = readFlag('litany-full'); // whole-litany view
 let aloud = readFlag('litany-aloud');
 let shortForm = readFlag('litany-short');
 let memorise = readFlag('litany-mem');
-let beatOn = readFlag('litany-beat'); // heartbeat glow, off unless turned on
+let beatOn = readFlag('litany-beat'); // heartbeat, off unless turned on
 const memLevels = readObject('litany-mem-levels', {});
 let favs = parseFavs(document.cookie);
 
@@ -452,7 +452,7 @@ function fitText() {
     else hi = mid;
   }
   lineEl.style.fontSize = `${lo}px`;
-  // The heartbeat glow sits behind the middle of the text.
+  // The heartbeat heart sits behind the middle of the text.
   pulseEl.style.setProperty('--pulse-y', `${lineEl.offsetTop + lineEl.offsetHeight / 2}px`);
 }
 
@@ -471,7 +471,7 @@ function draw() {
   applyReveal();
 }
 
-// ---- Heartbeat glow ----
+// ---- Heartbeat ----
 // Moves the heartbeat on by `ms`: the rate glides toward where the reader has got to.
 function beatTick(ms) {
   beatDone = furthest(beatDone, step, lines.length);
@@ -486,7 +486,7 @@ function paintPulse(colour) {
 const showPulse = () => pulseEl.classList.toggle('hidden', !beatOn || finished || !lines.length);
 function setBeat(on) {
   beatOn = on;
-  showToggle(beatBtn, on, 'Heartbeat glow', 'B');
+  showToggle(beatBtn, on, 'Heartbeat', 'B');
   beatBox.checked = on;
   saveFlag('litany-beat', on);
   showPulse();

@@ -11,8 +11,7 @@
   --line: #2a2a33;
   --bar: rgba(22, 22, 29, 0.85);
   --hover-text: #ffffff;
-  --pulse-rest: 0.05; /* heartbeat glow strength between beats */
-  --pulse-swell: 0.09; /* and how much brighter on a beat */
+  --pulse-peak: 0.22; /* how strong the heartbeat colour is at its fullest */
   color-scheme: dark;
   /* Space taken by a phone's notch, rounded corners and home bar (0 elsewhere).
      The page fills the whole screen (viewport-fit=cover), so edge controls add these. */
@@ -35,8 +34,7 @@
   --line: #e0dacd;
   --bar: rgba(251, 248, 242, 0.9);
   --hover-text: #000000;
-  --pulse-rest: 0.07;
-  --pulse-swell: 0.1;
+  --pulse-peak: 0.22;
   color-scheme: light;
 }
 
@@ -387,30 +385,32 @@ button {
 #reader:not(.full-view) #stage {
   padding-top: calc(110px + var(--safe-top));
 }
-/* Heartbeat glow: a soft light in the breath colour behind the text. app.js sets
-   --beat (0 resting, 1 at the peak) each frame and --pulse-y to the text's middle.
-   The stage's z-index keeps the glow behind the text but above the page. */
+/* Heartbeat: a soft patch of the breath colour behind the text, heart-shaped
+   but blurred so it has no hard edge, fading in and out. app.js sets --beat
+   (0 unseen, 1 fullest) each frame and --pulse-y to the text's middle.
+   The stage's z-index keeps it behind the text but above the page. */
 #pulse {
   --beat: 0;
   position: absolute;
   left: 50%;
   top: var(--pulse-y, 50%);
   z-index: -1;
-  width: min(120vw, 1400px);
-  height: 80vmin;
-  border-radius: 50%;
-  background: radial-gradient(closest-side, currentColor, transparent);
+  width: min(70vmin, 640px);
+  height: min(70vmin, 640px);
+  overflow: visible;
+  fill: currentColor;
+  -webkit-filter: blur(min(6vmin, 48px));
+  filter: blur(min(6vmin, 48px));
   color: var(--in);
   pointer-events: none;
-  opacity: calc(var(--pulse-rest) + var(--pulse-swell) * var(--beat));
-  transform: translate(-50%, -50%) scale(calc(1 + 0.05 * var(--beat)));
+  opacity: calc(var(--pulse-peak) * var(--beat));
+  transform: translate(-50%, -50%);
   transition: color 1.5s;
 }
-/* Reduce motion: the glow stays, but still. */
+/* Reduce motion: the heart stays, faint and still. */
 @media (prefers-reduced-motion: reduce) {
   #pulse {
-    opacity: calc(var(--pulse-rest) + var(--pulse-swell) * 0.3);
-    transform: translate(-50%, -50%);
+    opacity: calc(var(--pulse-peak) * 0.5);
   }
 }
 

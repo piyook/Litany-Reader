@@ -1,5 +1,6 @@
-// The heartbeat glow behind the text: it beats a little quick at first and
-// slows as the litany goes on, so watching it settle helps you settle too.
+// The heartbeat behind the text: a faint heart that fades in and out, a little
+// quick at first and slower as the litany goes on, so watching it settle helps
+// you settle too.
 
 export const BPM_START = 80;
 export const BPM_END = 54;
@@ -21,12 +22,6 @@ export const furthest = (before, step, count) => (count > 0 ? Math.max(before, M
 // line: about two thirds of the way there every 3 seconds.
 export const glide = (bpm, target, ms) => bpm + (target - bpm) * (1 - Math.exp(-ms / 3000));
 
-// How strong the glow is (0 resting, 1 at the peak) at `b`, the point in one
-// beat (0 to 1). Two swells close together, the second softer: "lub-dub".
-export function beatPulse(b) {
-  const swell = (at, width) => {
-    const x = (b - at) / width;
-    return x < 0 || x > 1 ? 0 : Math.sin(Math.PI * x);
-  };
-  return Math.max(swell(0, 0.16), 0.6 * swell(0.22, 0.2));
-}
+// How visible the heart is (0 unseen, 1 at its fullest) at `b`, the point in
+// one beat (0 to 1): a smooth fade in and out, with no sudden change.
+export const beatPulse = (b) => 0.5 - 0.5 * Math.cos(2 * Math.PI * b);

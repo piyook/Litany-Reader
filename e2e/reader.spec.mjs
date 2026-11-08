@@ -198,7 +198,7 @@ test.describe('modes', () => {
     await expect(page.locator('#line .mem')).toHaveCount(0);
   });
 
-  test('heartbeat glow (B) is off at first, beats when on, and is remembered', async ({ page }) => {
+  test('heartbeat (B) is off at first, beats when on, and is remembered', async ({ page }) => {
     await open(page, 'Alpha Litany');
     const pulse = page.locator('#pulse');
     const box = page.locator('#t-beat');
@@ -206,7 +206,7 @@ test.describe('modes', () => {
     await page.keyboard.press('b');
     await expect(pulse).toBeVisible();
     await expect(page.locator('#btn-beat')).toHaveAttribute('aria-pressed', 'true');
-    // It beats: the glow strength changes over a second or so.
+    // It beats: the heart fades in and out over a second or so.
     const beat = () => pulse.evaluate((el) => el.style.getPropertyValue('--beat'));
     const seen = new Set();
     for (let i = 0; i < 12; i++) {

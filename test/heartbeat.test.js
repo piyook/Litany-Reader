@@ -56,19 +56,17 @@ describe('glide', () => {
 });
 
 describe('beatPulse', () => {
-  it('rests between beats', () => {
-    expect(beatPulse(0)).toBe(0);
-    expect(beatPulse(0.6)).toBe(0);
-    expect(beatPulse(0.99)).toBe(0);
+  it('is unseen at the start of a beat and fullest half way', () => {
+    expect(beatPulse(0)).toBeCloseTo(0, 5);
+    expect(beatPulse(0.5)).toBeCloseTo(1, 5);
   });
-  it('peaks on the first swell, softer on the second', () => {
-    expect(beatPulse(0.08)).toBeCloseTo(1, 5);
-    expect(beatPulse(0.32)).toBeCloseTo(0.6, 5);
-  });
-  it('stays between 0 and 1', () => {
+  it('fades smoothly, with no sudden jump anywhere in the beat', () => {
     for (let b = 0; b < 1; b += 0.01) {
       expect(beatPulse(b)).toBeGreaterThanOrEqual(0);
       expect(beatPulse(b)).toBeLessThanOrEqual(1);
+      expect(Math.abs(beatPulse(b + 0.01) - beatPulse(b))).toBeLessThan(0.04);
     }
+    // The end of one beat runs straight into the start of the next.
+    expect(beatPulse(0.999)).toBeCloseTo(beatPulse(0), 3);
   });
 });
