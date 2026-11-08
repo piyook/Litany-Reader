@@ -4,7 +4,7 @@
 
 export const BPM_START = 80;
 export const BPM_ONCE = 54; // after one time through
-export const BPM_FLOOR = 42; // the slowest it ever gets, after many times through
+export const BPM_FLOOR = 20; // the slowest it ever gets, after many times through
 
 // How quickly it slows: chosen so one time through lands on BPM_ONCE.
 const RATE = Math.log((BPM_START - BPM_FLOOR) / (BPM_ONCE - BPM_FLOOR));
