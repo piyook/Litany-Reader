@@ -78,13 +78,14 @@ This applies to `npm start` and to Docker.
 | `litany-against-overwhelm.txt` | piyook |
 | `litany-against-regret.txt` | piyook |
 | `litany-against-self-criticism.txt` | piyook |
+| `litany-against-worry.txt` | piyook |
 | `litany-for-calm.txt` | piyook |
 | `litany-for-patience.txt` | piyook |
 | `litany-for-resilience.txt` | piyook |
 | `litany-for-sleep.txt` | piyook |
 | `litany-of-gratitude.txt` | piyook |
 
-Each one also has a short form of three lines, for when you only have a moment.
+Each one also has a short form of a few lines, for when you only have a moment.
 
 ### File format
 
