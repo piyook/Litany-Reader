@@ -47,12 +47,13 @@ const viewBtn = $('btn-view'),
   loopBtn = $('btn-loop'),
   repeatPill = $('repeat-pill'),
   favBtn = $('btn-fav'),
-  favPill = $('fav-pill'),
   memBtn = $('btn-mem'),
   memPill = $('mem-pill'),
   beatBtn = $('btn-beat'),
   beatBox = $('t-beat'),
   soundBox = $('t-beat-sound'),
+  beatPill = $('beat-pill'),
+  soundPill = $('sound-pill'),
   pulseEl = $('pulse');
 
 // ---- Settings, as saved last time ----
@@ -149,6 +150,13 @@ function showToggle(btn, on, label, key) {
   btn.classList.toggle('active', on);
   btn.setAttribute('aria-pressed', String(on));
   btn.title = `${label}: ${on ? 'on' : 'off'} (${key})`;
+}
+
+// Shows a round toggle's state in the top bar.
+function showPill(pill, on, title) {
+  pill.classList.toggle('on', on);
+  pill.setAttribute('aria-pressed', String(on));
+  pill.title = title;
 }
 
 // ---- Favourites ----
@@ -260,7 +268,7 @@ async function openLitany(id) {
 // Shows the long or short form from the first line. With no short form, the long one.
 function loadForm() {
   src = usingShort() ? shortLines : longLines;
-  $('reader-title').textContent = displayTitle();
+  setTitle($('reader-title'));
   shortBtn.disabled = !shortLines.length;
   updateShortBtn();
   splitLines();
@@ -398,7 +406,7 @@ function buildAllRows() {
   if (title) {
     const h = document.createElement('div');
     h.className = 'title';
-    h.textContent = displayTitle();
+    setTitle(h);
     lineEl.appendChild(h);
   }
   rowEls = [];
@@ -488,6 +496,7 @@ function beatTick(ms) {
 function setSound(on) {
   soundOn = on;
   soundBox.checked = on;
+  showPill(soundPill, on, on ? 'Heartbeat sound: on (click to mute)' : 'Heartbeat sound: muted (click to turn on)');
   saveFlag('litany-beat-sound', on);
 }
 function paintPulse(colour) {
@@ -499,6 +508,7 @@ const showPulse = () => pulseEl.classList.toggle('hidden', !beatOn || finished |
 function setBeat(on) {
   beatOn = on;
   showToggle(beatBtn, on, 'Heartbeat', 'B');
+  showPill(beatPill, on, `Heartbeat: ${on ? 'on' : 'off'} (B)`);
   beatBox.checked = on;
   saveFlag('litany-beat', on);
   showPulse();
@@ -677,11 +687,33 @@ function setAloud(on) {
   if (!restartIfFinished() && lines.length) goTo(idx);
 }
 
-// The heart in the reader toolbar, and in the top bar, for the open litany.
+// The heart in the reader toolbar, and the small one after the title, for the open litany.
 function updateFavBtn() {
   const on = currentId != null && favs.includes(currentId);
-  favPill.classList.toggle('hidden', !on);
   showToggle(favBtn, on, 'Favourite', 'H');
+  paintTitles();
+}
+// Sets a title element's text. While the litany is a favourite, a small heart
+// sits just above the end of it, like a superscript, taking no space so the
+// title stays centred.
+function setTitle(el) {
+  el.textContent = '';
+  const text = document.createElement('span');
+  text.className = 'title-text';
+  text.textContent = displayTitle();
+  el.append(text);
+  if (currentId == null || !favs.includes(currentId)) return;
+  const h = document.createElement('span');
+  h.className = 'title-fav';
+  h.title = 'Favourite';
+  h.innerHTML = HEART;
+  text.append(h);
+}
+// The title at the top (one-line view) and the one in the whole-litany view.
+function paintTitles() {
+  setTitle($('reader-title'));
+  const t = lineEl.querySelector('.title');
+  if (t) setTitle(t);
 }
 const toggleCurrentFav = () => {
   if (currentId != null && toggleFav(currentId)) updateFavBtn();
@@ -744,7 +776,6 @@ setLoop(looping);
 setFullView(fullView);
 updateShortBtn();
 favBtn.innerHTML = HEART;
-favPill.innerHTML = HEART.replace(/width="20" height="20"/, 'width="16" height="16"');
 setAloud(aloud);
 setMemorise(memorise);
 setBeat(beatOn);
@@ -757,12 +788,13 @@ repeatPill.onclick = () => setLoop(!looping);
 viewBtn.onclick = () => setFullView(!fullView);
 shortBtn.onclick = () => setShort(!shortForm);
 favBtn.onclick = toggleCurrentFav;
-favPill.onclick = toggleCurrentFav;
 memBtn.onclick = () => setMemorise(!memorise);
 memPill.onclick = nextMemLevel;
 beatBtn.onclick = () => setBeat(!beatOn);
 beatBox.addEventListener('change', () => setBeat(beatBox.checked));
 soundBox.addEventListener('change', () => setSound(soundBox.checked));
+beatPill.onclick = () => setBeat(!beatOn);
+soundPill.onclick = () => setSound(!soundOn);
 aloudBtn.onclick = () => setAloud(!aloud);
 modePill.onclick = () => setAloud(!aloud);
 for (const b of themeBtns) b.onclick = toggleTheme;

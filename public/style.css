@@ -56,6 +56,61 @@
   align-items: center;
   gap: 10px;
 }
+/* A small filled heart just above the end of the litany's title while it is a
+   favourite, like a superscript. It takes no space, so the title stays centred.
+   Just to show it: favourites are changed with the toolbar heart or H. */
+.title-text {
+  position: relative;
+}
+.title-fav {
+  position: absolute;
+  left: 100%;
+  top: -0.4em;
+  width: 0.75em;
+  height: 0.75em;
+  margin-left: 0.2em;
+  color: var(--fav);
+  opacity: 0.85;
+}
+.title-fav svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.title-fav path {
+  fill: currentColor;
+}
+/* Heartbeat and sound toggles beside the repeat button: muted when off, amber when on. */
+.round-pill {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 1px solid currentColor;
+  color: var(--muted);
+  opacity: 0.8;
+  transition:
+    color 0.4s,
+    background 0.4s,
+    opacity 0.3s;
+}
+.round-pill:hover {
+  opacity: 1;
+}
+.round-pill svg {
+  display: block;
+  margin: auto;
+}
+.round-pill.on {
+  color: var(--in);
+  background: color-mix(in srgb, var(--in) 14%, transparent);
+}
+#sound-pill .icon-sound,
+#sound-pill.on .icon-muted {
+  display: none;
+}
+#sound-pill.on .icon-sound {
+  display: block;
+}
 /* Repeat toggle beside the mode pill: muted "read once" icon when off, coloured repeat icon when on. */
 #repeat-pill {
   width: 28px;
@@ -86,27 +141,6 @@
 #repeat-pill.on {
   color: var(--in);
   background: color-mix(in srgb, var(--in) 14%, transparent);
-}
-/* Heart beside the pills, only while the open litany is a favourite. */
-#fav-pill {
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  border: 1px solid currentColor;
-  color: var(--fav);
-  background: color-mix(in srgb, var(--fav) 14%, transparent);
-  opacity: 0.8;
-  transition: opacity 0.3s;
-}
-#fav-pill:hover {
-  opacity: 1;
-}
-#fav-pill svg {
-  display: block;
-  margin: auto;
-}
-#fav-pill path {
-  fill: currentColor;
 }
 #mode-pill {
   padding: 5px 14px;
@@ -335,7 +369,9 @@ button {
   letter-spacing: 0.16em;
   text-transform: uppercase;
   color: var(--muted);
-  padding: 0 16px;
+  /* Room above for the favourite heart, which sits raised after the title. */
+  padding: 6px 16px 0;
+  margin-top: -6px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -450,6 +486,13 @@ button {
 #line.full .row {
   margin: 0.18em 0;
   cursor: pointer;
+}
+/* The title and its favourite heart keep their own colours, not the line's dim one. */
+#line .title-text {
+  color: inherit;
+}
+#line .title-fav {
+  color: var(--fav);
 }
 #line.full .title {
   font-size: 0.8em;

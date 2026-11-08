@@ -53,6 +53,17 @@ test.describe('index', () => {
     await expect(page.locator('#litany-list .fav').first()).toHaveAttribute('aria-pressed', 'true');
   });
 
+  test('a favourite shows a small heart after its title, for information only', async ({ page }) => {
+    await open(page, 'Alpha Litany');
+    const heart = page.locator('#reader-title .title-fav');
+    await expect(heart).toHaveCount(0);
+    await page.keyboard.press('h');
+    await expect(heart).toBeVisible();
+    await expect(page.locator('#reader-title button')).toHaveCount(0); // not something to click
+    await page.keyboard.press('h');
+    await expect(heart).toHaveCount(0);
+  });
+
   test('refuses a fourth favourite', async ({ page }) => {
     for (const title of ['Alpha Litany', 'Beta Litany', 'Delta Litany', 'Gamma Litany']) {
       const row = page.locator('#litany-list li', { hasText: title });
@@ -225,6 +236,24 @@ test.describe('modes', () => {
     await page.reload();
     await open(page, 'Alpha Litany');
     await expect(pulse).toBeVisible();
+  });
+
+  test('the top bar switches the heartbeat and mutes its sound', async ({ page }) => {
+    await open(page, 'Alpha Litany');
+    const beatPill = page.locator('#beat-pill');
+    const soundPill = page.locator('#sound-pill');
+    await expect(beatPill).toHaveAttribute('aria-pressed', 'false');
+    await expect(soundPill).toHaveAttribute('aria-pressed', 'false');
+    await beatPill.click();
+    await expect(page.locator('#pulse')).toBeVisible();
+    await expect(page.locator('#btn-beat')).toHaveAttribute('aria-pressed', 'true');
+    await soundPill.click();
+    await expect(soundPill).toHaveAttribute('aria-pressed', 'true');
+    await expect(page.locator('#t-beat-sound')).toBeChecked();
+    await soundPill.click(); // mute
+    await expect(page.locator('#t-beat-sound')).not.toBeChecked();
+    await beatPill.click();
+    await expect(page.locator('#pulse')).toBeHidden();
   });
 
   test('heartbeat sound and heart rates are set in the settings and remembered', async ({ page }) => {

@@ -10,7 +10,7 @@ A very simple app that shows a litany one line at a time, in large text, paced t
 
 | One line at a time | Whole litany |
 |---|---|
-| ![One line at a time: the line fills in amber on the in-breath; the dots under the title show how far through you are, and the heart at the top marks a favourite](docs/single-line.png) | ![Whole litany: lines already read keep their breath colour, the current line fills in amber; the heart at the top marks a favourite](docs/whole-litany.png) |
+| ![One line at a time: the line fills in amber on the in-breath; the dots under the title show how far through you are, a small heart after the title marks a favourite, and a soft heartbeat glows behind the breath ring](docs/single-line.png) | ![Whole litany: lines already read keep their breath colour, the current line fills in amber; a small heart after the title marks a favourite, and a soft heartbeat glows behind the breath ring](docs/whole-litany.png) |
 
 The idea comes from the **Litany Against Fear** in Frank Herbert's *Dune* (1965), recited by the Bene Gesserit to calm the mind in the face of fear. The litanies here are written in the same spirit: short lines, spoken slowly, in time with the breath.
 
@@ -221,8 +221,8 @@ An optional calming cue alongside the breath: a soft heart behind the breath rin
 ### Using it to calm down
 
 1. Open a litany and turn on **Repeat** (the button at the top, or `L`), so it keeps going for as long as you need.
-2. Turn on the heart with the heartbeat button (a heart with a pulse line through it) or `B`.
-3. For sound too, open ⚙ settings and tick **Heartbeat sound** under **Calming**. Turn the volume low: it should be a soft thump you can just hear. On an iPhone or iPad, flick the silent switch off.
+2. Turn on the heart with the heartbeat button at the top of the screen (a heart with a pulse line through it), or `B`.
+3. For sound too, click the speaker button beside it. It shows a crossed-out speaker while muted. Turn the volume low: it should be a soft thump you can just hear. On an iPhone or iPad, flick the silent switch off.
 4. Breathe with the ring and the line, and let the heartbeat sit in the background. Don't try to match it; just notice it slowing.
 5. Stay for several times through. The first time through it eases from about 80 beats a minute to about 54; then about 39, then 31, and on down toward 20.
 6. When you feel settled, pause (`Space`) or close the litany. Opening a litany starts the heartbeat fresh.
@@ -233,15 +233,15 @@ On a phone, the sound plays through earphones or the speaker; with earphones it 
 
 All under **Calming** in the ⚙ settings, off by default and saved in the browser:
 
-- **Heartbeat**: the heart behind the breath ring. Also the heartbeat button and `B`. It fades smoothly in and out with each beat, in the breath colour, with no flash or sudden change. With *reduce motion* turned on in your device settings, the heart stays still.
-- **Heartbeat sound**: a soft "lub-dub" on each beat, made by the browser (no sound file, so it works offline). It can be on with or without the heart. Browsers only allow sound after you tap or press a key, so it starts from your first tap after the page opens.
+- **Heartbeat**: the heart behind the breath ring. Also the heartbeat buttons at the top of the screen and in the toolbar, and `B`. It fades smoothly in and out with each beat, in the breath colour, with no flash or sudden change. With *reduce motion* turned on in your device settings, the heart stays still.
+- **Heartbeat sound**: a soft "lub-dub" on each beat, made by the browser (no sound file, so it works offline). It can be on with or without the heart. The speaker button at the top of the screen turns it on and mutes it. Browsers only allow sound after you tap or press a key, so it starts from your first tap after the page opens.
 - **Start heart rate** (default 80) and **Slowest heart rate** (default 20), in beats a minute, each between 10 and 150. A change takes effect straight away, the beat gliding to the new rate. Lower the start rate if 80 feels too quick to begin with.
 
 The beat never speeds up while a litany is open: going back a line or switching between the long and short form keeps the rate where it is.
 
 ## Favourites
 
-You can keep up to three favourites. On the index, hover over a litany and click the heart on the right; in the reader, use the heart button or `H`. Favourites show a filled heart and sit at the top of the index. While you read a favourite, a heart also shows at the top of the screen beside the Silent and repeat buttons; click it to remove the favourite. To pick a fourth, remove one first. They are kept in a cookie in your browser.
+You can keep up to three favourites. On the index, hover over a litany and click the heart on the right; in the reader, use the heart button or `H`. Favourites show a filled heart and sit at the top of the index. While you read a favourite, a small rose heart shows after its title, just so you can see it is one; to remove it, use the heart button or `H`. To pick a fourth, remove one first. They are kept in a cookie in your browser.
 
 ## Controls
 
