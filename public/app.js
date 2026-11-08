@@ -33,7 +33,10 @@ import {
 import { hiddenWords, levelOf, MEM_MAX, MEM_PILL, MEM_TOAST, memKey } from './lib/memorise.js';
 import { read, readFlag, readObject, save, saveFlag, saveObject } from './lib/prefs.js';
 import { buildParts, letterRange } from './lib/text.js';
+import { VERSION } from './version.js';
 import { keepAwake } from './wake-lock.js';
+
+document.getElementById('app-version').textContent = `Version ${VERSION}`;
 
 const $ = (id) => document.getElementById(id);
 const indexEl = $('index'),
