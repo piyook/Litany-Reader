@@ -222,7 +222,7 @@ An optional calming cue alongside the breath: a soft heart behind the breath rin
 
 1. Open a litany and turn on **Repeat** (the button at the top, or `L`), so it keeps going for as long as you need.
 2. Turn on the heart with the heartbeat button at the top of the screen (a heart with a pulse line through it), or `B`.
-3. For sound too, click the speaker button beside it. It shows a crossed-out speaker while muted. It should be a soft thump you can just hear: set it with **Heartbeat volume** in the ⚙ settings and the phone's volume buttons. On an iPhone or iPad, flick the silent switch off.
+3. For sound too, click the speaker button beside it. It shows a crossed-out speaker while muted. It should be a soft thump you can just hear: set it with **Heartbeat volume** in the ⚙ settings and the phone's volume buttons. It plays like any other media, so on an iPhone or iPad it plays even with the silent switch on; use the speaker button to mute it.
 4. Breathe with the ring and the line, and let the heartbeat sit in the background. Don't try to match it; just notice it slowing.
 5. Stay for several times through. The first time through it eases from about 80 beats a minute to about 54; then about 39, then 31, and on down toward 20.
 6. When you feel settled, pause (`Space`) or close the litany. Opening a litany starts the heartbeat fresh.

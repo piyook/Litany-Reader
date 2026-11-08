@@ -1,11 +1,13 @@
 # The checks the pre-push hook runs, again on GitHub: Biome (lint and format),
 # the unit tests, the end-to-end tests in a browser, fallow (dead code,
 # duplication, complexity) and npm audit.
+# Run on pull requests and on main after a merge. Not on pushes to dev: an open
+# pull request already runs them, and the pre-push hook runs them before any push.
 name: Quality checks
 
 on:
   push:
-    branches: [main, dev]
+    branches: [main]
   pull_request:
   workflow_dispatch:
 

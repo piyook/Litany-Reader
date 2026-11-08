@@ -1,7 +1,7 @@
 // Litany Reader front end: the page itself. The rules it follows (breathing,
 // splitting lines, learning by heart, favourites) live in lib/, with tests.
 
-import { playBeat, readySound } from './heart-sound.js';
+import { playBeat, readySound, setSoundGain } from './heart-sound.js';
 import {
   clampTiming,
   cueWord,
@@ -505,7 +505,7 @@ function beatTick(ms) {
   const before = beatAt;
   beatAt = (beatAt + (ms * bpm) / 60000) % 1;
   // Sound just before the heart is fullest (half way through the beat).
-  if (soundOn && passed(before, beatAt, 0.45)) playBeat(volumeGain(beatVolume));
+  if (soundOn && passed(before, beatAt, 0.45)) playBeat();
 }
 function setSound(on) {
   soundOn = on;
@@ -794,6 +794,7 @@ setAloud(aloud);
 setMemorise(memorise);
 setBeat(beatOn);
 setSound(soundOn);
+setSoundGain(volumeGain(beatVolume));
 readySound();
 setTheme(document.documentElement.dataset.theme || 'dark');
 
@@ -882,7 +883,10 @@ volumeField.addEventListener('input', () => {
   beatVolume = clampVolume(parseFloat(volumeField.value));
   save('litany-beat-volume', String(beatVolume));
 });
-volumeField.addEventListener('change', () => playBeat(volumeGain(beatVolume)));
+volumeField.addEventListener('change', () => {
+  setSoundGain(volumeGain(beatVolume));
+  playBeat();
+});
 for (const k in rateFields) {
   rateFields[k].addEventListener('input', () => {
     const v = parseFloat(rateFields[k].value);
