@@ -48,11 +48,12 @@ function thump(a, at, loudness) {
   osc.stop(at + 0.2);
 }
 
-// One heartbeat: a thump, then a softer one just after.
-export function playBeat() {
+// One heartbeat: a thump, then a softer one just after. `gain` scales both:
+// 1 is the original quiet level, about 2.6 the loudest that doesn't distort.
+export function playBeat(gain = 1) {
   const a = audio();
-  if (a?.state !== 'running') return;
+  if (a?.state !== 'running' || gain <= 0) return;
   const now = a.currentTime + 0.01;
-  thump(a, now, 0.35);
-  thump(a, now + 0.16, 0.2);
+  thump(a, now, 0.35 * gain);
+  thump(a, now + 0.16, 0.2 * gain);
 }

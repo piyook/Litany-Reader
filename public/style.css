@@ -685,9 +685,10 @@ button {
   border-radius: 12px;
   font-family: system-ui, sans-serif;
   font-size: 14px;
-  /* Scrolls on short screens rather than running off the top. */
+  /* Scrolls on short screens rather than running off the top, and sits above the top bar. */
   max-height: calc(100% - 120px - var(--safe-top) - var(--safe-bottom));
   overflow-y: auto;
+  z-index: 3;
 }
 #settings h2 {
   font-size: 13px;
@@ -729,6 +730,13 @@ button {
 #settings input[type="checkbox"] {
   width: 18px;
   height: 18px;
+  accent-color: var(--in);
+}
+#settings input[type="range"] {
+  width: 120px;
+  padding: 0;
+  border: 0;
+  background: none;
   accent-color: var(--in);
 }
 #settings input:disabled {
@@ -788,6 +796,8 @@ button {
     right: calc(12px + var(--safe-right));
     width: auto;
     bottom: calc(150px + var(--safe-bottom));
+    /* Stop below the top bar; scroll inside if the screen is short. */
+    max-height: calc(100% - 150px - 64px - var(--safe-top) - var(--safe-bottom));
   }
   #toast {
     bottom: calc(150px + var(--safe-bottom));
