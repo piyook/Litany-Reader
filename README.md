@@ -34,7 +34,7 @@ These help me. I hope they help someone else.
 ## Install as an app
 
 <p align="center">
-  <img src="docs/phone-short-line.png" width="260" alt="Installed on an iPhone, the short form one line at a time: 'I am the centre of the storm.' fills in blue on the out-breath, with five dots under the title for the five lines, and a soft blue heartbeat behind the breath ring">
+  <img src="docs/phone-short-line.png" width="260" alt="Installed on an iPhone, the short form one line at a time: 'Winds rage around me, but within me is calm.' fills in blue on the out-breath, with five dots under the title for the five lines, and a soft blue heartbeat behind the breath ring">
   &nbsp;&nbsp;
   <img src="docs/phone-short-whole.png" width="260" alt="Installed on an iPhone, the whole short form on one screen: the first two lines keep their breath colour and the third fills in amber on the in-breath, with a soft amber heartbeat behind the breath ring">
 </p>
