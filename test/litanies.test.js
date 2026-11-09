@@ -110,11 +110,18 @@ describe('listFiles and listLitanies', () => {
     expect((await listFiles(lib)).sort()).toEqual(['a.TXT', 'b.txt']);
   });
 
-  it('gives the id, title and author of each litany, sorted by title', async () => {
+  it('gives the id, title, author and opening line of each litany, sorted by title', async () => {
     expect(await listLitanies(lib)).toEqual([
-      { id: 'a.TXT', title: 'Apple Peace', author: 'Jo' },
-      { id: 'b.txt', title: 'Zebra Calm', author: '' },
+      { id: 'a.TXT', title: 'Apple Peace', author: 'Jo', first: 'One' },
+      { id: 'b.txt', title: 'Zebra Calm', author: '', first: 'One' },
     ]);
+  });
+
+  it('gives no opening line for a litany that is only a title', async () => {
+    const solo = await fs.mkdtemp(path.join(os.tmpdir(), 'litany-solo-'));
+    await fs.writeFile(path.join(solo, 'q.txt'), 'Quiet');
+    expect(await listLitanies(solo)).toEqual([{ id: 'q.txt', title: 'Quiet', author: '', first: '' }]);
+    await fs.rm(solo, { recursive: true, force: true });
   });
 
   it('reads the litanies folder by default', async () => {

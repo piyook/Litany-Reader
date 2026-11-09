@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { hexToRgb, lerp, mix, rgb } from '../public/lib/colour.js';
-import { favsCookie, favsFirst, MAX_FAVS, parseFavs, toggled } from '../public/lib/favs.js';
+import { favsCookie, MAX_FAVS, parseFavs, toggled } from '../public/lib/favs.js';
 import { read, readFlag, readObject, save, saveFlag, saveObject } from '../public/lib/prefs.js';
 
 describe('favourites', () => {
@@ -25,11 +25,6 @@ describe('favourites', () => {
     expect(toggled(['a', 'b'], 'a')).toEqual(['b']);
     expect(toggled(['a', 'b', 'c'], 'd')).toBeNull();
     expect(MAX_FAVS).toBe(3);
-  });
-
-  it('puts favourites first, each group in its own order', () => {
-    const items = [{ id: 'a' }, { id: 'b' }, { id: 'c' }, { id: 'd' }];
-    expect(favsFirst(items, ['c', 'b']).map((it) => it.id)).toEqual(['b', 'c', 'a', 'd']);
   });
 });
 

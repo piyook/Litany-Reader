@@ -12,7 +12,8 @@ test.beforeEach(async ({ page }) => {
 });
 
 const open = async (page, title) => {
-  await page.locator('#litany-list .open', { hasText: title }).click();
+  // .first(): a favourite is listed twice, under Favourites and in its group.
+  await page.locator('#litany-list .open', { hasText: title }).first().click();
   await expect(page.locator('#reader')).toBeVisible();
 };
 // Every cue word shown so far, in order, so short phases are not missed.
@@ -34,23 +35,40 @@ const showControls = async (page) => {
 };
 
 test.describe('index', () => {
-  test('lists every litany by title, with its author', async ({ page }) => {
-    await expect(page.locator('#litany-list .open')).toHaveText([
-      /^Alpha Litany\s*Tester$/,
+  test('lists every litany by title, with its opening line and (authors differ here) its author', async ({ page }) => {
+    await expect(page.locator('#litany-list .key')).toHaveText([
+      'Alpha Litany',
       'Beta Litany',
       'Delta Litany',
       'Gamma Litany',
     ]);
+    const alpha = page.locator('#litany-list li', { hasText: 'Alpha Litany' });
+    await expect(alpha.locator('.first')).toHaveText('First line of alpha.');
+    await expect(alpha.locator('.author-tag')).toHaveText('Tester');
+    // None of these titles start "Litany against / for / of", so they share one
+    // section, which stays open: folding the only group would hide everything.
+    await expect(page.locator('#litany-list h2')).toHaveText(['Litanies']);
+    await expect(page.locator('#litany-list .toggle')).toHaveCount(0);
   });
 
-  test('a favourite moves to the top and stays there after a reload', async ({ page }) => {
-    const row = page.locator('#litany-list li', { hasText: 'Gamma Litany' });
-    await row.hover();
-    await row.locator('.fav').click();
-    await expect(page.locator('#litany-list .open').first()).toHaveText('Gamma Litany');
+  test('no row is picked out when the page opens', async ({ page }) => {
+    await expect(page.locator('#litany-list .key').first()).toBeVisible();
+    await expect(page.locator('#litany-list :focus')).toHaveCount(0);
+  });
+
+  test('a favourite shows under the always-open Favourites, stays in its group too, and is remembered', async ({
+    page,
+  }) => {
+    await page.locator('#litany-list li', { hasText: 'Gamma Litany' }).locator('.fav').click();
+    const favs = page.locator('#litany-list [data-group="fav"]');
+    const inGroup = page.locator('#litany-list [data-group="more"] li', { hasText: 'Gamma Litany' });
+    await expect(favs.locator('.key')).toHaveText(['Gamma Litany']);
+    await expect(inGroup.locator('.fav')).toHaveAttribute('aria-pressed', 'true');
     await page.reload();
-    await expect(page.locator('#litany-list .open').first()).toHaveText('Gamma Litany');
-    await expect(page.locator('#litany-list .fav').first()).toHaveAttribute('aria-pressed', 'true');
+    await expect(favs.locator('.key')).toHaveText(['Gamma Litany']);
+    await expect(favs.locator('.fav')).toHaveAttribute('aria-pressed', 'true');
+    await expect(inGroup.locator('.fav')).toHaveAttribute('aria-pressed', 'true');
+    await expect(favs.locator('.toggle')).toHaveCount(0); // nothing to fold
   });
 
   test('a favourite shows a small heart after its title, for information only', async ({ page }) => {
@@ -67,11 +85,44 @@ test.describe('index', () => {
   test('refuses a fourth favourite', async ({ page }) => {
     for (const title of ['Alpha Litany', 'Beta Litany', 'Delta Litany', 'Gamma Litany']) {
       const row = page.locator('#litany-list li', { hasText: title });
-      await row.hover();
       await row.locator('.fav').click();
     }
     await expect(page.locator('#toast')).toHaveText('You can have three favourites. Remove one first.');
-    await expect(page.locator('#litany-list .fav.on')).toHaveCount(3);
+    await expect(page.locator('#litany-list [data-group="fav"] li')).toHaveCount(3);
+  });
+});
+
+// Real titles, so the litanies fall into the folding groups. The offline helper is
+// kept out of the way so the made-up index is what the page sees, reload included.
+test.describe('index groups', () => {
+  test.use({ serviceWorkers: 'block' });
+  const items = [
+    { id: 'alpha.txt', title: 'Litany Against Fear', author: '', first: 'Fear does not rule me.' },
+    { id: 'beta.txt', title: 'Litany Against Worry', author: '', first: 'I will not live tomorrow today.' },
+    { id: 'gamma.txt', title: 'Litany for Calm', author: '', first: 'I am the centre of the storm.' },
+  ];
+  test.beforeEach(async ({ page }) => {
+    await page.route('**/api/index.json', (r) => r.fulfill({ json: items }));
+    await page.reload();
+  });
+
+  test('groups start folded, showing what is in them, and open on a click, remembered', async ({ page }) => {
+    const sec = page.locator('#litany-list [data-group="against"]');
+    const toggle = sec.locator('.toggle');
+    await expect(page.locator('#litany-list .all-head')).toHaveText('All litanies');
+    await expect(page.locator('#litany-list .toggle .label')).toHaveText(['Holding steady', 'Every day']);
+    await expect(toggle).toHaveAttribute('aria-expanded', 'false');
+    await expect(sec.locator('.summary')).toHaveText('Fear, Worry');
+    await expect(sec.locator('.key').first()).toBeHidden();
+    await toggle.click();
+    await expect(toggle).toHaveAttribute('aria-expanded', 'true');
+    await expect(sec.locator('.key')).toHaveText(['Fear', 'Worry']);
+    await expect(sec.locator('.prefix').first()).toHaveText('Litany Against');
+    await page.reload();
+    await expect(toggle).toHaveAttribute('aria-expanded', 'true');
+    await expect(page.locator('#litany-list [data-group="toward"] .toggle')).toHaveAttribute('aria-expanded', 'false');
+    await toggle.click();
+    await expect(sec.locator('.key').first()).toBeHidden();
   });
 });
 

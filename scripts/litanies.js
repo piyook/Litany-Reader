@@ -44,13 +44,15 @@ async function parseLitany(file, dir = LITANY_DIR) {
   return { title, lines, short, author: authors.join(', ') };
 }
 
-// The index: id, title and author of every litany, sorted by title.
+// The index: id, title, author and opening line of every litany, sorted by title.
 async function listLitanies(dir = LITANY_DIR) {
   const files = await listFiles(dir);
   const items = await Promise.all(
     files.map(async (id) => {
-      const { title, author } = await parseLitany(id, dir);
-      return { id, title, author };
+      const { title, author, lines } = await parseLitany(id, dir);
+      // A file with no steps shows its title as its only line; that's no preview.
+      const first = lines[0] === title ? '' : lines[0];
+      return { id, title, author, first };
     }),
   );
   return items.sort((a, b) => a.title.localeCompare(b.title));
