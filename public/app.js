@@ -17,7 +17,7 @@ import {
   revealNow,
 } from './lib/breath.js';
 import { hexToRgb, lerp, mix, rgb } from './lib/colour.js';
-import { favsCookie, favsFirst, parseFavs, toggled } from './lib/favs.js';
+import { favsCookie, parseFavs, toggled } from './lib/favs.js';
 import {
   beatPulse,
   bpmAt,
@@ -33,6 +33,7 @@ import {
 } from './lib/heartbeat.js';
 import { hiddenWords, levelOf, MEM_MAX, MEM_PILL, MEM_TOAST, memKey } from './lib/memorise.js';
 import { read, readFlag, readObject, save, saveFlag, saveObject } from './lib/prefs.js';
+import { indexSections, showAuthors, splitTitle } from './lib/sections.js';
 import { buildParts, letterRange } from './lib/text.js';
 import { VERSION } from './version.js';
 import { keepAwake } from './wake-lock.js';
@@ -217,23 +218,43 @@ async function showIndex() {
       saveFavs();
     }
     renderIndex();
-    listEl.querySelector('.open')?.focus();
+    // Ready for the keyboard, but only for keyboard users: a focused row lights up,
+    // which looks like a choice already made to someone who taps.
+    if (usingKeys) listEl.querySelector('.open')?.focus();
   } catch {
     msgEl.textContent = 'Could not reach the server. Is it running?';
   }
 }
 
-function indexRow(it) {
+// Whether the last thing used was the keyboard (rather than a mouse or finger).
+let usingKeys = false;
+addEventListener('keydown', () => (usingKeys = true), true);
+addEventListener('pointerdown', () => (usingKeys = false), true);
+
+// Sections opened on the index, by key, remembered on this device. They start
+// folded, so the index fits on a phone screen. Favourites never fold.
+const openSections = readObject('litany-open', {});
+
+const span = (cls, text) => {
+  const s = document.createElement('span');
+  s.className = cls;
+  s.textContent = text;
+  return s;
+};
+
+// One row: "Litany against" small above the key word ("Fear"), then the opening line.
+function indexRow(it, withAuthor) {
   const li = document.createElement('li');
   const b = document.createElement('button');
   b.className = 'open';
-  b.textContent = it.title;
-  if (it.author) {
-    const a = document.createElement('span');
-    a.className = 'author-tag';
-    a.textContent = it.author;
-    b.appendChild(a);
-  }
+  const { prefix, key } = splitTitle(it.title);
+  const eyebrow = span('eyebrow', '');
+  if (prefix) eyebrow.appendChild(span('prefix', prefix));
+  if (withAuthor && it.author) eyebrow.appendChild(span('author-tag', it.author));
+  if (eyebrow.childElementCount) b.appendChild(eyebrow);
+  b.appendChild(span('key', key));
+  if (it.first) b.appendChild(span('first', it.first));
+  b.setAttribute('aria-label', [it.title, withAuthor && it.author, it.first].filter(Boolean).join('. '));
   b.onclick = () => openLitany(it.id);
   const h = document.createElement('button');
   const on = favs.includes(it.id);
@@ -252,10 +273,72 @@ function indexRow(it) {
   return li;
 }
 
-// Favourites first, then the rest, each in the server's (alphabetical) order.
+// Lines of text, like the whole-litany button: the icon for "All litanies".
+const LINES =
+  '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M5 6h14"/><path d="M3 11h18"/><path d="M6 16h12"/><path d="M4 21h16"/></svg>';
+const CHEVRON =
+  '<svg class="chev" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>';
+
+// Favourites (always open), then the groups, each a heading that opens and closes it.
+// A closed group lists its key words under the heading, so you can see what's in it.
+// With only one group there is nothing to save by folding it, so it stays open.
 function renderIndex() {
   listEl.innerHTML = '';
-  for (const it of favsFirst(indexItems, favs)) listEl.appendChild(indexRow(it));
+  const withAuthor = showAuthors(indexItems);
+  const sections = indexSections(indexItems, favs);
+  const oneGroup = sections.filter((sec) => sec.key !== 'fav').length === 1;
+  for (const sec of sections) {
+    // "All litanies" heads the folding groups, set apart from Favourites.
+    if (sec.key !== 'fav' && !oneGroup && !listEl.querySelector('.all-head')) {
+      const all = document.createElement('h2');
+      all.className = 'plain-head all-head';
+      all.innerHTML = LINES;
+      all.append('All litanies');
+      listEl.appendChild(all);
+    }
+    const s = document.createElement('section');
+    s.className = 'group';
+    s.dataset.group = sec.key;
+    const h = document.createElement('h2');
+    const ul = document.createElement('ul');
+    for (const it of sec.items) ul.appendChild(indexRow(it, withAuthor));
+    if (sec.key === 'fav' || oneGroup) {
+      h.className = 'plain-head';
+      h.innerHTML = sec.key === 'fav' ? HEART : '<span class="dot" aria-hidden="true"></span>';
+      h.append(sec.label);
+      s.append(h, ul);
+    } else {
+      const shut = openSections[sec.key] !== true;
+      const t = document.createElement('button');
+      t.type = 'button';
+      t.className = 'toggle';
+      t.innerHTML = `${CHEVRON}<span class="dot" aria-hidden="true"></span>`;
+      t.append(
+        span('label', sec.label),
+        span('count', String(sec.items.length)),
+        span('summary', sec.items.map((it) => splitTitle(it.title).key).join(', ')),
+      );
+      const body = document.createElement('div');
+      body.className = 'body';
+      body.appendChild(ul);
+      const show = (closed) => {
+        s.classList.toggle('closed', closed);
+        t.setAttribute('aria-expanded', String(!closed));
+        ul.inert = closed; // rows out of sight are out of reach of Tab too
+      };
+      show(shut);
+      t.onclick = () => {
+        const closed = !s.classList.contains('closed');
+        show(closed);
+        if (closed) delete openSections[sec.key];
+        else openSections[sec.key] = true;
+        saveObject('litany-open', openSections);
+      };
+      h.appendChild(t);
+      s.append(h, body);
+    }
+    listEl.appendChild(s);
+  }
 }
 
 // ---- Reader ----

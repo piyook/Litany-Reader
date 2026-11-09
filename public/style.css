@@ -182,26 +182,6 @@
   color: var(--out);
   background: color-mix(in srgb, var(--out) 14%, transparent);
 }
-.index-head {
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  margin: 0 0 2rem;
-}
-.index-head .btn-theme {
-  color: var(--muted);
-  width: 38px;
-  height: 38px;
-  border-radius: 50%;
-}
-.index-head .btn-theme:hover {
-  color: var(--text);
-  background: var(--line);
-}
-.index-head .btn-theme svg {
-  display: block;
-  margin: auto;
-}
 
 * {
   box-sizing: border-box;
@@ -231,68 +211,292 @@ button {
   color: var(--muted);
 }
 
-/* Index */
-/* Content up to 1200px wide, centred by the side padding, so the scroll box stays full width
-   and any scrollbar (only on short windows) sits at the window edge. */
+/* Index. Phone first: one column with a 20px gutter; on wider screens the column
+   stops at 680px, centred by the side padding, so the scroll box stays full width
+   and any scrollbar sits at the window edge. */
 #index {
-  padding-top: calc(8vh + var(--safe-top));
-  padding-bottom: calc(8vh + var(--safe-bottom));
-  padding-left: max(clamp(24px, 6vw, 96px), calc((100% - 1200px) / 2), calc(16px + var(--safe-left)));
-  padding-right: max(clamp(24px, 6vw, 96px), calc((100% - 1200px) / 2), calc(16px + var(--safe-right)));
+  padding-top: calc(28px + var(--safe-top));
+  padding-bottom: calc(40px + var(--safe-bottom));
+  padding-left: max(20px, calc(16px + var(--safe-left)), calc((100% - 680px) / 2));
+  padding-right: max(20px, calc(16px + var(--safe-right)), calc((100% - 680px) / 2));
   overflow-y: auto;
   height: 100%;
 }
 #index-msg:empty {
   display: none;
 }
+
+/* Header: the breath ring, the name, the theme button; then one line on what it's for. */
+.index-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.index-head .mark {
+  width: 34px;
+  height: 34px;
+  flex-shrink: 0;
+}
+.mark .track {
+  fill: none;
+  stroke: var(--line);
+  stroke-width: 7;
+}
+.mark .arc {
+  fill: none;
+  stroke: var(--in);
+  stroke-width: 7;
+  stroke-linecap: round;
+  stroke-dasharray: 0.62 1;
+  transform: rotate(-90deg);
+  transform-origin: 50% 50%;
+}
+.mark .orb {
+  fill: var(--in);
+  opacity: 0.85;
+}
 #index h1 {
+  flex: 1;
+  margin: 0;
+  font-weight: normal;
+  font-size: 1.35rem;
+  letter-spacing: 0.01em;
+  color: var(--text);
+}
+.index-head .btn-theme {
+  color: var(--muted);
+  width: 44px;
+  height: 44px;
+  margin-right: -8px; /* line the icon up with the hearts below */
+  border-radius: 50%;
+}
+.index-head .btn-theme:hover {
+  color: var(--text);
+  background: var(--line);
+}
+.index-head .btn-theme svg {
+  display: block;
+  margin: auto;
+}
+#index .intro {
+  margin: 10px 0 0;
+  color: var(--muted);
+  font-style: italic;
+  line-height: 1.5;
+}
+
+/* Sections: lines between them; Favourites always open, the others open and close. */
+#litany-list {
+  margin-top: 24px;
+  border-top: 1px solid var(--line);
+}
+#litany-list .group {
+  border-bottom: 1px solid var(--line);
+}
+#litany-list h2 {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: system-ui, sans-serif;
+  font-weight: 600;
+  font-size: 14px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.plain-head {
+  padding: 20px 0 2px;
+}
+/* A clear gap after Favourites, then the heading over the folding groups. */
+#litany-list .all-head {
+  margin-top: 20px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--line);
+}
+#litany-list .all-head:first-child {
+  margin-top: 0;
+}
+#litany-list h2 > svg {
+  width: 16px;
+  height: 16px;
+  color: var(--fav);
+  fill: currentColor;
+}
+#litany-list .all-head > svg {
+  color: var(--hold);
+  fill: none;
+}
+/* A dot in the breath colours: blue (letting go) for Holding steady, amber (taking in) for Every day. */
+#litany-list .dot {
+  flex-shrink: 0;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--muted);
+}
+#litany-list [data-group="against"] .dot {
+  background: var(--out);
+}
+#litany-list [data-group="toward"] .dot {
+  background: var(--in);
+}
+#litany-list .toggle {
+  width: 100%;
+  min-height: 56px;
+  padding: 14px 0;
+  text-align: left;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 10px;
+  font: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
+}
+/* Open, the heading sits close to its first row; closed, it has room for the summary. */
+#litany-list .group:not(.closed) .toggle {
+  padding-bottom: 2px;
+}
+#litany-list .toggle:hover {
+  color: var(--text);
+}
+#litany-list .toggle:focus-visible {
+  outline: 2px solid var(--in);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+#litany-list .chev {
+  display: block;
+  flex-shrink: 0;
+  width: 22px;
+  height: 22px;
+  margin-left: -3px; /* the arrow's drawing sits inset; line it up with the text edge */
+  transition: transform 0.25s;
+}
+#litany-list .closed .chev {
+  transform: rotate(-90deg);
+}
+#litany-list .count {
+  margin-left: auto;
+  padding-right: 14px; /* under the hearts' centre line */
   font-weight: normal;
   letter-spacing: 0.04em;
-  color: var(--muted);
-  font-size: 1.1rem;
-  text-transform: uppercase;
-  margin: 0;
+  font-variant-numeric: tabular-nums;
 }
-#litany-list {
+#litany-list .summary {
+  display: none;
+  flex-basis: 100%;
+  padding-left: 29px; /* under the dot */
+  font-family: Georgia, "Iowan Old Style", "Palatino Linotype", serif;
+  font-weight: normal;
+  font-size: 1.05rem;
+  letter-spacing: 0;
+  text-transform: none;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+#litany-list .closed .summary {
+  display: block;
+}
+#litany-list ul {
   list-style: none;
-  padding: 0;
+  padding: 0 0 4px;
   margin: 0;
 }
+/* Slides open and shut where the browser can animate grid rows; older iPads just snap. */
+#litany-list .body {
+  display: grid;
+  grid-template-rows: 1fr;
+  transition: grid-template-rows 0.3s ease;
+}
+#litany-list .body > ul {
+  overflow: hidden;
+  min-height: 0;
+}
+#litany-list .closed .body {
+  grid-template-rows: 0fr;
+}
+/* Truly hidden once shut (after the slide), so nothing reads or reaches the rows. */
+#litany-list .closed ul {
+  padding-bottom: 0;
+  visibility: hidden;
+  transition: visibility 0s 0.3s;
+}
+
+/* Rows: "Litany against" small, the key word large, the opening line faint below. */
 #litany-list li {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 4px;
   border-bottom: 1px solid var(--line);
+}
+#litany-list li:last-child {
+  border-bottom: 0;
 }
 #litany-list .open {
   flex: 1;
   min-width: 0;
+  min-height: 44px;
+  padding: 14px 0;
   text-align: left;
-  font-size: 1.8rem;
-  padding: 0.9rem 0;
-  color: var(--text);
-  transition: color 0.2s;
+  display: grid;
+  gap: 2px;
 }
-#litany-list .open:hover,
 #litany-list .open:focus-visible {
-  color: var(--in);
   outline: none;
 }
-/* Small muted author tag on the right of each index entry. */
-#litany-list .open {
+#litany-list .eyebrow {
   display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  gap: 1rem;
+  align-items: center;
+  gap: 8px;
+  font-family: system-ui, sans-serif;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
 }
-/* Heart: filled for a favourite, a faint outline on hover or focus otherwise. */
+#litany-list .key {
+  font-size: 1.65rem;
+  line-height: 1.15;
+  color: var(--text);
+  overflow-wrap: anywhere;
+  transition: color 0.2s;
+}
+#litany-list .first {
+  font-style: italic;
+  color: var(--muted);
+  font-size: 0.95rem;
+  line-height: 1.4;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+#litany-list .open:hover .key,
+#litany-list .open:focus-visible .key {
+  color: var(--in);
+}
+#litany-list [data-group="against"] .open:hover .key,
+#litany-list [data-group="against"] .open:focus-visible .key {
+  color: var(--out);
+}
+/* Shown only when the litanies are by different people. */
+#litany-list .author-tag {
+  letter-spacing: 0.04em;
+  text-transform: none;
+  padding: 1px 8px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+}
+/* Heart: filled for a favourite, a faint outline otherwise. */
 #litany-list .fav {
   flex-shrink: 0;
-  width: 38px;
-  height: 38px;
+  width: 44px;
+  height: 44px;
   border-radius: 50%;
   color: var(--muted);
-  opacity: 0;
+  opacity: 0.45;
   transition:
     opacity 0.2s,
     color 0.2s;
@@ -301,38 +505,41 @@ button {
   display: block;
   margin: auto;
 }
-#litany-list li:hover .fav,
-#litany-list li:focus-within .fav {
-  opacity: 0.6;
-}
-#litany-list li .fav:hover,
-#litany-list li .fav:focus-visible {
+#litany-list .fav:hover,
+#litany-list .fav:focus-visible {
   opacity: 1;
   color: var(--fav);
   outline: none;
 }
-#litany-list li .fav.on {
+#litany-list .fav.on {
   opacity: 1;
   color: var(--fav);
-}
-@media (hover: none) {
-  #litany-list .fav {
-    opacity: 0.5;
-  }
 }
 .fav.on path,
 #btn-fav.active path {
   fill: currentColor;
 }
-#litany-list .author-tag {
-  flex-shrink: 0;
-  font-family: system-ui, sans-serif;
-  font-size: 0.72rem;
-  letter-spacing: 0.08em;
-  color: var(--muted);
-  padding: 2px 9px;
-  border: 1px solid var(--line);
-  border-radius: 999px;
+
+/* Wider screens: a little more air and larger key words. */
+@media (min-width: 700px) {
+  #index {
+    padding-top: calc(8vh + var(--safe-top));
+  }
+  #litany-list {
+    margin-top: 32px;
+  }
+  #litany-list .key {
+    font-size: 2rem;
+  }
+  #litany-list .first {
+    font-size: 1.05rem;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  #litany-list .body,
+  #litany-list .chev {
+    transition: none;
+  }
 }
 
 /* Reader */

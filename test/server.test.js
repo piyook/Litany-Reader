@@ -22,7 +22,7 @@ describe('the API', () => {
     expect(res.headers.get('cache-control')).toBe('no-store');
     const items = await res.json();
     expect(items.length).toBeGreaterThan(0);
-    for (const item of items) expect(Object.keys(item).sort()).toEqual(['author', 'id', 'title']);
+    for (const item of items) expect(Object.keys(item).sort()).toEqual(['author', 'first', 'id', 'title']);
   });
 
   it('gives one litany at both its paths', async () => {

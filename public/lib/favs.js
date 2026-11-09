@@ -23,9 +23,3 @@ export function toggled(favs, id) {
   if (favs.length >= MAX_FAVS) return null;
   return [...favs, id];
 }
-
-// Favourites first, then the rest, each keeping the order of `items`.
-export const favsFirst = (items, favs) => [
-  ...items.filter((it) => favs.includes(it.id)),
-  ...items.filter((it) => !favs.includes(it.id)),
-];

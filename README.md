@@ -161,9 +161,19 @@ Author: Name
 - The first line is the title.
 - Every other non-empty line is one step on screen.
 - An optional `Short version` (or `Short form`) line starts a short form: the lines after it are a quick version of the litany, read when [Short form](#views) is on. A litany without one is always read in full.
-- An optional `Author:` line, last in the file or last before `Short version`, is a credit, not a step. A line ending in `.`, `!` or `?` is always read as a step. It shows as a small tag beside the title on the index, and under the text in the whole-litany view.
+- An optional `Author:` line, last in the file or last before `Short version`, is a credit, not a step. A line ending in `.`, `!` or `?` is always read as a step. It shows under the text in the whole-litany view, and as a small tag on the index when the litanies are not all by the same author.
+- The title decides where the litany sits on the index: "Litany against …" under **Holding steady**, "Litany for …" or "Litany of …" under **Every day**, anything else under **More**. See [The index](#the-index).
 
 The folder is read fresh each time, so new or edited files show up when you refresh.
+
+## The index
+
+The index lists your **Favourites** first, then **All litanies** in two groups:
+
+- **Holding steady**: the litanies against something (anxiety, fear, worry…).
+- **Every day**: the litanies for or of something (calm, patience, sleep, gratitude…).
+
+Each litany shows the key word of its title large ("Fear"), with "Litany against" small above it and its opening line underneath. The groups start folded, showing how many litanies they hold and what they are; tap a group's heading to open or close it. The browser remembers which groups you opened. Favourites are always open.
 
 ## Breathing
 
@@ -242,7 +252,7 @@ The beat never speeds up while a litany is open: going back a line or switching 
 
 ## Favourites
 
-You can keep up to three favourites. On the index, hover over a litany and click the heart on the right; in the reader, use the heart button or `H`. Favourites show a filled heart and sit at the top of the index. While you read a favourite, a small rose heart shows after its title, just so you can see it is one; to remove it, use the heart button or `H`. To pick a fourth, remove one first. They are kept in a cookie in your browser.
+You can keep up to three favourites. On the index, tap the heart on the right of a litany; in the reader, use the heart button or `H`. Favourites show a filled heart and are listed under **Favourites** at the top of the index, as well as in their own group. While you read a favourite, a small rose heart shows after its title, just so you can see it is one; to remove it, use the heart button or `H`. To pick a fourth, remove one first. They are kept in a cookie in your browser.
 
 ## Controls
 

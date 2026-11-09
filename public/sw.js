@@ -15,6 +15,7 @@ const SHELL = [
   'lib/heartbeat.js',
   'lib/memorise.js',
   'lib/prefs.js',
+  'lib/sections.js',
   'lib/text.js',
   'style.css',
   'manifest.webmanifest',
