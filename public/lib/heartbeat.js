@@ -4,13 +4,13 @@
 
 // Beats per minute at the start, and the slowest it gets after many times through.
 // Both can be changed in the settings.
-export const DEFAULT_RATES = { start: 80, end: 20 };
+export const DEFAULT_RATES = { start: 60, end: 20 };
 
 // A rate typed into the settings, kept between 10 and 150 beats a minute.
 export const clampRate = (v) => Math.max(10, Math.min(150, Math.round(v)));
 
 // How quickly it slows: one time through covers about 43% of the way from the
-// start rate to the slowest (80 to 54 with the defaults), two about 68%, three 82%.
+// start rate to the slowest (60 to 43 with the defaults), two about 68%, three 82%.
 const SLOWING = Math.log(60 / 34);
 
 // Beats per minute after `done` times through the litany (0.5 is half way
@@ -43,6 +43,13 @@ export const volumeGain = (v) => (clampVolume(v) / 100) * MAX_GAIN;
 // (all 0 to 1, wrapping round at 1). Used to sound each beat once.
 export const passed = (before, after, at) =>
   before <= after ? before < at && at <= after : at > before || at <= after;
+
+// The point in a beat (0 to 1) at which to start the sound so it lands with the
+// heart at its fullest (half way, 0.5). The sound has a fixed start-up delay
+// (about 30ms), so the lead is a time, not a share of the beat: a share that suits
+// 60 beats a minute starts it far too early at 20.
+const SOUND_LEAD_MS = 30;
+export const soundPoint = (bpm) => Math.max(0, 0.5 - (SOUND_LEAD_MS * bpm) / 60000);
 
 // How visible the heart is (0 unseen, 1 at its fullest) at `b`, the point in
 // one beat (0 to 1): a smooth fade in and out, with no sudden change.

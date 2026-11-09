@@ -278,8 +278,8 @@ test.describe('modes', () => {
     const box = page.locator('#t-beat-sound');
     await expect(box).not.toBeChecked();
     await box.check();
-    // The heart rates start at 80 and 20, and a change is saved.
-    await expect(page.locator('#t-hr-start')).toHaveValue('80');
+    // The heart rates start at 60 and 20, and a change is saved.
+    await expect(page.locator('#t-hr-start')).toHaveValue('60');
     await expect(page.locator('#t-hr-end')).toHaveValue('20');
     await page.locator('#t-hr-end').fill('35');
     // Volume starts at 70 and is saved when moved.
@@ -288,7 +288,7 @@ test.describe('modes', () => {
     await volume.fill('90');
     expect(await page.evaluate(() => localStorage.getItem('litany-beat-volume'))).toBe('90');
     expect(await page.evaluate(() => JSON.parse(localStorage.getItem('litany-heart-rates')))).toEqual({
-      start: 80,
+      start: 60,
       end: 35,
     });
     await page.locator('#t-done').click();

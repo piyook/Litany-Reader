@@ -9,8 +9,22 @@ import {
   furthest,
   glide,
   passed,
+  soundPoint,
   volumeGain,
 } from '../public/lib/heartbeat.js';
+
+describe('soundPoint', () => {
+  it('starts the sound the same time before the peak at any rate', () => {
+    for (const bpm of [10, 20, 54, 80, 150]) {
+      const leadMs = ((0.5 - soundPoint(bpm)) * 60000) / bpm;
+      expect(leadMs).toBeCloseTo(30, 5);
+    }
+  });
+  it('is just before the peak, never after it', () => {
+    expect(soundPoint(80)).toBeLessThan(0.5);
+    expect(soundPoint(20)).toBeCloseTo(0.49, 5);
+  });
+});
 
 describe('passed', () => {
   it('is true only on the frame that moves past the point', () => {
@@ -30,9 +44,9 @@ describe('passed', () => {
 
 describe('bpmAt', () => {
   const { start, end } = DEFAULT_RATES;
-  it('starts at 80 and is about 54 after one time through, by default', () => {
-    expect(bpmAt(0)).toBe(start);
-    expect(bpmAt(1)).toBeCloseTo(54, 5);
+  it('starts at 60 and is about 43 after one time through, by default', () => {
+    expect(bpmAt(0)).toBe(60);
+    expect(bpmAt(1)).toBeCloseTo(20 + 40 * (34 / 60), 5);
   });
   it('keeps slowing with each repeat, never below the slowest rate', () => {
     let last = Infinity;

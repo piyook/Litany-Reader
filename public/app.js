@@ -28,6 +28,7 @@ import {
   furthest,
   glide,
   passed,
+  soundPoint,
   volumeGain,
 } from './lib/heartbeat.js';
 import { hiddenWords, levelOf, MEM_MAX, MEM_PILL, MEM_TOAST, memKey } from './lib/memorise.js';
@@ -507,8 +508,8 @@ function beatTick(ms) {
   bpm = glide(bpm, bpmAt(beatDone, heartRates), ms);
   const before = beatAt;
   beatAt = (beatAt + (ms * bpm) / 60000) % 1;
-  // Sound just before the heart is fullest (half way through the beat).
-  if (soundOn && passed(before, beatAt, 0.45)) playBeat();
+  // Sound a moment before the heart is fullest, so it lands with it at any rate.
+  if (soundOn && passed(before, beatAt, soundPoint(bpm))) playBeat();
 }
 function setSound(on) {
   soundOn = on;
