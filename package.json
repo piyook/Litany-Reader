@@ -1,6 +1,6 @@
 {
   "name": "litany-reader",
-  "version": "1.9.0",
+  "version": "1.9.1",
   "private": true,
   "license": "MIT",
   "description": "Shows a litany one line at a time, paced to guide calm breathing.",
