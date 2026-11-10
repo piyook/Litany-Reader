@@ -130,8 +130,10 @@ This applies to `npm start` and to Docker.
 | `litany-against-overwhelm.txt` | piyook |
 | `litany-against-regret.txt` | piyook |
 | `litany-against-self-criticism.txt` | piyook |
+| `litany-against-social-anxiety.txt` | piyook |
 | `litany-against-worry.txt` | piyook |
 | `litany-for-calm.txt` | piyook |
+| `litany-for-determination.txt` | piyook |
 | `litany-for-patience.txt` | piyook |
 | `litany-for-resilience.txt` | piyook |
 | `litany-for-sleep.txt` | piyook |
