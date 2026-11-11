@@ -108,9 +108,10 @@ let src = [],
   partLen = [],
   partWord = [];
 let idx = 0,
-  step = 0, // lines shown, across loops, so in and out keep alternating
+  step = 0, // lines shown, across loops, for the heartbeat's progress
   phase = 'breath',
   half = 0, // read aloud: 0 the in-breath half of the line, 1 the out-breath half
+  rest = false, // the closing out-breath after the last line, when it was an in-breath
   elapsed = 0,
   playing = false,
   finished = false;
@@ -136,7 +137,7 @@ let beatDone = 0,
 const usingShort = () => shortForm && shortLines.length > 0;
 const displayTitle = () => (usingShort() ? `${title} · short` : title);
 const memLevel = () => levelOf(memLevels, memKey(currentId, usingShort()));
-const kind = () => kindOf({ aloud, half, step });
+const kind = () => kindOf({ aloud, half, idx, rest });
 const phaseDuration = () => phaseMs(timings, phase, kind());
 
 // ---- Colours, read from the CSS, and again whenever the theme changes ----
@@ -424,6 +425,7 @@ function goTo(i) {
   idx = target;
   phase = 'breath';
   half = 0;
+  rest = false;
   elapsed = 0;
   finished = false;
   readerEl.classList.remove('finished');
@@ -538,7 +540,7 @@ function paintRows() {
   });
   for (let k = 0; k < lines.length; k++) {
     if (k === idx) continue; // draw() fills the current part
-    const colour = k < idx ? mix(DIM, COL[pastKind(k, idx, step, aloud)], 0.5) : rgb(DIM);
+    const colour = k < idx ? mix(DIM, COL[pastKind(k, aloud)], 0.5) : rgb(DIM);
     for (const c of partChars(k)) c.style.color = colour;
   }
 }
@@ -619,6 +621,11 @@ function setBeat(on) {
 
 function paintLine(k, p, eased) {
   const n = chars.length;
+  if (rest) {
+    // Closing out-breath: the last line stays as it was read, on the in-breath.
+    for (let i = 0; i < n; i++) chars[i].style.color = rgb(COL.in);
+    return;
+  }
   if (aloud && k === 'in') {
     // Silent read: the whole line brightens evenly, ready to be spoken.
     const c = mix(DIM, PREVIEW, phase === 'breath' ? eased : 1);
@@ -654,7 +661,7 @@ function paintCue(k, colour) {
 // whole-litany view, lines already read stay revealed and lines to come stay hidden.
 function applyReveal() {
   if (!memorise || (fullView && !rowChars.length)) return;
-  const now = revealNow(phase, aloud, half);
+  const now = revealNow(phase, aloud, half, rest);
   const key = `${idx}:${now}`;
   if (key === revealKey) return;
   revealKey = key;
@@ -680,13 +687,13 @@ function raiseMemLevel() {
 }
 
 function advance() {
-  const s = nextPhase({ phase, half, idx, step }, { aloud, count: lines.length, looping });
+  const s = nextPhase({ phase, half, idx, step, rest }, { aloud, count: lines.length, looping });
   if (s.event === 'end') {
     raiseMemLevel();
     finish();
     return;
   }
-  ({ phase, half, idx, step } = s);
+  ({ phase, half, idx, step, rest } = s);
   elapsed = 0;
   if (s.event === 'loop') raiseMemLevel(); // one more time through
   if (s.event === 'line' || s.event === 'loop') renderLine();

@@ -15,15 +15,19 @@ import {
 } from '../public/lib/breath.js';
 
 describe('kindOf', () => {
-  it('alternates in and out by step when reading silently', () => {
-    expect(kindOf({ aloud: false, half: 0, step: 0 })).toBe('in');
-    expect(kindOf({ aloud: false, half: 0, step: 1 })).toBe('out');
-    expect(kindOf({ aloud: false, half: 1, step: 2 })).toBe('in');
+  it('alternates in and out by line when reading silently, starting with in', () => {
+    expect(kindOf({ aloud: false, half: 0, idx: 0 })).toBe('in');
+    expect(kindOf({ aloud: false, half: 0, idx: 1 })).toBe('out');
+    expect(kindOf({ aloud: false, half: 1, idx: 2 })).toBe('in');
+  });
+
+  it('breathes out on the closing rest', () => {
+    expect(kindOf({ aloud: false, half: 0, idx: 2, rest: true })).toBe('out');
   });
 
   it('follows the half of the line when reading aloud', () => {
-    expect(kindOf({ aloud: true, half: 0, step: 1 })).toBe('in');
-    expect(kindOf({ aloud: true, half: 1, step: 0 })).toBe('out');
+    expect(kindOf({ aloud: true, half: 0, idx: 1 })).toBe('in');
+    expect(kindOf({ aloud: true, half: 1, idx: 0 })).toBe('out');
   });
 });
 
@@ -80,16 +84,12 @@ describe('cueWord, revealNow and pastKind', () => {
     expect(revealNow('hold', false, 0)).toBe(true);
     expect(revealNow('hold', true, 0)).toBe(false);
     expect(revealNow('hold', true, 1)).toBe(true);
+    expect(revealNow('breath', false, 0, true)).toBe(true); // closing out-breath
   });
 
   it('gives each line already read the breath it was on', () => {
-    // On line 3 at step 3 (out): line 2 was in, line 1 out, line 0 in.
-    expect([0, 1, 2].map((k) => pastKind(k, 3, 3, false))).toEqual(['in', 'out', 'in']);
-    // After one loop with an odd number of lines, step is one ahead and every line swaps.
-    expect([0, 1, 2].map((k) => pastKind(k, 3, 4, false))).toEqual(['out', 'in', 'out']);
-    // A step behind the line number (after going back past the start) still works.
-    expect(pastKind(0, 3, 0, false)).toBe('out');
-    expect(pastKind(0, 3, 4, true)).toBe('out');
+    expect([0, 1, 2].map((k) => pastKind(k, false))).toEqual(['in', 'out', 'in']);
+    expect(pastKind(0, true)).toBe('out');
   });
 });
 
@@ -113,19 +113,37 @@ describe('nextPhase', () => {
     expect(nextPhase(at({ idx: 1, step: 1 }), silent)).toEqual({
       phase: 'breath',
       half: 0,
+      rest: false,
       idx: 2,
       step: 2,
       event: 'line',
     });
   });
 
-  it('ends after the last line, or loops back to the first', () => {
-    expect(nextPhase(at({ idx: 2, step: 2 }), silent)).toMatchObject({ idx: 2, event: 'end' });
-    expect(nextPhase(at({ idx: 2, step: 2 }), { ...silent, looping: true })).toMatchObject({
+  it('adds a closing out-breath when the last line was an in-breath', () => {
+    expect(nextPhase(at({ idx: 2, step: 2 }), silent)).toMatchObject({
+      idx: 2,
+      rest: true,
+      phase: 'breath',
+      event: 'rest',
+    });
+    expect(nextPhase(at({ idx: 2, rest: true, phase: 'breath' }), silent)).toMatchObject({ phase: 'hold', rest: true });
+  });
+
+  it('ends after the closing out-breath, or loops back to the first line on an in-breath', () => {
+    expect(nextPhase(at({ idx: 2, step: 2, rest: true }), silent)).toMatchObject({ idx: 2, event: 'end' });
+    expect(nextPhase(at({ idx: 2, step: 2, rest: true }), { ...silent, looping: true })).toMatchObject({
       idx: 0,
       step: 3,
+      rest: false,
       event: 'loop',
     });
+  });
+
+  it('needs no closing out-breath when the last line was one', () => {
+    const even = { ...silent, count: 4 };
+    expect(nextPhase(at({ idx: 3, step: 3 }), even)).toMatchObject({ event: 'end' });
+    expect(nextPhase(at({ idx: 3, step: 3 }), { ...even, looping: true })).toMatchObject({ idx: 0, event: 'loop' });
   });
 
   it('reads a line aloud on the out-breath after the in-breath hold', () => {
