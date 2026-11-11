@@ -258,9 +258,9 @@ You can keep up to three favourites. On the index, tap the heart on the right of
 
 ## Controls
 
-Move the pointer to the bottom of the screen to show the controls: previous, play/pause, next, favourite, loop, short form, learn by heart, heartbeat, whole litany, read aloud, light/dark, settings, back. They hide again when the pointer moves away, and the cursor hides after a few seconds without movement. The light/dark button is also on the index page; the reader follows your system setting until you choose. Loop can also be switched with the repeat button at the top of the screen. With loop on, the litany repeats from the start indefinitely. Turning loop on after a litany has finished starts it again.
+Move the pointer to the bottom of the screen to show the controls: previous, play/pause, next, favourite, loop, short form, learn by heart, heartbeat, whole litany, read aloud, theme, settings, back. They hide again when the pointer moves away, and the cursor hides after a few seconds without movement. The theme button (a palette) is also on the index page. It opens a list of six colour themes: Dusk (the default, dark), Dawn (light), Midnight, Forest, Parchment and Ember. Pick one and the whole app changes colour at once. Until you choose, the app starts on Dawn if your system is set to light, and Dusk otherwise. Loop can also be switched with the repeat button at the top of the screen. With loop on, the litany repeats from the start indefinitely. Turning loop on after a litany has finished starts it again.
 
-Keys: `Space` play/pause · `←` `→` previous/next · `H` favourite on/off · `L` loop on/off · `S` short form on/off · `M` learn by heart on/off · `B` heartbeat on/off · `V` whole litany on one screen · `A` read aloud on/off · `T` light/dark · `F` fullscreen · `Esc` close settings, leave fullscreen, or go back to the index.
+Keys: `Space` play/pause · `←` `→` previous/next · `H` favourite on/off · `L` loop on/off · `S` short form on/off · `M` learn by heart on/off · `B` heartbeat on/off · `V` whole litany on one screen · `A` read aloud on/off · `T` choose a theme (then `↑` `↓` and `Enter`) · `F` fullscreen · `Esc` close settings, leave fullscreen, or go back to the index.
 
 ## Files
 

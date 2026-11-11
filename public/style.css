@@ -1,4 +1,8 @@
-:root {
+/* Colour themes. Dusk is the default. Each block sets the same colours. The theme
+   picker also puts data-theme on each of its rows, so every row shows its own colours.
+   Dawn and Parchment have darker breath colours so they read on a light ground. */
+:root,
+[data-theme="dusk"] {
   --bg: #0b0b0f;
   --text-dim: #3a3a44;
   --text: #c9c9d1;
@@ -13,6 +17,8 @@
   --hover-text: #ffffff;
   --pulse-peak: 0.4; /* how strong the heartbeat colour is at its fullest */
   color-scheme: dark;
+}
+:root {
   /* Space taken by a phone's notch, rounded corners and home bar (0 elsewhere).
      The page fills the whole screen (viewport-fit=cover), so edge controls add these. */
   --safe-top: env(safe-area-inset-top, 0px);
@@ -20,8 +26,8 @@
   --safe-bottom: env(safe-area-inset-bottom, 0px);
   --safe-left: env(safe-area-inset-left, 0px);
 }
-/* Light theme: warm paper, darker breath colours so they read on a light ground. */
-:root[data-theme="light"] {
+/* Warm paper. */
+[data-theme="dawn"] {
   --bg: #f3efe6;
   --text-dim: #d3cdc1;
   --text: #2b2a30;
@@ -34,15 +40,71 @@
   --line: #e0dacd;
   --bar: rgba(251, 248, 242, 0.9);
   --hover-text: #000000;
-  --pulse-peak: 0.4;
   color-scheme: light;
 }
-
-/* Theme button shows the theme you would switch to: sun in dark mode, moon in light.
-   !important beats the general "button svg { display: block }" rules. */
-:root[data-theme="dark"] .btn-theme .icon-moon,
-:root[data-theme="light"] .btn-theme .icon-sun {
-  display: none !important;
+/* Deep blue-black. */
+[data-theme="midnight"] {
+  --bg: #070b16;
+  --text-dim: #26304a;
+  --text: #c3cde6;
+  --muted: #66728f;
+  --in: #f0b873;
+  --out: #6fb4f0;
+  --hold: #8fd3b6;
+  --fav: #ef8fa6;
+  --panel: #0e1424;
+  --line: #1f2840;
+  --bar: rgba(14, 20, 36, 0.85);
+  --hover-text: #ffffff;
+  color-scheme: dark;
+}
+/* Green-black with sage text. */
+[data-theme="forest"] {
+  --bg: #0c140f;
+  --text-dim: #2c3d31;
+  --text: #cbd8c6;
+  --muted: #72877a;
+  --in: #e6b45e;
+  --out: #7fc2c0;
+  --hold: #a9d97f;
+  --fav: #e59090;
+  --panel: #121d15;
+  --line: #223228;
+  --bar: rgba(18, 29, 21, 0.85);
+  --hover-text: #ffffff;
+  color-scheme: dark;
+}
+/* Aged paper, brown ink. */
+[data-theme="parchment"] {
+  --bg: #ede0c4;
+  --text-dim: #cdbd9b;
+  --text: #3a2e22;
+  --muted: #7a6a52;
+  --in: #a85a12;
+  --out: #6b4a9e;
+  --hold: #4f7a35;
+  --fav: #b0394f;
+  --panel: #f5ebd3;
+  --line: #d8c9a6;
+  --bar: rgba(245, 235, 211, 0.9);
+  --hover-text: #000000;
+  color-scheme: light;
+}
+/* Very dim and warm, with no blue: for reading in bed. */
+[data-theme="ember"] {
+  --bg: #120a07;
+  --text-dim: #3d2a22;
+  --text: #d9b99f;
+  --muted: #85665a;
+  --in: #f08a3c;
+  --out: #b394d6;
+  --hold: #b5b86a;
+  --fav: #e57373;
+  --panel: #1a100c;
+  --line: #2f1f18;
+  --bar: rgba(26, 16, 12, 0.85);
+  --hover-text: #ffffff;
+  color-scheme: dark;
 }
 
 /* Mode pill at the top of the reader: silent or spoken. Click to switch. */
@@ -962,6 +1024,99 @@ button {
   border-radius: 6px;
 }
 
+/* Theme picker: a card in the middle of the screen, or a sheet from the bottom on
+   phones. Each row is drawn in its own theme's colours. */
+#theme-popup {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: calc(16px + var(--safe-top)) calc(16px + var(--safe-right)) calc(16px + var(--safe-bottom))
+    calc(16px + var(--safe-left));
+  background: rgba(0, 0, 0, 0.4);
+}
+.theme-card {
+  width: min(360px, 100%);
+  max-height: 100%;
+  overflow-y: auto;
+  padding: 16px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  font-family: system-ui, sans-serif;
+  font-size: 15px;
+}
+#theme-popup h2 {
+  margin: 0 0 12px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+#theme-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.theme-opt {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 48px;
+  padding: 10px 14px;
+  text-align: left;
+  background: var(--bg);
+  color: var(--text);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+}
+.theme-opt .name {
+  flex: 1;
+}
+.theme-opt .dots {
+  display: flex;
+  gap: 5px;
+}
+.theme-opt .dots i {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+.theme-opt .dots i:nth-child(1) {
+  background: var(--in);
+}
+.theme-opt .dots i:nth-child(2) {
+  background: var(--out);
+}
+.theme-opt .dots i:nth-child(3) {
+  background: var(--hold);
+}
+.theme-opt .tick {
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: var(--in);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  opacity: 0;
+}
+.theme-opt[aria-checked="true"] {
+  border-color: var(--in);
+  box-shadow: 0 0 0 1px var(--in);
+}
+.theme-opt[aria-checked="true"] .tick {
+  opacity: 1;
+}
+.theme-opt:focus-visible {
+  outline: 2px solid var(--text);
+  outline-offset: 2px;
+}
+
 /* Short message, e.g. when the favourites limit is reached. */
 #toast {
   position: fixed;
@@ -1015,6 +1170,16 @@ button {
   }
   #toast {
     bottom: calc(150px + var(--safe-bottom));
+  }
+  #theme-popup {
+    align-items: flex-end;
+    padding: 0;
+  }
+  .theme-card {
+    width: 100%;
+    max-width: 480px;
+    border-radius: 18px 18px 0 0;
+    padding: 18px calc(16px + var(--safe-right)) calc(18px + var(--safe-bottom)) calc(16px + var(--safe-left));
   }
   #top-bar {
     top: calc(14px + var(--safe-top));

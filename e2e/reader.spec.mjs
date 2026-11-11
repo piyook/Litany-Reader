@@ -354,20 +354,46 @@ test.describe('modes', () => {
     await expect(page.locator('#t-beat-volume')).toHaveValue('90');
   });
 
-  test('the theme (T) switches and is remembered', async ({ page }) => {
+  test('the theme picker (T) changes the theme and it is remembered', async ({ page }) => {
     const theme = () => page.locator('html').getAttribute('data-theme');
     // The status bar / browser colour follows the theme's background.
     const barColour = () => page.locator('meta[name="theme-color"]').getAttribute('content');
-    const colours = { dark: '#0b0b0f', light: '#f3efe6' };
-    const before = await theme();
-    expect(await barColour()).toBe(colours[before]);
-    await page.keyboard.press('t');
-    const after = await theme();
-    expect(after).not.toBe(before);
-    expect(await barColour()).toBe(colours[after]);
+    const popup = page.locator('#theme-popup');
+    const rows = page.locator('.theme-opt');
+    // Nothing saved yet and a dark system: the default theme, Dusk.
+    await page.emulateMedia({ colorScheme: 'dark' });
+    await page.evaluate(() => localStorage.removeItem('litany-theme'));
     await page.reload();
-    expect(await theme()).toBe(after);
-    expect(await barColour()).toBe(colours[after]);
+    expect(await theme()).toBe('dusk');
+    expect(await barColour()).toBe('#0b0b0f');
+    await expect(popup).toBeHidden();
+
+    await page.keyboard.press('t');
+    await expect(popup).toBeVisible();
+    await expect(rows).toHaveCount(6);
+    await expect(page.locator('.theme-opt[aria-checked="true"]')).toHaveAttribute('data-theme', 'dusk');
+    await page.keyboard.press('Escape');
+    await expect(popup).toBeHidden();
+
+    await page.locator('.index-head .btn-theme').click();
+    await page.locator('.theme-opt[data-theme="forest"]').click();
+    await expect(popup).toBeHidden();
+    expect(await theme()).toBe('forest');
+    expect(await barColour()).toBe('#0c140f');
+
+    await page.reload();
+    expect(await theme()).toBe('forest');
+    expect(await barColour()).toBe('#0c140f');
+    await page.keyboard.press('t');
+    await page.keyboard.press('ArrowDown'); // from Forest to the next row, Parchment
+    await page.keyboard.press('Enter');
+    expect(await theme()).toBe('parchment');
+  });
+
+  test('themes saved as dark or light before themes existed still work', async ({ page }) => {
+    await page.evaluate(() => localStorage.setItem('litany-theme', 'light'));
+    await page.reload();
+    expect(await page.locator('html').getAttribute('data-theme')).toBe('dawn');
   });
 });
 

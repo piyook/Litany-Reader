@@ -35,6 +35,7 @@ import { hiddenWords, levelOf, MEM_MAX, MEM_PILL, MEM_TOAST, memKey } from './li
 import { read, readFlag, readObject, save, saveFlag, saveObject } from './lib/prefs.js';
 import { indexSections, showAuthors, splitTitle } from './lib/sections.js';
 import { buildParts, letterRange } from './lib/text.js';
+import { resolveTheme, THEMES } from './lib/themes.js';
 import { VERSION } from './version.js';
 import { keepAwake } from './wake-lock.js';
 
@@ -845,16 +846,36 @@ function nextMemLevel() {
   rehide();
 }
 
-// Light / dark theme. The <head> script sets it before first paint; this keeps it in step.
+// Colour theme. The <head> script sets it before first paint; this keeps it in step.
+// The palette button (or T) opens a picker with a row for each theme in lib/themes.js.
 const themeBtns = document.querySelectorAll('.btn-theme');
-function setTheme(t) {
+const themePopup = $('theme-popup'),
+  themeList = $('theme-list');
+const TICK = '<svg class="tick" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
+// Each row carries data-theme, so the CSS draws it in that theme's own colours.
+themeList.innerHTML = THEMES.map(
+  (t) =>
+    `<button type="button" class="theme-opt" role="radio" aria-checked="false" data-theme="${t.id}">` +
+    `<span class="name">${t.name}</span><span class="dots"><i></i><i></i><i></i></span>${TICK}</button>`,
+).join('');
+const themeRows = [...themeList.children];
+let themeOpener = null;
+const themeOpen = () => !themePopup.classList.contains('hidden');
+function openThemes(opener) {
+  themeOpener = opener || null;
+  themePopup.classList.remove('hidden');
+  (themeList.querySelector('[aria-checked="true"]') || themeRows[0]).focus();
+}
+function closeThemes() {
+  themePopup.classList.add('hidden');
+  themeOpener?.focus();
+  themeOpener = null;
+}
+function setTheme(saved) {
+  const t = resolveTheme(saved);
   document.documentElement.dataset.theme = t;
   save('litany-theme', t);
-  const label = t === 'dark' ? 'Switch to light mode (T)' : 'Switch to dark mode (T)';
-  themeBtns.forEach((b) => {
-    b.title = label;
-    b.setAttribute('aria-label', label);
-  });
+  for (const row of themeRows) row.setAttribute('aria-checked', String(row.dataset.theme === t));
   readColours();
   // Status bar and browser colour follow the page background.
   const bg = getComputedStyle(document.documentElement).getPropertyValue('--bg').trim();
@@ -864,7 +885,15 @@ function setTheme(t) {
     draw();
   }
 }
-const toggleTheme = () => setTheme(document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark');
+for (const row of themeRows) {
+  row.onclick = () => {
+    setTheme(row.dataset.theme);
+    closeThemes();
+  };
+}
+themePopup.addEventListener('click', (e) => {
+  if (e.target === themePopup) closeThemes(); // the dimmed area around the card
+});
 
 function toggleFullscreen() {
   if (document.fullscreenElement) document.exitFullscreen();
@@ -883,7 +912,7 @@ setBeat(beatOn);
 setSound(soundOn);
 setSoundGain(volumeGain(beatVolume));
 readySound();
-setTheme(document.documentElement.dataset.theme || 'dark');
+setTheme(document.documentElement.dataset.theme);
 
 loopBtn.onclick = () => setLoop(!looping);
 repeatPill.onclick = () => setLoop(!looping);
@@ -899,7 +928,7 @@ beatPill.onclick = () => setBeat(!beatOn);
 soundPill.onclick = () => setSound(!soundOn);
 aloudBtn.onclick = () => setAloud(!aloud);
 modePill.onclick = () => setAloud(!aloud);
-for (const b of themeBtns) b.onclick = toggleTheme;
+for (const b of themeBtns) b.onclick = () => (themeOpen() ? closeThemes() : openThemes(b));
 playBtn.onclick = toggle;
 $('btn-prev').onclick = prev;
 $('btn-next').onclick = next;
@@ -1047,13 +1076,27 @@ const KEYS = new Map([
   ['b', () => setBeat(!beatOn)],
   ['f', toggleFullscreen],
 ]);
+// The theme picker takes the keys while it is open; Enter and Space press the focused row.
+function themeKey(key) {
+  if (key === 'Escape' || key === 't') closeThemes();
+  else if (key === 'ArrowDown' || key === 'ArrowUp') {
+    const at = themeRows.indexOf(document.activeElement);
+    const step = key === 'ArrowDown' ? 1 : -1;
+    themeRows[(at + step + themeRows.length) % themeRows.length].focus();
+  } else return false;
+  return true;
+}
 document.addEventListener('keydown', (e) => {
   if (e.target.tagName === 'INPUT') {
     if (e.key === 'Escape') closeSettings();
     return;
   }
   const key = e.key.length === 1 ? e.key.toLowerCase() : e.key;
-  if (key === 't') return toggleTheme();
+  if (themeOpen()) {
+    if (themeKey(key)) e.preventDefault();
+    return;
+  }
+  if (key === 't') return openThemes(themeBtns[0]);
   if (!readerEl.classList.contains('hidden')) KEYS.get(key)?.(e);
 });
 
