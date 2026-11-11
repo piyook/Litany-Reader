@@ -8,9 +8,13 @@ export const DEFAULT_TIMINGS = { in: 4, hold1: 4, out: 6, hold2: 2 };
 // A timing typed into the settings, kept between its least and 30 seconds.
 export const clampTiming = (key, v) => Math.max(key.startsWith('hold') ? 0 : 0.5, Math.min(30, v));
 
-// `step` counts lines shown, across loops, so in and out keep alternating even
-// when a litany with an odd number of lines wraps round.
-export const kindOf = ({ aloud, half, step }) => (aloud ? (half ? 'out' : 'in') : step % 2 === 0 ? 'in' : 'out');
+// Reading silently, lines alternate from an in-breath on the first line, so
+// every time through starts breathing in. `rest` is the extra out-breath after
+// the last line of an odd-length litany, so every time through ends breathing out.
+export const kindOf = ({ aloud, half, idx, rest }) => {
+  if (aloud) return half ? 'out' : 'in';
+  return rest || idx % 2 === 1 ? 'out' : 'in';
+};
 
 // Milliseconds the phase lasts. The hold after an in-breath is hold1, after an out-breath hold2.
 export function phaseMs(timings, phase, kind) {
@@ -42,27 +46,27 @@ export const fillAt = (front, i, edge) => Math.max(0, Math.min(1, (front - i) / 
 
 // The breath a part already read was on, so it keeps a softer version of that colour.
 // In read-aloud mode every line is spoken on the out-breath.
-export function pastKind(k, idx, step, aloud) {
-  if (aloud) return 'out';
-  const parity = (((step - idx + k) % 2) + 2) % 2; // never negative, even when step < idx
-  return parity === 0 ? 'in' : 'out';
-}
+export const pastKind = (k, aloud) => kindOf({ aloud, half: 1, idx: k, rest: false });
 
-// Hidden words come back in the hold after the line is breathed (read aloud: after it is spoken).
-export const revealNow = (phase, aloud, half) => phase === 'hold' && (!aloud || half === 1);
+// Hidden words come back in the hold after the line is breathed (read aloud:
+// after it is spoken), and stay through the closing out-breath.
+export const revealNow = (phase, aloud, half, rest = false) => rest || (phase === 'hold' && (!aloud || half === 1));
 
 // `step` after moving from line `from` to line `to`.
 export const moveStep = (step, from, to) => Math.max(0, step + (to - from));
 
 // What follows the current phase. `count` is how many steps the litany has.
 // `event` says what changed: 'hold', 'speak' (read aloud, same line),
-// 'line' (next line), 'loop' (back to the first line) or 'end'.
+// 'rest' (closing out-breath, same line), 'line' (next line), 'loop' (back to
+// the first line) or 'end'.
 export function nextPhase(s, { aloud, count, looping }) {
   if (s.phase === 'breath') return { ...s, phase: 'hold', event: 'hold' };
   if (aloud && s.half === 0) return { ...s, half: 1, phase: 'breath', event: 'speak' };
-  if (s.idx < count - 1 || looping) {
+  const last = s.idx === count - 1;
+  if (last && !s.rest && kindOf({ aloud, ...s }) === 'in') return { ...s, rest: true, phase: 'breath', event: 'rest' };
+  if (!last || looping) {
     const idx = (s.idx + 1) % count;
-    return { idx, step: s.step + 1, half: 0, phase: 'breath', event: idx === 0 ? 'loop' : 'line' };
+    return { idx, step: s.step + 1, half: 0, rest: false, phase: 'breath', event: idx === 0 ? 'loop' : 'line' };
   }
   return { ...s, event: 'end' };
 }
