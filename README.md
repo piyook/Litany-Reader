@@ -162,6 +162,7 @@ Author: Name
 
 - The first line is the title.
 - Every other non-empty line is one step on screen.
+- **Aim for an even number of steps**, in the full litany and in the short version. The app gives each step the opposite breath to the one before, starting with an in-breath, so "I draw breath…" should be an odd-numbered step and "I release it…" an even one. With an odd count that holds on the first read, but when the litany loops every line lands on the opposite breath the second time round. A step is one line as it is read: with [Split to fit a breath](#settings) on, a line over the word limit counts as two or more, so count those too (a line of 13 or more words with a comma or full stop in it will split at the default of 12).
 - An optional `Short version` (or `Short form`) line starts a short form: the lines after it are a quick version of the litany, read when [Short form](#views) is on. A litany without one is always read in full.
 - An optional `Author:` line, last in the file or last before `Short version`, is a credit, not a step. A line ending in `.`, `!` or `?` is always read as a step. It shows under the text in the whole-litany view, and as a small tag on the index when the litanies are not all by the same author.
 - The title decides where the litany sits on the index: "Litany against …" under **Holding steady**, "Litany for …" or "Litany of …" under **Every day**, anything else under **More**. See [The index](#the-index).
@@ -258,9 +259,9 @@ You can keep up to three favourites. On the index, tap the heart on the right of
 
 ## Controls
 
-Move the pointer to the bottom of the screen to show the controls: previous, play/pause, next, favourite, loop, short form, learn by heart, heartbeat, whole litany, read aloud, light/dark, settings, back. They hide again when the pointer moves away, and the cursor hides after a few seconds without movement. The light/dark button is also on the index page; the reader follows your system setting until you choose. Loop can also be switched with the repeat button at the top of the screen. With loop on, the litany repeats from the start indefinitely. Turning loop on after a litany has finished starts it again.
+Move the pointer to the bottom of the screen to show the controls: previous, play/pause, next, favourite, loop, short form, learn by heart, heartbeat, whole litany, read aloud, theme, settings, back. They hide again when the pointer moves away, and the cursor hides after a few seconds without movement. The theme button (a palette) is also on the index page. It opens a list of six colour themes: Dusk (the default, dark), Dawn (light), Midnight, Forest, Parchment and Ember. Pick one and the whole app changes colour at once. Until you choose, the app starts on Dawn if your system is set to light, and Dusk otherwise. Loop can also be switched with the repeat button at the top of the screen. With loop on, the litany repeats from the start indefinitely. Turning loop on after a litany has finished starts it again.
 
-Keys: `Space` play/pause · `←` `→` previous/next · `H` favourite on/off · `L` loop on/off · `S` short form on/off · `M` learn by heart on/off · `B` heartbeat on/off · `V` whole litany on one screen · `A` read aloud on/off · `T` light/dark · `F` fullscreen · `Esc` close settings, leave fullscreen, or go back to the index.
+Keys: `Space` play/pause · `←` `→` previous/next · `H` favourite on/off · `L` loop on/off · `S` short form on/off · `M` learn by heart on/off · `B` heartbeat on/off · `V` whole litany on one screen · `A` read aloud on/off · `T` choose a theme (then `↑` `↓` and `Enter`) · `F` fullscreen · `Esc` close settings, leave fullscreen, or go back to the index.
 
 ## Files
 
