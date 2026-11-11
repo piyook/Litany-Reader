@@ -134,6 +134,7 @@ This applies to `npm start` and to Docker.
 | `litany-against-worry.txt` | piyook |
 | `litany-for-calm.txt` | piyook |
 | `litany-for-determination.txt` | piyook |
+| `litany-for-hope.txt` | piyook |
 | `litany-for-patience.txt` | piyook |
 | `litany-for-resilience.txt` | piyook |
 | `litany-for-sleep.txt` | piyook |
