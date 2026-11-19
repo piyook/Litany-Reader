@@ -20,8 +20,6 @@ A litany takes practice before it works in real situations. This tool helps by l
 
 Add your own as `.txt` files in the `litanies` folder (see [File format](#file-format)).
 
-These help me. I hope they help someone else.
-
 > [!NOTE]
 > This is a calming aid, not a substitute for professional help. If you are struggling, please reach out to someone: a friend, your doctor, or a helpline. You are not alone.
 >
